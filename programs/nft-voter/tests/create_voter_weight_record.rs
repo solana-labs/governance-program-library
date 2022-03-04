@@ -9,8 +9,12 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
     // Arrange
     let mut nft_voter_bench = NftVoterTestBench::start_new().await;
 
+    let registrar_cookie = nft_voter_bench.with_registrar().await;
+
     // Act
-    nft_voter_bench.with_registrar().await;
+    nft_voter_bench
+        .with_voter_weight_record(&registrar_cookie)
+        .await;
 
     Ok(())
 }
