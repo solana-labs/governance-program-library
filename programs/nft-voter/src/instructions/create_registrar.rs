@@ -1,9 +1,9 @@
+use crate::error::ErrorCode;
+use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 use std::mem::size_of;
-use crate::state::*;
-use crate::error::ErrorCode;
 
 #[derive(Accounts)]
 pub struct CreateRegistrar<'info> {
@@ -11,7 +11,7 @@ pub struct CreateRegistrar<'info> {
     /// per governance realm and governing mint.
     #[account(
         init,
-        seeds = [realm.key().as_ref(), b"registrar".as_ref(), realm_governing_token_mint.key().as_ref()],
+        seeds = [b"registrar".as_ref(),realm.key().as_ref(),  realm_governing_token_mint.key().as_ref()],
         bump,
         payer = payer,
         space = 8 + size_of::<Registrar>()
@@ -24,19 +24,23 @@ pub struct CreateRegistrar<'info> {
     /// - realm is owned by the governance_program_id
     /// - realm_governing_token_mint must be the community or council mint
     /// - realm_authority is realm.authority
+    /// CHECK: Owned by spl-gov
     pub realm: UncheckedAccount<'info>,
 
     /// The program id of the spl-governance program the realm belongs to.
+    /// CHECK: Can be any instance of spl-gov
     pub governance_program_id: UncheckedAccount<'info>,
+
     /// Either the realm community mint or the council mint.
     pub realm_governing_token_mint: Account<'info, Mint>,
+
+    #[account(mut)]
     pub realm_authority: Signer<'info>,
 
     #[account(mut)]
     pub payer: Signer<'info>,
 
     pub system_program: Program<'info, System>,
-    pub rent: Sysvar<'info, Rent>,
 }
 
 /// Creates a new voting registrar.

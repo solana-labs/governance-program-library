@@ -6,7 +6,7 @@ edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "nft_voter"
+name = "gpl_nft_voter"
 
 [features]
 no-entrypoint = []
@@ -16,8 +16,14 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
+solana-program = "1.9.5"
 anchor-lang = { version = "0.22.1", features = ["init-if-needed"] }
 spl-governance = { version = "2.2.2", features = ["no-entrypoint"] }
+spl-governance-addin-api  = "0.1.1"
 anchor-spl = "0.22.1"
-spl-token = "3.3.0"
+
+[dev-dependencies]
+solana-sdk = "1.9.5"
+solana-program-test = "1.9.5"
+spl-token = { version = "^3.3.0", features = ["no-entrypoint"] }
 mpl-token-metadata = { version = "1.1.0" , features = ["no-entrypoint"] }
