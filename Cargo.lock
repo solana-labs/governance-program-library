@@ -1070,6 +1070,7 @@ dependencies = [
  "solana-program-test",
  "solana-sdk",
  "spl-governance",
+ "spl-token",
 ]
 
 [[package]]

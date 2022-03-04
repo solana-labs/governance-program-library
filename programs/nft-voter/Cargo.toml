@@ -24,3 +24,4 @@ mpl-token-metadata = "1.1.0"
 [dev-dependencies]
 solana-sdk = "1.9.5"
 solana-program-test = "1.9.5"
+spl-token = { version = "^3.0.0", features = ["no-entrypoint"] }

@@ -7,7 +7,7 @@ mod program_test;
 #[tokio::test]
 async fn test_create_registrar() -> Result<(), TransportError> {
     // Arrange
-    let nft_voter_bench = NftVoterTestBench::start_new().await;
+    let mut nft_voter_bench = NftVoterTestBench::start_new().await;
 
     // Act
     nft_voter_bench.with_registrar().await;

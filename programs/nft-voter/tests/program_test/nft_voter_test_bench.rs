@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::ProgramTest;
 use solana_sdk::instruction::Instruction;
@@ -11,7 +9,7 @@ use crate::program_test::governance_test_bench::GovernanceTestBench;
 use crate::program_test::program_test_bench::ProgramTestBench;
 
 pub struct NftVoterTestBench {
-    pub bench: Arc<ProgramTestBench>,
+    pub bench: ProgramTestBench,
     pub governance_bench: GovernanceTestBench,
 }
 
@@ -27,20 +25,23 @@ impl NftVoterTestBench {
         //  GovernanceTestBench::add_program(&mut program_test);
 
         let bench = ProgramTestBench::start_new(program_test).await;
-        let bench_arc = Arc::new(bench);
 
-        let governance_bench = GovernanceTestBench::new(bench_arc.clone());
+        let governance_bench = GovernanceTestBench::new();
 
         Self {
-            bench: bench_arc,
+            bench,
             governance_bench,
         }
     }
 
-    pub async fn with_registrar(&self) {
+    pub async fn with_registrar(&mut self) {
         let realm = Pubkey::new_unique();
-        let realm_governing_token_mint = Pubkey::new_unique();
+        let realm_governing_token_mint = Keypair::new();
         let realm_authority = Keypair::new();
+
+        self.bench
+            .create_mint(&realm_governing_token_mint, &realm_authority.pubkey(), None)
+            .await;
 
         let (registrar, _) = Pubkey::find_program_address(
             &[
@@ -58,9 +59,9 @@ impl NftVoterTestBench {
             registrar,
             realm,
             governance_program_id: self.governance_bench.program_id,
-            realm_governing_token_mint,
+            realm_governing_token_mint: realm_governing_token_mint.pubkey(),
             realm_authority: realm_authority.pubkey(),
-            payer: self.bench.context.borrow().payer.pubkey(),
+            payer: self.bench.context.payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
         };
 
