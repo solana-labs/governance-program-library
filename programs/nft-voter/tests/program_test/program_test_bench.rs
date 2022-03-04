@@ -7,6 +7,11 @@ use solana_sdk::{
 
 pub struct ProgramTestBench {
     pub context: ProgramTestContext,
+    pub payer: Keypair,
+    pub next_id: u8,
+}
+pub fn clone_keypair(source: &Keypair) -> Keypair {
+    Keypair::from_bytes(&source.to_bytes()).unwrap()
 }
 
 impl ProgramTestBench {
@@ -15,7 +20,13 @@ impl ProgramTestBench {
     pub async fn start_new(program_test: ProgramTest) -> Self {
         let context = program_test.start_with_context().await;
 
-        Self { context: context }
+        let payer = clone_keypair(&context.payer);
+
+        Self {
+            payer,
+            context,
+            next_id: 0,
+        }
     }
 
     #[allow(dead_code)]
@@ -48,6 +59,12 @@ impl ProgramTestBench {
             )
             .await
             .unwrap()
+    }
+
+    pub fn get_unique_name(&mut self, prefix: &str) -> String {
+        self.next_id += 1;
+
+        format!("{}.{}", prefix, self.next_id)
     }
 
     #[allow(dead_code)]
