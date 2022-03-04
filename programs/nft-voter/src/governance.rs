@@ -61,5 +61,22 @@ macro_rules! vote_weight_record {
                 &mut self.0
             }
         }
+
+        impl Default for VoterWeightRecord {
+            fn default() -> Self {
+
+                VoterWeightRecord( spl_governance_addin_api::voter_weight::VoterWeightRecord{
+                account_discriminator: spl_governance_addin_api::voter_weight::VoterWeightRecord::ACCOUNT_DISCRIMINATOR,
+                realm: anchor_lang::prelude::Pubkey::default(),
+                governing_token_mint: anchor_lang::prelude::Pubkey::default(),
+                governing_token_owner: anchor_lang::prelude::Pubkey::default(),
+                voter_weight:0,
+                voter_weight_expiry:Some(0),
+                weight_action:Some(spl_governance_addin_api::voter_weight::VoterWeightAction::CastVote),
+                weight_action_target: Some(anchor_lang::prelude::Pubkey::default()),
+                reserved: [0; 8]
+                })
+            }
+        }
     };
 }
