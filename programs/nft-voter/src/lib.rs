@@ -6,6 +6,7 @@ mod error;
 mod instructions;
 use instructions::*;
 
+mod governance;
 mod state;
 
 // use state::*;
