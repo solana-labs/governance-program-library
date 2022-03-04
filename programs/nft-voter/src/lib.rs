@@ -1,16 +1,21 @@
 use anchor_lang::prelude::*;
 
+mod error;
+// use error::*;
+
+mod instructions;
+use instructions::*;
+
+mod state;
+
+// use state::*;
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
 #[program]
 pub mod nft_voter {
-    use anchor_lang::solana_program::entrypoint::ProgramResult;
 
     use super::*;
-    pub fn initialize(_ctx: Context<Initialize>) -> ProgramResult {
-        Ok(())
+    pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
+        instructions::create_registrar(ctx)
     }
 }
-
-#[derive(Accounts)]
-pub struct Initialize {}
