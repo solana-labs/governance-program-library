@@ -16,8 +16,10 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
+solana-program = "1.9.5"
 anchor-lang = "0.22.1"
 spl-governance = { version = "2.2.2", features = ["no-entrypoint"] }
+spl-governance-addin-api  = "0.1.1"
 anchor-spl = "0.22.1"
 mpl-token-metadata = "1.1.0"
 

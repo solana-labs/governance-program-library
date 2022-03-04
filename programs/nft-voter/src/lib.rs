@@ -6,6 +6,7 @@ mod error;
 mod instructions;
 use instructions::*;
 
+mod governance;
 mod state;
 
 // use state::*;
@@ -17,5 +18,11 @@ pub mod nft_voter {
     use super::*;
     pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
         instructions::create_registrar(ctx)
+    }
+    pub fn create_voter_weight_record(
+        ctx: Context<CreateVoterWeightRecord>,
+        governing_token_owner: Pubkey,
+    ) -> Result<()> {
+        instructions::create_voter_weight_record(ctx, governing_token_owner)
     }
 }

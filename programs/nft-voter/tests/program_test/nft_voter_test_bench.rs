@@ -16,6 +16,12 @@ pub struct NftVoterTestBench {
     pub governance_bench: GovernanceTestBench,
 }
 
+pub struct RegistrarCookie {
+    pub registrar: Pubkey,
+    pub realm: Pubkey,
+    pub realm_governing_token_mint: Pubkey,
+}
+
 impl NftVoterTestBench {
     pub fn add_program(program_test: &mut ProgramTest) {
         program_test.add_program("gpl_nft_voter", gpl_nft_voter::id(), None);
@@ -37,7 +43,8 @@ impl NftVoterTestBench {
         }
     }
 
-    pub async fn with_registrar(&mut self) {
+    #[allow(dead_code)]
+    pub async fn with_registrar(&mut self) -> RegistrarCookie {
         let realm_governing_token_mint = Keypair::new();
         let realm_authority = Keypair::new();
 
@@ -98,6 +105,50 @@ impl NftVoterTestBench {
 
         self.bench
             .process_transaction(&instructions, Some(&[&realm_authority]))
-            .await
+            .await;
+
+        RegistrarCookie {
+            registrar,
+            realm,
+            realm_governing_token_mint: realm_governing_token_mint.pubkey(),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_voter_weight_record(&mut self, registrar_cookie: &RegistrarCookie) {
+        let governing_token_owner = self.bench.context.payer.pubkey();
+
+        let (voter_weight_record, _) = Pubkey::find_program_address(
+            &[
+                b"voter-weight-record".as_ref(),
+                registrar_cookie.realm.as_ref(),
+                registrar_cookie.realm_governing_token_mint.as_ref(),
+                governing_token_owner.as_ref(),
+            ],
+            &gpl_nft_voter::id(),
+        );
+
+        let data = anchor_lang::InstructionData::data(
+            &gpl_nft_voter::instruction::CreateVoterWeightRecord {
+                governing_token_owner: self.bench.payer.pubkey(),
+            },
+        );
+
+        let accounts = gpl_nft_voter::accounts::CreateVoterWeightRecord {
+            registrar: registrar_cookie.registrar,
+            realm: registrar_cookie.realm,
+            realm_governing_token_mint: registrar_cookie.realm_governing_token_mint,
+            voter_weight_record,
+            payer: governing_token_owner,
+            system_program: solana_sdk::system_program::id(),
+        };
+
+        let instructions = vec![Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            data,
+        }];
+
+        self.bench.process_transaction(&instructions, None).await
     }
 }
