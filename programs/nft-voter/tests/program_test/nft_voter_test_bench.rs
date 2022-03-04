@@ -151,4 +151,37 @@ impl NftVoterTestBench {
 
         self.bench.process_transaction(&instructions, None).await
     }
+
+    #[allow(dead_code)]
+    pub async fn with_max_voter_weight_record(&mut self, registrar_cookie: &RegistrarCookie) {
+        let (max_voter_weight_record, _) = Pubkey::find_program_address(
+            &[
+                b"max_voter-weight-record".as_ref(),
+                registrar_cookie.realm.as_ref(),
+                registrar_cookie.realm_governing_token_mint.as_ref(),
+            ],
+            &gpl_nft_voter::id(),
+        );
+
+        let data = anchor_lang::InstructionData::data(
+            &gpl_nft_voter::instruction::CreateMaxVoterWeightRecord {},
+        );
+
+        let accounts = gpl_nft_voter::accounts::CreateMaxVoterWeightRecord {
+            registrar: registrar_cookie.registrar,
+            realm: registrar_cookie.realm,
+            realm_governing_token_mint: registrar_cookie.realm_governing_token_mint,
+            max_voter_weight_record,
+            payer: self.bench.payer.pubkey(),
+            system_program: solana_sdk::system_program::id(),
+        };
+
+        let instructions = vec![Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            data,
+        }];
+
+        self.bench.process_transaction(&instructions, None).await
+    }
 }
