@@ -30,8 +30,11 @@ pub struct CreateRegistrar<'info> {
     /// The program id of the spl-governance program the realm belongs to.
     /// CHECK: Can be any instance of spl-gov
     pub governance_program_id: UncheckedAccount<'info>,
+
     /// Either the realm community mint or the council mint.
     pub realm_governing_token_mint: Account<'info, Mint>,
+
+    #[account(mut)]
     pub realm_authority: Signer<'info>,
 
     #[account(mut)]

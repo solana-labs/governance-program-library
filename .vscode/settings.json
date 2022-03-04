@@ -1,3 +1,6 @@
 {
-  "cSpell.words": ["Pubkey"]
+  "cSpell.words": [
+    "Keypair",
+    "Pubkey"
+  ]
 }

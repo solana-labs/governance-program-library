@@ -1,17 +1,18 @@
-use std::sync::Arc;
-
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::ProgramTest;
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signer::Signer;
 
 use solana_sdk::signature::Keypair;
+use spl_governance::instruction::create_realm;
+use spl_governance::state::enums::MintMaxVoteWeightSource;
+use spl_governance::state::realm::get_realm_address;
 
 use crate::program_test::governance_test_bench::GovernanceTestBench;
 use crate::program_test::program_test_bench::ProgramTestBench;
 
 pub struct NftVoterTestBench {
-    pub bench: Arc<ProgramTestBench>,
+    pub bench: ProgramTestBench,
     pub governance_bench: GovernanceTestBench,
 }
 
@@ -24,31 +25,54 @@ impl NftVoterTestBench {
         let mut program_test = ProgramTest::default();
 
         NftVoterTestBench::add_program(&mut program_test);
-        //  GovernanceTestBench::add_program(&mut program_test);
+        GovernanceTestBench::add_program(&mut program_test);
 
         let bench = ProgramTestBench::start_new(program_test).await;
-        let bench_arc = Arc::new(bench);
 
-        let governance_bench = GovernanceTestBench::new(bench_arc.clone());
+        let governance_bench = GovernanceTestBench::new();
 
         Self {
-            bench: bench_arc,
+            bench,
             governance_bench,
         }
     }
 
-    pub async fn with_registrar(&self) {
-        let realm = Pubkey::new_unique();
-        let realm_governing_token_mint = Pubkey::new_unique();
+    pub async fn with_registrar(&mut self) {
+        let realm_governing_token_mint = Keypair::new();
         let realm_authority = Keypair::new();
+
+        self.bench
+            .create_mint(&realm_governing_token_mint, &realm_authority.pubkey(), None)
+            .await;
+
+        let name = self.bench.get_unique_name("realm");
+
+        let realm = get_realm_address(&self.governance_bench.program_id, &name);
+
+        let create_realm_ix = create_realm(
+            &self.governance_bench.program_id,
+            &realm_authority.pubkey(),
+            &realm_governing_token_mint.pubkey(),
+            &self.bench.payer.pubkey(),
+            None,
+            None,
+            None,
+            name.clone(),
+            1,
+            MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
+        );
+
+        self.bench
+            .process_transaction(&[create_realm_ix], None)
+            .await;
 
         let (registrar, _) = Pubkey::find_program_address(
             &[
                 b"registrar".as_ref(),
-                // &realm.to_bytes(),
-                // &realm_governing_token_mint.to_bytes(),
+                &realm.to_bytes(),
+                &realm_governing_token_mint.pubkey().to_bytes(),
             ],
-            &self.governance_bench.program_id,
+            &gpl_nft_voter::id(),
         );
 
         let data =
@@ -58,9 +82,9 @@ impl NftVoterTestBench {
             registrar,
             realm,
             governance_program_id: self.governance_bench.program_id,
-            realm_governing_token_mint,
+            realm_governing_token_mint: realm_governing_token_mint.pubkey(),
             realm_authority: realm_authority.pubkey(),
-            payer: self.bench.context.borrow().payer.pubkey(),
+            payer: self.bench.context.payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
         };
 
