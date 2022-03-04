@@ -28,4 +28,10 @@ pub mod nft_voter {
     pub fn create_max_voter_weight_record(ctx: Context<CreateMaxVoterWeightRecord>) -> Result<()> {
         instructions::create_max_voter_weight_record(ctx)
     }
+    pub fn configure_collection(ctx: Context<ConfigureCollection>, multiplier: u64) -> Result<()> {
+        instructions::configure_collection(ctx, multiplier)
+    }
+    pub fn vote_with_nft(ctx: Context<VoteWithNFT>) -> Result<()> {
+        instructions::vote_with_nft(ctx)
+    }
 }

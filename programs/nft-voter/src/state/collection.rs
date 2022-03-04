@@ -5,11 +5,9 @@ use anchor_lang::prelude::*;
 #[account]
 #[derive(Default)]
 pub struct Collection {
-  /// Name of the collection
-  pub name: String,
+  /// Key of the collection used to verify NFTs on vote
+  pub key: Pubkey,
   /// Multiplier for the collection
   pub multiplier: u64,
-  /// Collection creator address which will be used to verify NFTs on vote
-  pub collection_creator: Pubkey
   
 }
