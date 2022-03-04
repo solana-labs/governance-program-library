@@ -1,4 +1,8 @@
-use anchor_lang::{Accounts, prelude::{Signer, Context}, account};
+use anchor_lang::{
+    account,
+    prelude::{Context, Signer},
+    Accounts,
+};
 
 use anchor_lang::prelude::*;
 use anchor_spl::token::{TokenAccount, Token};
