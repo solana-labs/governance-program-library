@@ -1,6 +1,6 @@
 /// A macro is exposed so that we can embed the program ID.
 #[macro_export]
-macro_rules! vote_weight_record {
+macro_rules! voter_weight_record {
     ($id:expr) => {
         /// Anchor wrapper for the SPL governance program's VoterWeightRecord type.
         #[derive(Clone)]
