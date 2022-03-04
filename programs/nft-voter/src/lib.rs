@@ -28,4 +28,17 @@ pub mod nft_voter {
     pub fn create_max_voter_weight_record(ctx: Context<CreateMaxVoterWeightRecord>) -> Result<()> {
         instructions::create_max_voter_weight_record(ctx)
     }
+    pub fn update_voter_weight_record(
+        ctx: Context<UpdateVoterWeightRecord>,
+        realm: Pubkey,
+        governing_token_mint: Pubkey,
+        governing_token_owner: Pubkey,
+    ) -> Result<()> {
+        instructions::update_voter_weight_record(
+            ctx,
+            realm,
+            governing_token_mint,
+            governing_token_owner,
+        )
+    }
 }
