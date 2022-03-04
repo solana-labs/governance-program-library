@@ -569,6 +569,7 @@ dependencies = [
  "anchor-spl",
  "mpl-token-metadata",
  "spl-governance",
+ "spl-token",
 ]
 
 [[package]]
