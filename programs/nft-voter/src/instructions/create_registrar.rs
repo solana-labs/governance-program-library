@@ -1,8 +1,8 @@
-use crate::error::ErrorCode;
+//use crate::error::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
-use spl_governance::state::realm;
+//use spl_governance::state::realm;
 use std::mem::size_of;
 
 #[derive(Accounts)]
@@ -30,10 +30,12 @@ pub struct CreateRegistrar<'info> {
     /// The program id of the spl-governance program the realm belongs to.
     /// CHECK: Can be any instance of spl-gov
     pub governance_program_id: UncheckedAccount<'info>,
+
     /// Either the realm community mint or the council mint.
     pub realm_governing_token_mint: Account<'info, Mint>,
-    pub realm_authority: Signer<'info>,
 
+    // #[account(mut)]
+    pub realm_authority: Signer<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
 
@@ -50,17 +52,17 @@ pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
     registrar.realm = ctx.accounts.realm.key();
     registrar.realm_governing_token_mint = ctx.accounts.realm_governing_token_mint.key();
 
-    // Verify that "realm_authority" is the expected authority on "realm"
-    // and that the mint matches one of the realm mints too.
-    let realm = realm::get_realm_data_for_governing_token_mint(
-        &registrar.governance_program_id,
-        &ctx.accounts.realm.to_account_info(),
-        &registrar.realm_governing_token_mint,
-    )?;
-    require!(
-        realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
-        ErrorCode::InvalidRealmAuthority
-    );
+    // // Verify that "realm_authority" is the expected authority on "realm"
+    // // and that the mint matches one of the realm mints too.
+    // let realm = realm::get_realm_data_for_governing_token_mint(
+    //     &registrar.governance_program_id,
+    //     &ctx.accounts.realm.to_account_info(),
+    //     &registrar.realm_governing_token_mint,
+    // )?;
+    // require!(
+    //     realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
+    //     ErrorCode::InvalidRealmAuthority
+    // );
 
     Ok(())
 }

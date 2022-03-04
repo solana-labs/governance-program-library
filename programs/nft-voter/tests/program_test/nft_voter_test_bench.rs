@@ -46,10 +46,10 @@ impl NftVoterTestBench {
         let (registrar, _) = Pubkey::find_program_address(
             &[
                 b"registrar".as_ref(),
-                // &realm.to_bytes(),
-                // &realm_governing_token_mint.to_bytes(),
+                &realm.to_bytes(),
+                &realm_governing_token_mint.pubkey().to_bytes(),
             ],
-            &self.governance_bench.program_id,
+            &gpl_nft_voter::id(),
         );
 
         let data =
