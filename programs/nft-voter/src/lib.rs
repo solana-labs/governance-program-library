@@ -31,7 +31,7 @@ pub mod nft_voter {
     pub fn configure_collection(ctx: Context<ConfigureCollection>, multiplier: u64) -> Result<()> {
         instructions::configure_collection(ctx, multiplier)
     }
-    pub fn vote_with_nft(ctx: Context<VoteWithNFT>) -> Result<()> {
-        instructions::vote_with_nft(ctx)
-    }
+    // pub fn vote_with_nft(ctx: Context<VoteWithNFT>) -> Result<()> {
+    //     instructions::vote_with_nft(ctx)
+    // }
 }
