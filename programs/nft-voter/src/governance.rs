@@ -80,3 +80,83 @@ macro_rules! voter_weight_record {
         }
     };
 }
+
+/// A macro is exposed so that we can embed the program ID.
+#[macro_export]
+macro_rules! max_voter_weight_record {
+    ($id:expr) => {
+        /// Anchor wrapper for the SPL governance program's VoterWeightRecord type.
+        #[derive(Clone)]
+        pub struct MaxVoterWeightRecord(spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord);
+
+        impl anchor_lang::AccountDeserialize for MaxVoterWeightRecord {
+            fn try_deserialize(
+                buf: &mut &[u8],
+            ) -> std::result::Result<Self, anchor_lang::error::Error> {
+                let mut data = buf;
+                let vwr: spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord =
+                    anchor_lang::AnchorDeserialize::deserialize(&mut data)
+                        .map_err(|_| anchor_lang::prelude::ErrorCode::AccountDidNotDeserialize)?;
+                if !solana_program::program_pack::IsInitialized::is_initialized(&vwr) {
+                    return Err(anchor_lang::prelude::ErrorCode::AccountDidNotSerialize.into());
+                }
+                Ok(MaxVoterWeightRecord(vwr))
+            }
+
+            fn try_deserialize_unchecked(
+                buf: &mut &[u8],
+            ) -> std::result::Result<Self, anchor_lang::error::Error> {
+                let mut data = buf;
+                let vwr: spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord =
+                    anchor_lang::AnchorDeserialize::deserialize(&mut data)
+                        .map_err(|_| anchor_lang::prelude::ErrorCode::AccountDidNotDeserialize)?;
+                Ok(MaxVoterWeightRecord(vwr))
+            }
+        }
+
+        impl anchor_lang::AccountSerialize for MaxVoterWeightRecord {
+            fn try_serialize<W: std::io::Write>(
+                &self,
+                writer: &mut W,
+            ) -> std::result::Result<(), anchor_lang::error::Error> {
+                anchor_lang::AnchorSerialize::serialize(&self.0, writer)
+                    .map_err(|_| anchor_lang::prelude::ErrorCode::AccountDidNotSerialize)?;
+                Ok(())
+            }
+        }
+
+        impl anchor_lang::Owner for MaxVoterWeightRecord {
+            fn owner() -> anchor_lang::prelude::Pubkey {
+                $id
+            }
+        }
+
+        impl std::ops::Deref for MaxVoterWeightRecord {
+            type Target = spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord;
+
+            fn deref(&self) -> &Self::Target {
+                &self.0
+            }
+        }
+
+        impl std::ops::DerefMut for MaxVoterWeightRecord {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                &mut self.0
+            }
+        }
+
+        impl Default for MaxVoterWeightRecord {
+            fn default() -> Self {
+
+                MaxVoterWeightRecord( spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord{
+                account_discriminator: spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord::ACCOUNT_DISCRIMINATOR,
+                realm: anchor_lang::prelude::Pubkey::default(),
+                governing_token_mint: anchor_lang::prelude::Pubkey::default(),
+                max_voter_weight:0,
+                max_voter_weight_expiry:Some(0),
+                reserved: [0; 8]
+                })
+            }
+        }
+    };
+}
