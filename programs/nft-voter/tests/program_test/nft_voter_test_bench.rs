@@ -17,6 +17,7 @@ pub struct NftVoterTestBench {
 }
 
 pub struct RegistrarCookie {
+    pub registrar: Pubkey,
     pub realm: Pubkey,
     pub realm_governing_token_mint: Pubkey,
 }
@@ -107,6 +108,7 @@ impl NftVoterTestBench {
             .await;
 
         RegistrarCookie {
+            registrar,
             realm,
             realm_governing_token_mint: realm_governing_token_mint.pubkey(),
         }
@@ -133,6 +135,7 @@ impl NftVoterTestBench {
         );
 
         let accounts = gpl_nft_voter::accounts::CreateVoterWeightRecord {
+            registrar: registrar_cookie.registrar,
             realm: registrar_cookie.realm,
             realm_governing_token_mint: registrar_cookie.realm_governing_token_mint,
             voter_weight_record,
