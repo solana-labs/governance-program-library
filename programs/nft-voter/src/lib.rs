@@ -41,4 +41,12 @@ pub mod nft_voter {
             governing_token_owner,
         )
     }
+    pub fn relinquish_vote(
+        ctx: Context<RelinquishVote>,
+        realm: Pubkey,
+        governing_token_mint: Pubkey,
+        governing_token_owner: Pubkey,
+    ) -> Result<()> {
+        instructions::relinquish_vote(ctx, realm, governing_token_mint, governing_token_owner)
+    }
 }

@@ -225,4 +225,32 @@ impl NftVoterTestBench {
 
         self.bench.process_transaction(&instructions, None).await
     }
+
+    #[allow(dead_code)]
+    pub async fn relinquish_vote(
+        &mut self,
+        registrar_cookie: &RegistrarCookie,
+        voter_weight_record_cookie: &VoterWeightRecordCookie,
+    ) {
+        let data = anchor_lang::InstructionData::data(
+            &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
+                governing_token_owner: voter_weight_record_cookie.governing_token_owner,
+                realm: registrar_cookie.realm,
+                governing_token_mint: registrar_cookie.realm_governing_token_mint,
+            },
+        );
+
+        let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
+            registrar: registrar_cookie.registrar,
+            voter_weight_record: voter_weight_record_cookie.voter_weight_record,
+        };
+
+        let instructions = vec![Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            data,
+        }];
+
+        self.bench.process_transaction(&instructions, None).await
+    }
 }
