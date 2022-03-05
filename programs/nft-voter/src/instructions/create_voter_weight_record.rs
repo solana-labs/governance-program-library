@@ -8,8 +8,7 @@ use crate::state::{Registrar, VoterWeightRecord};
 #[instruction(governing_token_owner: Pubkey)]
 pub struct CreateVoterWeightRecord<'info> {
     #[account(
-        mut,
-        seeds = [b"registrar".as_ref(),realm.key().as_ref(),  realm_governing_token_mint.key().as_ref()],
+        seeds = [b"registrar".as_ref(),realm.key().as_ref(), realm_governing_token_mint.key().as_ref()],
         bump,
 
     )]

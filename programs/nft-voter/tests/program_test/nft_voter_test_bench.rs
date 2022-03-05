@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::ProgramTest;
 use solana_sdk::instruction::Instruction;
@@ -11,6 +13,8 @@ use spl_governance::state::realm::get_realm_address;
 use crate::program_test::governance_test_bench::GovernanceTestBench;
 use crate::program_test::program_test_bench::ProgramTestBench;
 
+const COLLECTION_PUBKEY: &str = "2tNsB373yxWfqznG1TE3GtkXtBtkdG6QtKvyWahju31s";
+
 pub struct NftVoterTestBench {
     pub bench: ProgramTestBench,
     pub governance_bench: GovernanceTestBench,
@@ -20,6 +24,12 @@ pub struct RegistrarCookie {
     pub registrar: Pubkey,
     pub realm: Pubkey,
     pub realm_governing_token_mint: Pubkey,
+    pub realm_authority: Keypair,
+}
+
+pub struct VoterWeightRecordCookie {
+    pub voter_weight_record: Pubkey,
+    pub governing_token_owner: Pubkey,
 }
 
 impl NftVoterTestBench {
@@ -111,11 +121,15 @@ impl NftVoterTestBench {
             registrar,
             realm,
             realm_governing_token_mint: realm_governing_token_mint.pubkey(),
+            realm_authority
         }
     }
 
     #[allow(dead_code)]
-    pub async fn with_voter_weight_record(&mut self, registrar_cookie: &RegistrarCookie) {
+    pub async fn with_voter_weight_record(
+        &mut self,
+        registrar_cookie: &RegistrarCookie,
+    ) -> VoterWeightRecordCookie {
         let governing_token_owner = self.bench.context.payer.pubkey();
 
         let (voter_weight_record, _) = Pubkey::find_program_address(
@@ -149,7 +163,12 @@ impl NftVoterTestBench {
             data,
         }];
 
-        self.bench.process_transaction(&instructions, None).await
+        self.bench.process_transaction(&instructions, None).await;
+
+        VoterWeightRecordCookie {
+            voter_weight_record,
+            governing_token_owner,
+        }
     }
 
     #[allow(dead_code)]
@@ -183,5 +202,87 @@ impl NftVoterTestBench {
         }];
 
         self.bench.process_transaction(&instructions, None).await
+    }
+
+    #[allow(dead_code)]
+    pub async fn update_voter_weight_record(
+        &mut self,
+        registrar_cookie: &RegistrarCookie,
+        voter_weight_record_cookie: &VoterWeightRecordCookie,
+    ) {
+        let data = anchor_lang::InstructionData::data(
+            &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
+                governing_token_owner: voter_weight_record_cookie.governing_token_owner,
+                realm: registrar_cookie.realm,
+                governing_token_mint: registrar_cookie.realm_governing_token_mint,
+            },
+        );
+
+        let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
+            registrar: registrar_cookie.registrar,
+            voter_weight_record: voter_weight_record_cookie.voter_weight_record,
+          };
+
+        let instructions = vec![Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            data,
+        }];
+        self.bench.process_transaction(&instructions, None).await
+    }
+  
+  #[allow(dead_code)]
+    pub async fn relinquish_vote(
+        &mut self,
+        registrar_cookie: &RegistrarCookie,
+        voter_weight_record_cookie: &VoterWeightRecordCookie,
+    ) {
+        let data = anchor_lang::InstructionData::data(
+            &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
+                governing_token_owner: voter_weight_record_cookie.governing_token_owner,
+                realm: registrar_cookie.realm,
+                governing_token_mint: registrar_cookie.realm_governing_token_mint,
+            },
+        );
+
+        let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
+            registrar: registrar_cookie.registrar,
+            voter_weight_record: voter_weight_record_cookie.voter_weight_record,
+        };
+
+        let instructions = vec![Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            data,
+        }];
+
+        self.bench.process_transaction(&instructions, None).await
+  }
+  #[allow(dead_code)]
+    pub async fn with_configure_collection(&mut self, registrar_cookie:  &mut RegistrarCookie) {
+        // TODO: check which collection to use in local testing
+        let collection = Pubkey::from_str(COLLECTION_PUBKEY).unwrap();
+
+        let data =
+            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::ConfigureCollection {
+                multiplier: 1
+            });
+
+        let accounts = gpl_nft_voter::accounts::ConfigureCollection {
+            registrar: registrar_cookie.registrar,
+            realm_authority: registrar_cookie.realm_authority.pubkey(),
+            collection,
+            token_program: spl_token::id(),
+      };
+
+      let instructions = vec![Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            data,
+        }];
+      
+        self.bench
+            .process_transaction(&instructions, Some(&[&registrar_cookie.realm_authority]))
+            .await;
     }
 }

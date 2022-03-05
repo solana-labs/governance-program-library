@@ -28,10 +28,28 @@ pub mod nft_voter {
     pub fn create_max_voter_weight_record(ctx: Context<CreateMaxVoterWeightRecord>) -> Result<()> {
         instructions::create_max_voter_weight_record(ctx)
     }
+    pub fn update_voter_weight_record(
+        ctx: Context<UpdateVoterWeightRecord>,
+        realm: Pubkey,
+        governing_token_mint: Pubkey,
+        governing_token_owner: Pubkey,
+    ) -> Result<()> {
+        instructions::update_voter_weight_record(
+            ctx,
+            realm,
+            governing_token_mint,
+            governing_token_owner,
+        )
+    }
+    pub fn relinquish_vote(
+        ctx: Context<RelinquishVote>,
+        realm: Pubkey,
+        governing_token_mint: Pubkey,
+        governing_token_owner: Pubkey,
+    ) -> Result<()> {
+        instructions::relinquish_vote(ctx, realm, governing_token_mint, governing_token_owner)
+    }
     pub fn configure_collection(ctx: Context<ConfigureCollection>, multiplier: u64) -> Result<()> {
         instructions::configure_collection(ctx, multiplier)
     }
-    // pub fn vote_with_nft(ctx: Context<VoteWithNFT>) -> Result<()> {
-    //     instructions::vote_with_nft(ctx)
-    // }
 }
