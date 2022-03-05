@@ -258,8 +258,9 @@ impl NftVoterTestBench {
 
         self.bench.process_transaction(&instructions, None).await
   }
-  
+  #[allow(dead_code)]
     pub async fn with_configure_collection(&mut self, registrar_cookie:  &mut RegistrarCookie) {
+        // TODO: check which collection to use in local testing
         let collection = Pubkey::from_str(COLLECTION_PUBKEY).unwrap();
 
         let data =
@@ -272,7 +273,13 @@ impl NftVoterTestBench {
             realm_authority: registrar_cookie.realm_authority.pubkey(),
             collection,
             token_program: spl_token::id(),
-      }
+      };
+
+      let instructions = vec![Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            data,
+        }];
       
         self.bench
             .process_transaction(&instructions, Some(&[&registrar_cookie.realm_authority]))
