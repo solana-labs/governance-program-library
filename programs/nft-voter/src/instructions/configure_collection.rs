@@ -5,30 +5,43 @@ use anchor_lang::{
 };
 
 use anchor_lang::prelude::*;
+use anchor_spl::token::{TokenAccount, Token};
 
-use crate::state::Registrar;
+use crate::{state::{Registrar, Collection}};
+
 
 #[derive(Accounts)]
 pub struct ConfigureCollection<'info> {
-    /// Registrar for which we configure this Collection
-    #[account(mut)]
-    pub registrar: Account<'info, Registrar>,
-
-    pub realm_authority: Signer<'info>,
-    // TODO: add collection
+  /// Registrar for which we configure this Collection
+  #[account(mut)]
+  pub registrar: Account<'info, Registrar>,
+  /// Authority of the Realm
+  #[account(mut)]
+  pub realm_authority: Signer<'info>,
+  // Collection which is going to be used for voting
+  #[account(
+    constraint = collection.owner == token_program.key() @ ErrorCode::AccountOwnedByWrongProgram
+  )]
+  pub collection: Account<'info, TokenAccount>,
+  pub token_program: Program<'info, Token>
+  
 }
 
-#[allow(dead_code)]
 pub fn configure_collection(
-    ctx: Context<ConfigureCollection>,
-    _collection_creator: Pubkey,
+  ctx: Context<ConfigureCollection>,
+  multiplier: u64
 ) -> Result<()> {
-    let _registrar = &mut ctx.accounts.registrar;
+  let registrar = &mut ctx.accounts.registrar;
+  let collection_account = &ctx.accounts.collection;
 
-    // TODO:
-    // - Check collection
-    // - Set up collection data
-    // - check max vote weight for the overflow
-    // - add collection to the registrar
-    Ok(())
+  // TODO: 
+  // check max vote weight
+  // Validate multiplier
+
+  registrar.collection = Collection {
+    key: collection_account.key(),
+    multiplier
+  };
+
+  Ok(())
 }

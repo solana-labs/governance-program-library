@@ -1,7 +1,7 @@
 pub use configure_collection::*;
-pub use create_registrar::*;
-
 mod configure_collection;
+
+pub use create_registrar::*;
 mod create_registrar;
 
 pub use create_voter_weight_record::*;
