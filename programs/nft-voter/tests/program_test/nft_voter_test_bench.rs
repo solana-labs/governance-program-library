@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::ProgramTest;
 use solana_sdk::instruction::Instruction;
@@ -11,6 +13,8 @@ use spl_governance::state::realm::get_realm_address;
 use crate::program_test::governance_test_bench::GovernanceTestBench;
 use crate::program_test::program_test_bench::ProgramTestBench;
 
+const COLLECTION_PUBKEY: &str = "2tNsB373yxWfqznG1TE3GtkXtBtkdG6QtKvyWahju31s";
+
 pub struct NftVoterTestBench {
     pub bench: ProgramTestBench,
     pub governance_bench: GovernanceTestBench,
@@ -20,6 +24,7 @@ pub struct RegistrarCookie {
     pub registrar: Pubkey,
     pub realm: Pubkey,
     pub realm_governing_token_mint: Pubkey,
+    pub realm_authority: Keypair,
 }
 
 impl NftVoterTestBench {
@@ -111,6 +116,7 @@ impl NftVoterTestBench {
             registrar,
             realm,
             realm_governing_token_mint: realm_governing_token_mint.pubkey(),
+            realm_authority
         }
     }
 
@@ -183,5 +189,35 @@ impl NftVoterTestBench {
         }];
 
         self.bench.process_transaction(&instructions, None).await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_configure_collection(&mut self, registrar_cookie:  &mut RegistrarCookie) {
+        let collection = Pubkey::from_str(COLLECTION_PUBKEY).unwrap();
+
+        let data =
+            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::ConfigureCollection {
+                multiplier: 1
+            });
+
+        let accounts = gpl_nft_voter::accounts::ConfigureCollection {
+            registrar: registrar_cookie.registrar,
+            realm_authority: registrar_cookie.realm_authority.pubkey(),
+            collection,
+            token_program: spl_token::id(),
+        };
+
+        let instructions = vec![Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            data,
+        }];
+
+        // print!("ACCOUNTS {:?}", instructions);
+
+        self.bench
+            .process_transaction(&instructions, Some(&[&registrar_cookie.realm_authority]))
+            .await;
+
     }
 }
