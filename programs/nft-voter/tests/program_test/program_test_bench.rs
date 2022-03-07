@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::{ProgramTest, ProgramTestContext};
 use solana_sdk::{
@@ -6,9 +8,8 @@ use solana_sdk::{
 };
 
 pub struct ProgramTestBench {
-    pub context: ProgramTestContext,
+    pub context: RefCell<ProgramTestContext>,
     pub payer: Keypair,
-    pub next_id: u8,
 }
 pub fn clone_keypair(source: &Keypair) -> Keypair {
     Keypair::from_bytes(&source.to_bytes()).unwrap()
@@ -24,18 +25,17 @@ impl ProgramTestBench {
 
         Self {
             payer,
-            context,
-            next_id: 0,
+            context: RefCell::new(context),
         }
     }
 
     #[allow(dead_code)]
     pub async fn process_transaction(
-        &mut self,
+        &self,
         instructions: &[Instruction],
         signers: Option<&[&Keypair]>,
     ) {
-        let context = &mut self.context;
+        let mut context = self.context.borrow_mut();
 
         let mut transaction =
             Transaction::new_with_payer(&instructions, Some(&context.payer.pubkey()));
@@ -61,27 +61,25 @@ impl ProgramTestBench {
             .unwrap()
     }
 
-    pub fn get_unique_name(&mut self, prefix: &str) -> String {
-        self.next_id += 1;
-
-        format!("{}.{}", prefix, self.next_id)
-    }
-
     #[allow(dead_code)]
     pub async fn create_mint(
-        &mut self,
+        &self,
         mint_keypair: &Keypair,
         mint_authority: &Pubkey,
         freeze_authority: Option<&Pubkey>,
     ) {
-        let context = &mut self.context;
-
-        let rent = context.banks_client.get_rent().await.unwrap();
+        let rent = self
+            .context
+            .borrow_mut()
+            .banks_client
+            .get_rent()
+            .await
+            .unwrap();
         let mint_rent = rent.minimum_balance(spl_token::state::Mint::LEN);
 
         let instructions = [
             system_instruction::create_account(
-                &context.payer.pubkey(),
+                &self.context.borrow().payer.pubkey(),
                 &mint_keypair.pubkey(),
                 mint_rent,
                 spl_token::state::Mint::LEN as u64,

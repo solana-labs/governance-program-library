@@ -1,4 +1,6 @@
+use std::borrow::Borrow;
 use std::str::FromStr;
+use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::ProgramTest;
@@ -18,8 +20,9 @@ use super::token_metadata_test_bench::TokenMetadataTestBench;
 const COLLECTION_PUBKEY: &str = "2tNsB373yxWfqznG1TE3GtkXtBtkdG6QtKvyWahju31s";
 
 pub struct NftVoterTestBench {
-    pub bench: ProgramTestBench,
+    pub bench: Arc<ProgramTestBench>,
     pub governance_bench: GovernanceTestBench,
+    pub token_metadata_bench: TokenMetadataTestBench,
 }
 
 pub struct RegistrarCookie {
@@ -47,12 +50,15 @@ impl NftVoterTestBench {
         TokenMetadataTestBench::add_program(&mut program_test);
 
         let bench = ProgramTestBench::start_new(program_test).await;
+        let bench_rc = Arc::new(bench);
 
         let governance_bench = GovernanceTestBench::new();
+        let token_metadata_bench = TokenMetadataTestBench::new(bench_rc.clone());
 
         Self {
-            bench,
+            bench: bench_rc,
             governance_bench,
+            token_metadata_bench,
         }
     }
 
@@ -65,7 +71,7 @@ impl NftVoterTestBench {
             .create_mint(&realm_governing_token_mint, &realm_authority.pubkey(), None)
             .await;
 
-        let name = self.bench.get_unique_name("realm");
+        let name = "realm".to_string();
 
         let realm = get_realm_address(&self.governance_bench.program_id, &name);
 
@@ -104,7 +110,7 @@ impl NftVoterTestBench {
             governance_program_id: self.governance_bench.program_id,
             realm_governing_token_mint: realm_governing_token_mint.pubkey(),
             realm_authority: realm_authority.pubkey(),
-            payer: self.bench.context.payer.pubkey(),
+            payer: self.bench.context.borrow().payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
         };
 
@@ -133,7 +139,7 @@ impl NftVoterTestBench {
         &mut self,
         registrar_cookie: &RegistrarCookie,
     ) -> VoterWeightRecordCookie {
-        let governing_token_owner = self.bench.context.payer.pubkey();
+        let governing_token_owner = self.bench.context.borrow().payer.pubkey();
 
         let (voter_weight_record, _) = Pubkey::find_program_address(
             &[

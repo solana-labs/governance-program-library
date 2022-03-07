@@ -1,9 +1,12 @@
-use std::str::FromStr;
+use std::{str::FromStr, sync::Arc};
 
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::ProgramTest;
 
+use super::program_test_bench::ProgramTestBench;
+
 pub struct TokenMetadataTestBench {
+    pub bench: Arc<ProgramTestBench>,
     pub program_id: Pubkey,
 }
 
@@ -18,8 +21,9 @@ impl TokenMetadataTestBench {
     }
 
     #[allow(dead_code)]
-    pub fn new() -> Self {
+    pub fn new(bench: Arc<ProgramTestBench>) -> Self {
         TokenMetadataTestBench {
+            bench,
             program_id: Self::program_id(),
         }
     }
