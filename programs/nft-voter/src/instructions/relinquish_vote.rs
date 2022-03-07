@@ -22,6 +22,7 @@ pub fn relinquish_vote(
     // TODO: Validate governing_token_owner
 
     // TODO: remove proposal/vote record
+    // TODO: relinquish from spl_gov or ensure the proposal is not in voting state
 
     Ok(())
 }
