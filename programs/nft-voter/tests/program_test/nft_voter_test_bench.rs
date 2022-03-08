@@ -22,7 +22,7 @@ const COLLECTION_PUBKEY: &str = "2tNsB373yxWfqznG1TE3GtkXtBtkdG6QtKvyWahju31s";
 pub struct NftVoterTestBench {
     pub bench: Arc<ProgramTestBench>,
     pub governance_bench: GovernanceTestBench,
-    pub token_metadata_bench: TokenMetadataTestBench,
+    pub token_metadata: TokenMetadataTestBench,
 }
 
 pub struct RegistrarCookie {
@@ -58,7 +58,7 @@ impl NftVoterTestBench {
         Self {
             bench: bench_rc,
             governance_bench,
-            token_metadata_bench,
+            token_metadata: token_metadata_bench,
         }
     }
 

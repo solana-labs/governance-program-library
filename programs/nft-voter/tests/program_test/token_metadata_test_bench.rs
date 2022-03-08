@@ -1,9 +1,12 @@
-use std::{str::FromStr, sync::Arc};
+use std::{borrow::Borrow, str::FromStr, sync::Arc};
 
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::ProgramTest;
+use solana_sdk::signer::Signer;
 
 use super::program_test_bench::ProgramTestBench;
+
+pub struct NftCookie {}
 
 pub struct TokenMetadataTestBench {
     pub bench: Arc<ProgramTestBench>,
@@ -26,5 +29,14 @@ impl TokenMetadataTestBench {
             bench,
             program_id: Self::program_id(),
         }
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_nft_v2(&self) -> NftCookie {
+        let nft_owner = self.bench.context.borrow().payer.pubkey();
+        let mint_cookie = self.bench.with_mint().await;
+        let nft_account_cookie = self.bench.with_tokens(&mint_cookie, &nft_owner, 1).await;
+
+        NftCookie {}
     }
 }

@@ -1,11 +1,20 @@
 use std::cell::RefCell;
 
-use anchor_lang::prelude::Pubkey;
+use anchor_lang::{prelude::Pubkey, Key};
 use solana_program_test::{ProgramTest, ProgramTestContext};
 use solana_sdk::{
     instruction::Instruction, program_pack::Pack, signature::Keypair, signer::Signer,
     system_instruction, transaction::Transaction,
 };
+
+pub struct MintCookie {
+    pub address: Pubkey,
+    pub mint_authority: Keypair,
+    pub freeze_authority: Option<Keypair>,
+}
+pub struct TokenAccountCookie {
+    pub address: Pubkey,
+}
 
 pub struct ProgramTestBench {
     pub context: RefCell<ProgramTestContext>,
@@ -61,6 +70,25 @@ impl ProgramTestBench {
             .unwrap()
     }
 
+    pub async fn with_mint(&self) -> MintCookie {
+        let mint_keypair = Keypair::new();
+        let mint_authority = Keypair::new();
+        let freeze_authority = Keypair::new();
+
+        self.create_mint(
+            &mint_keypair,
+            &mint_authority.pubkey(),
+            Some(&freeze_authority.pubkey()),
+        )
+        .await;
+
+        MintCookie {
+            address: mint_keypair.pubkey(),
+            mint_authority,
+            freeze_authority: Some(freeze_authority),
+        }
+    }
+
     #[allow(dead_code)]
     pub async fn create_mint(
         &self,
@@ -97,5 +125,100 @@ impl ProgramTestBench {
 
         self.process_transaction(&instructions, Some(&[mint_keypair]))
             .await;
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_token_account(&self, token_mint: &Pubkey) -> TokenAccountCookie {
+        let token_account_keypair = Keypair::new();
+        self.create_token_account(&token_account_keypair, token_mint, &self.payer.pubkey())
+            .await;
+
+        TokenAccountCookie {
+            address: token_account_keypair.pubkey(),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_tokens(
+        &self,
+        mint_cookie: &MintCookie,
+        owner: &Pubkey,
+        amount: u64,
+    ) -> TokenAccountCookie {
+        let token_account_keypair = Keypair::new();
+
+        self.create_token_account(&token_account_keypair, &mint_cookie.address, owner)
+            .await;
+
+        self.mint_tokens(
+            &mint_cookie.address,
+            &mint_cookie.mint_authority,
+            &token_account_keypair.pubkey(),
+            amount,
+        )
+        .await;
+
+        TokenAccountCookie {
+            address: token_account_keypair.pubkey(),
+        }
+    }
+
+    pub async fn mint_tokens(
+        &self,
+        token_mint: &Pubkey,
+        token_mint_authority: &Keypair,
+        token_account: &Pubkey,
+        amount: u64,
+    ) {
+        let mint_instruction = spl_token::instruction::mint_to(
+            &spl_token::id(),
+            token_mint,
+            token_account,
+            &token_mint_authority.pubkey(),
+            &[],
+            amount,
+        )
+        .unwrap();
+
+        self.process_transaction(&[mint_instruction], Some(&[token_mint_authority]))
+            .await;
+    }
+
+    #[allow(dead_code)]
+    pub async fn create_token_account(
+        &self,
+        token_account_keypair: &Keypair,
+        token_mint: &Pubkey,
+        owner: &Pubkey,
+    ) {
+        let rent = self
+            .context
+            .borrow_mut()
+            .banks_client
+            .get_rent()
+            .await
+            .unwrap();
+
+        let create_account_instruction = system_instruction::create_account(
+            &self.context.borrow().payer.pubkey(),
+            &token_account_keypair.pubkey(),
+            rent.minimum_balance(spl_token::state::Account::get_packed_len()),
+            spl_token::state::Account::get_packed_len() as u64,
+            &spl_token::id(),
+        );
+
+        let initialize_account_instruction = spl_token::instruction::initialize_account(
+            &spl_token::id(),
+            &token_account_keypair.pubkey(),
+            token_mint,
+            owner,
+        )
+        .unwrap();
+
+        self.process_transaction(
+            &[create_account_instruction, initialize_account_instruction],
+            Some(&[token_account_keypair]),
+        )
+        .await;
     }
 }
