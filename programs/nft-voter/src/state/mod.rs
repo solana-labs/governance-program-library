@@ -1,8 +1,8 @@
 pub use registrar::*;
 pub mod registrar;
 
-pub use collection::*;
-pub mod collection;
+pub use collection_config::*;
+pub mod collection_config;
 
 pub use proposal_nft_vote::*;
 pub mod proposal_nft_vote;

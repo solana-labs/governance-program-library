@@ -65,11 +65,11 @@ impl NftVoterTestBench {
 
     #[allow(dead_code)]
     pub async fn with_registrar(&mut self) -> RegistrarCookie {
-        let realm_governing_token_mint = Keypair::new();
+        let governing_token_mint = Keypair::new();
         let realm_authority = Keypair::new();
 
         self.bench
-            .create_mint(&realm_governing_token_mint, &realm_authority.pubkey(), None)
+            .create_mint(&governing_token_mint, &realm_authority.pubkey(), None)
             .await;
 
         let name = "realm".to_string();
@@ -79,7 +79,7 @@ impl NftVoterTestBench {
         let create_realm_ix = create_realm(
             &self.governance_bench.program_id,
             &realm_authority.pubkey(),
-            &realm_governing_token_mint.pubkey(),
+            &governing_token_mint.pubkey(),
             &self.bench.payer.pubkey(),
             None,
             None,
@@ -97,7 +97,7 @@ impl NftVoterTestBench {
             &[
                 b"registrar".as_ref(),
                 &realm.to_bytes(),
-                &realm_governing_token_mint.pubkey().to_bytes(),
+                &governing_token_mint.pubkey().to_bytes(),
             ],
             &gpl_nft_voter::id(),
         );
@@ -109,7 +109,7 @@ impl NftVoterTestBench {
             registrar,
             realm,
             governance_program_id: self.governance_bench.program_id,
-            realm_governing_token_mint: realm_governing_token_mint.pubkey(),
+            governing_token_mint: governing_token_mint.pubkey(),
             realm_authority: realm_authority.pubkey(),
             payer: self.bench.context.borrow().payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
@@ -130,7 +130,7 @@ impl NftVoterTestBench {
         RegistrarCookie {
             registrar,
             realm,
-            realm_governing_token_mint: realm_governing_token_mint.pubkey(),
+            realm_governing_token_mint: governing_token_mint.pubkey(),
             realm_authority,
         }
     }
@@ -275,7 +275,7 @@ impl NftVoterTestBench {
 
         let data =
             anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::ConfigureCollection {
-                multiplier: 1,
+                weight: 1,
             });
 
         let accounts = gpl_nft_voter::accounts::ConfigureCollection {
