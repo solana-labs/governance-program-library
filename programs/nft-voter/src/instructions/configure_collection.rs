@@ -32,12 +32,13 @@ pub fn configure_collection(ctx: Context<ConfigureCollection>, weight: u16) -> R
     // TODO:
     // check max vote weight
     // Validate multiplier
+    // Ensure realm.authority signed
 
-    registrar.collection = CollectionConfig {
+    registrar.collection_configs.push(CollectionConfig {
         collection: collection_account.key(),
         weight: weight,
         reserved: [0; 8],
-    };
+    });
 
     Ok(())
 }

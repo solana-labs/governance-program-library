@@ -103,7 +103,9 @@ impl NftVoterTestBench {
         );
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CreateRegistrar {});
+            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CreateRegistrar {
+                max_collections: 10,
+            });
 
         let accounts = gpl_nft_voter::accounts::CreateRegistrar {
             registrar,

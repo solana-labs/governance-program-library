@@ -18,7 +18,7 @@ pub struct Registrar {
 
     /// MPL Collection used for voting
     /// TODO: should be expanded to list of collections
-    pub collection: CollectionConfig,
+    pub collection_configs: Vec<CollectionConfig>,
 
     /// Reserved for future upgrades
     pub reserved: [u8; 64],

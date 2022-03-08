@@ -16,8 +16,8 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 pub mod nft_voter {
 
     use super::*;
-    pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
-        instructions::create_registrar(ctx)
+    pub fn create_registrar(ctx: Context<CreateRegistrar>, max_collections: u8) -> Result<()> {
+        instructions::create_registrar(ctx, max_collections)
     }
     pub fn create_voter_weight_record(
         ctx: Context<CreateVoterWeightRecord>,
