@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -38,10 +37,12 @@ pub struct VoterWeightRecordCookie {
 }
 
 impl NftVoterTestBench {
+    #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
         program_test.add_program("gpl_nft_voter", gpl_nft_voter::id(), None);
     }
 
+    #[allow(dead_code)]
     pub async fn start_new() -> Self {
         let mut program_test = ProgramTest::default();
 

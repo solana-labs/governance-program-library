@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use anchor_lang::{prelude::Pubkey, Key};
+use anchor_lang::prelude::Pubkey;
 use solana_program_test::{ProgramTest, ProgramTestContext};
 use solana_sdk::{
     instruction::Instruction, program_pack::Pack, signature::Keypair, signer::Signer,

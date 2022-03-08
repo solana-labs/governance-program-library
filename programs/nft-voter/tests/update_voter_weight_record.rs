@@ -15,8 +15,8 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
         .with_voter_weight_record(&registrar_cookie)
         .await;
 
-    let nft1 = nft_voter_bench.token_metadata.with_nft_v2().await;
-    let nft2 = nft_voter_bench.token_metadata.with_nft_v2().await;
+    let _nft1 = nft_voter_bench.token_metadata.with_nft_v2().await;
+    let _nft2 = nft_voter_bench.token_metadata.with_nft_v2().await;
 
     // Act
     nft_voter_bench

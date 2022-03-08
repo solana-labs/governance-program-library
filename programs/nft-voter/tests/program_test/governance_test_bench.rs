@@ -17,6 +17,7 @@ impl GovernanceTestBench {
         program_test.add_program("spl_governance", Self::program_id(), None);
     }
 
+    #[allow(dead_code)]
     pub fn new() -> Self {
         GovernanceTestBench {
             program_id: Self::program_id(),

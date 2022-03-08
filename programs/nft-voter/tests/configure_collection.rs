@@ -4,7 +4,7 @@ use solana_sdk::transport::TransportError;
 
 mod program_test;
 
-//#[tokio::test]
+#[tokio::test]
 async fn test_configure_collection() -> Result<(), TransportError> {
     // Arrange
     let mut nft_voter_bench = NftVoterTestBench::start_new().await;

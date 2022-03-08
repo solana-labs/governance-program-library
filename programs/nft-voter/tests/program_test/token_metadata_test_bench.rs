@@ -42,7 +42,7 @@ impl TokenMetadataTestBench {
 
         // Create collection
         let coll_mint_cookie = self.bench.with_mint().await;
-        let coll_nft_account_cookie = self
+        let _coll_nft_account_cookie = self
             .bench
             .with_tokens(&coll_mint_cookie, &nft_owner, 1)
             .await;
