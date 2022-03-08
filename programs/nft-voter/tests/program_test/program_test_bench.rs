@@ -75,12 +75,8 @@ impl ProgramTestBench {
         let mint_authority = Keypair::new();
         let freeze_authority = Keypair::new();
 
-        self.create_mint(
-            &mint_keypair,
-            &mint_authority.pubkey(),
-            Some(&freeze_authority.pubkey()),
-        )
-        .await;
+        self.create_mint(&mint_keypair, &mint_authority.pubkey(), None)
+            .await;
 
         MintCookie {
             address: mint_keypair.pubkey(),
