@@ -1,37 +1,25 @@
-// use crate::error::*;
+use crate::state::CollectionConfig;
 use anchor_lang::prelude::*;
 
-use super::Collection;
-
-/// Registrar which is responsible for voting
+/// Registrar which stores NFT voting configuration for the given Realm
 #[account]
-//#[derive(Default)]
 pub struct Registrar {
+    /// spl-governance program the Realm belongs to
     pub governance_program_id: Pubkey,
+
+    /// Realm of the Registrar
     pub realm: Pubkey,
-    pub realm_governing_token_mint: Pubkey,
-    pub reserved1: [u8; 32],
+
+    /// Governing token mint the Registrar is for
+    /// It can either be the Community or the Council mint of the Realm
+    /// When the plugin is used the mint is only used as identity of the governing power (voting population)
+    /// and the actual token of the mint is not used
+    pub governing_token_mint: Pubkey,
 
     /// MPL Collection used for voting
     /// TODO: should be expanded to list of collections
-    pub collection: Collection,
-    pub bump: u8,
-    // pub reserved2: [u8; 7],
-    // pub reserved3: [u64; 11], // split because `Default` does not support [u8; 95]
-}
-// const_assert!(std::mem::size_of::<Registrar>() == 5 * 32 + 4 * 152 + 8 + 1 + 95);
-// const_assert!(std::mem::size_of::<Registrar>() % 8 == 0);
+    pub collection_configs: Vec<CollectionConfig>,
 
-#[macro_export]
-macro_rules! registrar_seeds {
-    ( $registrar:expr ) => {
-        &[
-            $registrar.realm.as_ref(),
-            b"nft-registrar".as_ref(),
-            $registrar.realm_governing_token_mint.as_ref(),
-            &[$registrar.bump],
-        ]
-    };
+    /// Reserved for future upgrades
+    pub reserved: [u8; 64],
 }
-
-pub use registrar_seeds;
