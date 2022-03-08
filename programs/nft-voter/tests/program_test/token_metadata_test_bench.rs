@@ -1,12 +1,16 @@
-use std::{borrow::Borrow, str::FromStr, sync::Arc};
+use std::{str::FromStr, sync::Arc};
 
 use anchor_lang::prelude::Pubkey;
+use mpl_token_metadata::state::Collection;
 use solana_program_test::ProgramTest;
 use solana_sdk::signer::Signer;
 
 use super::program_test_bench::ProgramTestBench;
 
-pub struct NftCookie {}
+pub struct NftCookie {
+    pub address: Pubkey,
+    pub metadata_address: Pubkey,
+}
 
 pub struct TokenMetadataTestBench {
     pub bench: Arc<ProgramTestBench>,
@@ -37,6 +41,47 @@ impl TokenMetadataTestBench {
         let mint_cookie = self.bench.with_mint().await;
         let nft_account_cookie = self.bench.with_tokens(&mint_cookie, &nft_owner, 1).await;
 
-        NftCookie {}
+        let metadata_seeds = &[
+            b"metadata".as_ref(),
+            self.program_id.as_ref(),
+            &mint_cookie.address.as_ref(),
+        ];
+        let (metadata_address, _) = Pubkey::find_program_address(metadata_seeds, &self.program_id);
+
+        let name = "TestNFT".to_string();
+        let symbol = "NFT".to_string();
+        let uri = "URI".to_string();
+
+        let collection = Collection {
+            verified: false,
+            key: Pubkey::new_unique(),
+        };
+
+        let create_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v2(
+            self.program_id,
+            metadata_address,
+            mint_cookie.address,
+            mint_cookie.mint_authority.pubkey(),
+            nft_owner.clone(),
+            nft_owner.clone(),
+            name,
+            symbol,
+            uri,
+            None,
+            0,
+            false,
+            false,
+            Some(collection),
+            None,
+        );
+
+        self.bench
+            .process_transaction(&[create_metadata_ix], Some(&[&mint_cookie.mint_authority]))
+            .await;
+
+        NftCookie {
+            address: nft_account_cookie.address,
+            metadata_address,
+        }
     }
 }
