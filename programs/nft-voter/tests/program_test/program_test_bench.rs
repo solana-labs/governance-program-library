@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::{ProgramTest, ProgramTestContext};
 use solana_sdk::{
@@ -5,10 +7,18 @@ use solana_sdk::{
     system_instruction, transaction::Transaction,
 };
 
+pub struct MintCookie {
+    pub address: Pubkey,
+    pub mint_authority: Keypair,
+    pub freeze_authority: Option<Keypair>,
+}
+pub struct TokenAccountCookie {
+    pub address: Pubkey,
+}
+
 pub struct ProgramTestBench {
-    pub context: ProgramTestContext,
+    pub context: RefCell<ProgramTestContext>,
     pub payer: Keypair,
-    pub next_id: u8,
 }
 pub fn clone_keypair(source: &Keypair) -> Keypair {
     Keypair::from_bytes(&source.to_bytes()).unwrap()
@@ -24,18 +34,17 @@ impl ProgramTestBench {
 
         Self {
             payer,
-            context,
-            next_id: 0,
+            context: RefCell::new(context),
         }
     }
 
     #[allow(dead_code)]
     pub async fn process_transaction(
-        &mut self,
+        &self,
         instructions: &[Instruction],
         signers: Option<&[&Keypair]>,
     ) {
-        let context = &mut self.context;
+        let mut context = self.context.borrow_mut();
 
         let mut transaction =
             Transaction::new_with_payer(&instructions, Some(&context.payer.pubkey()));
@@ -61,27 +70,40 @@ impl ProgramTestBench {
             .unwrap()
     }
 
-    pub fn get_unique_name(&mut self, prefix: &str) -> String {
-        self.next_id += 1;
+    pub async fn with_mint(&self) -> MintCookie {
+        let mint_keypair = Keypair::new();
+        let mint_authority = Keypair::new();
+        let freeze_authority = Keypair::new();
 
-        format!("{}.{}", prefix, self.next_id)
+        self.create_mint(&mint_keypair, &mint_authority.pubkey(), None)
+            .await;
+
+        MintCookie {
+            address: mint_keypair.pubkey(),
+            mint_authority,
+            freeze_authority: Some(freeze_authority),
+        }
     }
 
     #[allow(dead_code)]
     pub async fn create_mint(
-        &mut self,
+        &self,
         mint_keypair: &Keypair,
         mint_authority: &Pubkey,
         freeze_authority: Option<&Pubkey>,
     ) {
-        let context = &mut self.context;
-
-        let rent = context.banks_client.get_rent().await.unwrap();
+        let rent = self
+            .context
+            .borrow_mut()
+            .banks_client
+            .get_rent()
+            .await
+            .unwrap();
         let mint_rent = rent.minimum_balance(spl_token::state::Mint::LEN);
 
         let instructions = [
             system_instruction::create_account(
-                &context.payer.pubkey(),
+                &self.context.borrow().payer.pubkey(),
                 &mint_keypair.pubkey(),
                 mint_rent,
                 spl_token::state::Mint::LEN as u64,
@@ -99,5 +121,100 @@ impl ProgramTestBench {
 
         self.process_transaction(&instructions, Some(&[mint_keypair]))
             .await;
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_token_account(&self, token_mint: &Pubkey) -> TokenAccountCookie {
+        let token_account_keypair = Keypair::new();
+        self.create_token_account(&token_account_keypair, token_mint, &self.payer.pubkey())
+            .await;
+
+        TokenAccountCookie {
+            address: token_account_keypair.pubkey(),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_tokens(
+        &self,
+        mint_cookie: &MintCookie,
+        owner: &Pubkey,
+        amount: u64,
+    ) -> TokenAccountCookie {
+        let token_account_keypair = Keypair::new();
+
+        self.create_token_account(&token_account_keypair, &mint_cookie.address, owner)
+            .await;
+
+        self.mint_tokens(
+            &mint_cookie.address,
+            &mint_cookie.mint_authority,
+            &token_account_keypair.pubkey(),
+            amount,
+        )
+        .await;
+
+        TokenAccountCookie {
+            address: token_account_keypair.pubkey(),
+        }
+    }
+
+    pub async fn mint_tokens(
+        &self,
+        token_mint: &Pubkey,
+        token_mint_authority: &Keypair,
+        token_account: &Pubkey,
+        amount: u64,
+    ) {
+        let mint_instruction = spl_token::instruction::mint_to(
+            &spl_token::id(),
+            token_mint,
+            token_account,
+            &token_mint_authority.pubkey(),
+            &[],
+            amount,
+        )
+        .unwrap();
+
+        self.process_transaction(&[mint_instruction], Some(&[token_mint_authority]))
+            .await;
+    }
+
+    #[allow(dead_code)]
+    pub async fn create_token_account(
+        &self,
+        token_account_keypair: &Keypair,
+        token_mint: &Pubkey,
+        owner: &Pubkey,
+    ) {
+        let rent = self
+            .context
+            .borrow_mut()
+            .banks_client
+            .get_rent()
+            .await
+            .unwrap();
+
+        let create_account_instruction = system_instruction::create_account(
+            &self.context.borrow().payer.pubkey(),
+            &token_account_keypair.pubkey(),
+            rent.minimum_balance(spl_token::state::Account::get_packed_len()),
+            spl_token::state::Account::get_packed_len() as u64,
+            &spl_token::id(),
+        );
+
+        let initialize_account_instruction = spl_token::instruction::initialize_account(
+            &spl_token::id(),
+            &token_account_keypair.pubkey(),
+            token_mint,
+            owner,
+        )
+        .unwrap();
+
+        self.process_transaction(
+            &[create_account_instruction, initialize_account_instruction],
+            Some(&[token_account_keypair]),
+        )
+        .await;
     }
 }
