@@ -49,7 +49,11 @@ pub mod nft_voter {
     ) -> Result<()> {
         instructions::relinquish_vote(ctx, realm, governing_token_mint, governing_token_owner)
     }
-    pub fn configure_collection(ctx: Context<ConfigureCollection>, weight: u16) -> Result<()> {
-        instructions::configure_collection(ctx, weight)
+    pub fn configure_collection(
+        ctx: Context<ConfigureCollection>,
+        weight: u16,
+        size: u32,
+    ) -> Result<()> {
+        instructions::configure_collection(ctx, weight, size)
     }
 }

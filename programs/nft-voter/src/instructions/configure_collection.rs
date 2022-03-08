@@ -25,7 +25,11 @@ pub struct ConfigureCollection<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-pub fn configure_collection(ctx: Context<ConfigureCollection>, weight: u16) -> Result<()> {
+pub fn configure_collection(
+    ctx: Context<ConfigureCollection>,
+    weight: u16,
+    size: u32,
+) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
     let collection_account = &ctx.accounts.collection;
 
@@ -38,6 +42,7 @@ pub fn configure_collection(ctx: Context<ConfigureCollection>, weight: u16) -> R
         collection: collection_account.key(),
         weight: weight,
         reserved: [0; 8],
+        size: size,
     });
 
     Ok(())

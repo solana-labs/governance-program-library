@@ -278,6 +278,7 @@ impl NftVoterTestBench {
         let data =
             anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::ConfigureCollection {
                 weight: 1,
+                size: 3,
             });
 
         let accounts = gpl_nft_voter::accounts::ConfigureCollection {
