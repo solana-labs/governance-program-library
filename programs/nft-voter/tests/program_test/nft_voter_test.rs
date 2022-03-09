@@ -2,6 +2,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
+use gpl_nft_voter::state::Registrar;
 use solana_program_test::ProgramTest;
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signer::Signer;
@@ -25,9 +26,8 @@ pub struct NftVoterTest {
 }
 
 pub struct RegistrarCookie {
-    pub registrar: Pubkey,
-    pub realm: Pubkey,
-    pub realm_governing_token_mint: Pubkey,
+    pub address: Pubkey,
+    pub account: Registrar,
     pub realm_authority: Keypair,
 }
 
@@ -129,10 +129,17 @@ impl NftVoterTest {
             .process_transaction(&instructions, Some(&[&realm_authority]))
             .await;
 
-        RegistrarCookie {
-            registrar,
+        let account = Registrar {
+            governance_program_id: self.governance_bench.program_id,
             realm,
-            realm_governing_token_mint: governing_token_mint.pubkey(),
+            governing_token_mint: governing_token_mint.pubkey(),
+            collection_configs: vec![],
+            reserved: [0; 64],
+        };
+
+        RegistrarCookie {
+            address: registrar,
+            account,
             realm_authority,
         }
     }
@@ -147,8 +154,8 @@ impl NftVoterTest {
         let (voter_weight_record, _) = Pubkey::find_program_address(
             &[
                 b"voter-weight-record".as_ref(),
-                registrar_cookie.realm.as_ref(),
-                registrar_cookie.realm_governing_token_mint.as_ref(),
+                registrar_cookie.account.realm.as_ref(),
+                registrar_cookie.account.governing_token_mint.as_ref(),
                 governing_token_owner.as_ref(),
             ],
             &gpl_nft_voter::id(),
@@ -161,9 +168,9 @@ impl NftVoterTest {
         );
 
         let accounts = gpl_nft_voter::accounts::CreateVoterWeightRecord {
-            registrar: registrar_cookie.registrar,
-            realm: registrar_cookie.realm,
-            realm_governing_token_mint: registrar_cookie.realm_governing_token_mint,
+            registrar: registrar_cookie.address,
+            realm: registrar_cookie.account.realm,
+            realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
             voter_weight_record,
             payer: governing_token_owner,
             system_program: solana_sdk::system_program::id(),
@@ -188,8 +195,8 @@ impl NftVoterTest {
         let (max_voter_weight_record, _) = Pubkey::find_program_address(
             &[
                 b"max_voter-weight-record".as_ref(),
-                registrar_cookie.realm.as_ref(),
-                registrar_cookie.realm_governing_token_mint.as_ref(),
+                registrar_cookie.account.realm.as_ref(),
+                registrar_cookie.account.governing_token_mint.as_ref(),
             ],
             &gpl_nft_voter::id(),
         );
@@ -199,9 +206,9 @@ impl NftVoterTest {
         );
 
         let accounts = gpl_nft_voter::accounts::CreateMaxVoterWeightRecord {
-            registrar: registrar_cookie.registrar,
-            realm: registrar_cookie.realm,
-            realm_governing_token_mint: registrar_cookie.realm_governing_token_mint,
+            registrar: registrar_cookie.address,
+            realm: registrar_cookie.account.realm,
+            realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
             max_voter_weight_record,
             payer: self.bench.payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
@@ -225,13 +232,13 @@ impl NftVoterTest {
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
                 governing_token_owner: voter_weight_record_cookie.governing_token_owner,
-                realm: registrar_cookie.realm,
-                governing_token_mint: registrar_cookie.realm_governing_token_mint,
+                realm: registrar_cookie.account.realm,
+                governing_token_mint: registrar_cookie.account.governing_token_mint,
             },
         );
 
         let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
-            registrar: registrar_cookie.registrar,
+            registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.voter_weight_record,
         };
 
@@ -252,13 +259,13 @@ impl NftVoterTest {
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
                 governing_token_owner: voter_weight_record_cookie.governing_token_owner,
-                realm: registrar_cookie.realm,
-                governing_token_mint: registrar_cookie.realm_governing_token_mint,
+                realm: registrar_cookie.account.realm,
+                governing_token_mint: registrar_cookie.account.governing_token_mint,
             },
         );
 
         let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
-            registrar: registrar_cookie.registrar,
+            registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.voter_weight_record,
         };
 
@@ -282,7 +289,7 @@ impl NftVoterTest {
             });
 
         let accounts = gpl_nft_voter::accounts::ConfigureCollection {
-            registrar: registrar_cookie.registrar,
+            registrar: registrar_cookie.address,
             realm_authority: registrar_cookie.realm_authority.pubkey(),
             collection,
             token_program: spl_token::id(),
