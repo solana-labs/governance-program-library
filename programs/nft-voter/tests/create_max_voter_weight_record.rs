@@ -7,12 +7,12 @@ mod program_test;
 #[tokio::test]
 async fn test_max_create_voter_weight_record() -> Result<(), TransportError> {
     // Arrange
-    let mut nft_voter_bench = NftVoterTest::start_new().await;
+    let mut nft_voter_test = NftVoterTest::start_new().await;
 
-    let registrar_cookie = nft_voter_bench.with_registrar().await;
+    let registrar_cookie = nft_voter_test.with_registrar().await;
 
     // Act
-    nft_voter_bench
+    nft_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
         .await;
 

@@ -6,8 +6,8 @@ mod program_test;
 #[tokio::test]
 async fn test_create_registrar() {
     // Arrange
-    let mut nft_voter_bench = NftVoterTest::start_new().await;
+    let mut nft_voter_test = NftVoterTest::start_new().await;
 
     // Act
-    nft_voter_bench.with_registrar().await;
+    nft_voter_test.with_registrar().await;
 }
