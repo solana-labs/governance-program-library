@@ -3,11 +3,11 @@ use std::str::FromStr;
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::ProgramTest;
 
-pub struct GovernanceTestBench {
+pub struct GovernanceTest {
     pub program_id: Pubkey,
 }
 
-impl GovernanceTestBench {
+impl GovernanceTest {
     pub fn program_id() -> Pubkey {
         Pubkey::from_str("Governance111111111111111111111111111111111").unwrap()
     }
@@ -19,7 +19,7 @@ impl GovernanceTestBench {
 
     #[allow(dead_code)]
     pub fn new() -> Self {
-        GovernanceTestBench {
+        GovernanceTest {
             program_id: Self::program_id(),
         }
     }

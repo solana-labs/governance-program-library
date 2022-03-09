@@ -12,12 +12,12 @@ pub struct NftCookie {
     pub metadata_address: Pubkey,
 }
 
-pub struct TokenMetadataTestBench {
+pub struct TokenMetadataTest {
     pub bench: Arc<ProgramTestBench>,
     pub program_id: Pubkey,
 }
 
-impl TokenMetadataTestBench {
+impl TokenMetadataTest {
     pub fn program_id() -> Pubkey {
         Pubkey::from_str("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s").unwrap()
     }
@@ -29,7 +29,7 @@ impl TokenMetadataTestBench {
 
     #[allow(dead_code)]
     pub fn new(bench: Arc<ProgramTestBench>) -> Self {
-        TokenMetadataTestBench {
+        TokenMetadataTest {
             bench,
             program_id: Self::program_id(),
         }

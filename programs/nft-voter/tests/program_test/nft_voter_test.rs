@@ -11,17 +11,17 @@ use spl_governance::instruction::create_realm;
 use spl_governance::state::enums::MintMaxVoteWeightSource;
 use spl_governance::state::realm::get_realm_address;
 
-use crate::program_test::governance_test_bench::GovernanceTestBench;
+use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
 
-use super::token_metadata_test_bench::TokenMetadataTestBench;
+use super::token_metadata_test::TokenMetadataTest;
 
 const COLLECTION_PUBKEY: &str = "2tNsB373yxWfqznG1TE3GtkXtBtkdG6QtKvyWahju31s";
 
-pub struct NftVoterTestBench {
+pub struct NftVoterTest {
     pub bench: Arc<ProgramTestBench>,
-    pub governance_bench: GovernanceTestBench,
-    pub token_metadata: TokenMetadataTestBench,
+    pub governance_bench: GovernanceTest,
+    pub token_metadata: TokenMetadataTest,
 }
 
 pub struct RegistrarCookie {
@@ -36,7 +36,7 @@ pub struct VoterWeightRecordCookie {
     pub governing_token_owner: Pubkey,
 }
 
-impl NftVoterTestBench {
+impl NftVoterTest {
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
         program_test.add_program("gpl_nft_voter", gpl_nft_voter::id(), None);
@@ -46,15 +46,15 @@ impl NftVoterTestBench {
     pub async fn start_new() -> Self {
         let mut program_test = ProgramTest::default();
 
-        NftVoterTestBench::add_program(&mut program_test);
-        GovernanceTestBench::add_program(&mut program_test);
-        TokenMetadataTestBench::add_program(&mut program_test);
+        NftVoterTest::add_program(&mut program_test);
+        GovernanceTest::add_program(&mut program_test);
+        TokenMetadataTest::add_program(&mut program_test);
 
         let bench = ProgramTestBench::start_new(program_test).await;
         let bench_rc = Arc::new(bench);
 
-        let governance_bench = GovernanceTestBench::new();
-        let token_metadata_bench = TokenMetadataTestBench::new(bench_rc.clone());
+        let governance_bench = GovernanceTest::new();
+        let token_metadata_bench = TokenMetadataTest::new(bench_rc.clone());
 
         Self {
             bench: bench_rc,
