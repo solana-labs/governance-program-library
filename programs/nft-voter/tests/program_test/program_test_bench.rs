@@ -1,11 +1,19 @@
 use std::cell::RefCell;
 
-use anchor_lang::prelude::Pubkey;
+use anchor_lang::{prelude::Pubkey, AccountDeserialize};
+use solana_program::borsh::try_from_slice_unchecked;
 use solana_program_test::{ProgramTest, ProgramTestContext};
 use solana_sdk::{
-    instruction::Instruction, program_pack::Pack, signature::Keypair, signer::Signer,
-    system_instruction, transaction::Transaction,
+    account::{Account, ReadableAccount},
+    instruction::Instruction,
+    program_pack::Pack,
+    signature::Keypair,
+    signer::Signer,
+    system_instruction,
+    transaction::Transaction,
 };
+
+use borsh::BorshDeserialize;
 
 pub struct MintCookie {
     pub address: Pubkey,
@@ -216,5 +224,43 @@ impl ProgramTestBench {
             Some(&[token_account_keypair]),
         )
         .await;
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_account(&self, address: &Pubkey) -> Option<Account> {
+        self.context
+            .borrow_mut()
+            .banks_client
+            .get_account(*address)
+            .await
+            .unwrap()
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_borsh_account<T: BorshDeserialize>(&self, address: &Pubkey) -> T {
+        self.get_account(address)
+            .await
+            .map(|a| try_from_slice_unchecked(&a.data).unwrap())
+            .unwrap_or_else(|| panic!("GET-TEST-ACCOUNT-ERROR: Account {} not found", address))
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_account_data(&self, address: Pubkey) -> Vec<u8> {
+        self.context
+            .borrow_mut()
+            .banks_client
+            .get_account(address)
+            .await
+            .unwrap()
+            .unwrap()
+            .data()
+            .to_vec()
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_anchor_account<T: AccountDeserialize>(&self, address: Pubkey) -> T {
+        let data = self.get_account_data(address).await;
+        let mut data_slice: &[u8] = &data;
+        AccountDeserialize::try_deserialize(&mut data_slice).unwrap()
     }
 }

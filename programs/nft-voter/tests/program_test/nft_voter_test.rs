@@ -305,4 +305,9 @@ impl NftVoterTest {
             .process_transaction(&instructions, Some(&[&registrar_cookie.realm_authority]))
             .await;
     }
+
+    #[allow(dead_code)]
+    pub async fn get_registrar_account(&mut self, registrar: &Pubkey) -> Registrar {
+        self.bench.get_anchor_account::<Registrar>(*registrar).await
+    }
 }

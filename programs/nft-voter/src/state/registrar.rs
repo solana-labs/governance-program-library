@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 
 /// Registrar which stores NFT voting configuration for the given Realm
 #[account]
+#[derive(Debug, PartialEq)]
 pub struct Registrar {
     /// spl-governance program the Realm belongs to
     pub governance_program_id: Pubkey,
