@@ -124,6 +124,35 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), BanksCli
         .err()
         .unwrap();
 
+    // PDA doesn't match and hence the error is PrivilegeEscalation
+    assert_ix_err(err, InstructionError::PrivilegeEscalation);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_create_registrar_with_invalid_governing_token_mint_error(
+) -> Result<(), BanksClientError> {
+    // Arrange
+    let mut nft_voter_test = NftVoterTest::start_new().await;
+
+    let mut realm_cookie = nft_voter_test.governance.with_realm().await?;
+    realm_cookie.realm_authority = Keypair::new();
+
+    let mint_cookie = nft_voter_test.bench.with_mint().await?;
+
+    // Act
+    let err = nft_voter_test
+        .with_registrar_using_ix(
+            &realm_cookie,
+            |i| i.accounts[3].pubkey = mint_cookie.address, // governing_token_mint
+            None,
+        )
+        .await
+        .err()
+        .unwrap();
+
+    // PDA doesn't match and hence the error is PrivilegeEscalation
     assert_ix_err(err, InstructionError::PrivilegeEscalation);
 
     Ok(())
