@@ -1,11 +1,20 @@
 use std::cell::RefCell;
 
-use anchor_lang::prelude::Pubkey;
-use solana_program_test::{ProgramTest, ProgramTestContext};
+use anchor_lang::{prelude::Pubkey, AccountDeserialize};
+
+use solana_program::borsh::try_from_slice_unchecked;
+use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
-    instruction::Instruction, program_pack::Pack, signature::Keypair, signer::Signer,
-    system_instruction, transaction::Transaction,
+    account::{Account, ReadableAccount},
+    instruction::Instruction,
+    program_pack::Pack,
+    signature::Keypair,
+    signer::Signer,
+    system_instruction,
+    transaction::Transaction,
 };
+
+use borsh::BorshDeserialize;
 
 pub struct MintCookie {
     pub address: Pubkey,
@@ -43,7 +52,7 @@ impl ProgramTestBench {
         &self,
         instructions: &[Instruction],
         signers: Option<&[&Keypair]>,
-    ) {
+    ) -> Result<(), BanksClientError> {
         let mut context = self.context.borrow_mut();
 
         let mut transaction =
@@ -67,22 +76,21 @@ impl ProgramTestBench {
                 solana_sdk::commitment_config::CommitmentLevel::Processed,
             )
             .await
-            .unwrap()
     }
 
-    pub async fn with_mint(&self) -> MintCookie {
+    pub async fn with_mint(&self) -> Result<MintCookie, BanksClientError> {
         let mint_keypair = Keypair::new();
         let mint_authority = Keypair::new();
         let freeze_authority = Keypair::new();
 
         self.create_mint(&mint_keypair, &mint_authority.pubkey(), None)
-            .await;
+            .await?;
 
-        MintCookie {
+        Ok(MintCookie {
             address: mint_keypair.pubkey(),
             mint_authority,
             freeze_authority: Some(freeze_authority),
-        }
+        })
     }
 
     #[allow(dead_code)]
@@ -91,7 +99,7 @@ impl ProgramTestBench {
         mint_keypair: &Keypair,
         mint_authority: &Pubkey,
         freeze_authority: Option<&Pubkey>,
-    ) {
+    ) -> Result<(), BanksClientError> {
         let rent = self
             .context
             .borrow_mut()
@@ -120,18 +128,21 @@ impl ProgramTestBench {
         ];
 
         self.process_transaction(&instructions, Some(&[mint_keypair]))
-            .await;
+            .await
     }
 
     #[allow(dead_code)]
-    pub async fn with_token_account(&self, token_mint: &Pubkey) -> TokenAccountCookie {
+    pub async fn with_token_account(
+        &self,
+        token_mint: &Pubkey,
+    ) -> Result<TokenAccountCookie, BanksClientError> {
         let token_account_keypair = Keypair::new();
         self.create_token_account(&token_account_keypair, token_mint, &self.payer.pubkey())
-            .await;
+            .await?;
 
-        TokenAccountCookie {
+        Ok(TokenAccountCookie {
             address: token_account_keypair.pubkey(),
-        }
+        })
     }
 
     #[allow(dead_code)]
@@ -140,11 +151,11 @@ impl ProgramTestBench {
         mint_cookie: &MintCookie,
         owner: &Pubkey,
         amount: u64,
-    ) -> TokenAccountCookie {
+    ) -> Result<TokenAccountCookie, BanksClientError> {
         let token_account_keypair = Keypair::new();
 
         self.create_token_account(&token_account_keypair, &mint_cookie.address, owner)
-            .await;
+            .await?;
 
         self.mint_tokens(
             &mint_cookie.address,
@@ -152,11 +163,11 @@ impl ProgramTestBench {
             &token_account_keypair.pubkey(),
             amount,
         )
-        .await;
+        .await?;
 
-        TokenAccountCookie {
+        Ok(TokenAccountCookie {
             address: token_account_keypair.pubkey(),
-        }
+        })
     }
 
     pub async fn mint_tokens(
@@ -165,7 +176,7 @@ impl ProgramTestBench {
         token_mint_authority: &Keypair,
         token_account: &Pubkey,
         amount: u64,
-    ) {
+    ) -> Result<(), BanksClientError> {
         let mint_instruction = spl_token::instruction::mint_to(
             &spl_token::id(),
             token_mint,
@@ -177,7 +188,7 @@ impl ProgramTestBench {
         .unwrap();
 
         self.process_transaction(&[mint_instruction], Some(&[token_mint_authority]))
-            .await;
+            .await
     }
 
     #[allow(dead_code)]
@@ -186,7 +197,7 @@ impl ProgramTestBench {
         token_account_keypair: &Keypair,
         token_mint: &Pubkey,
         owner: &Pubkey,
-    ) {
+    ) -> Result<(), BanksClientError> {
         let rent = self
             .context
             .borrow_mut()
@@ -215,6 +226,44 @@ impl ProgramTestBench {
             &[create_account_instruction, initialize_account_instruction],
             Some(&[token_account_keypair]),
         )
-        .await;
+        .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_account(&self, address: &Pubkey) -> Option<Account> {
+        self.context
+            .borrow_mut()
+            .banks_client
+            .get_account(*address)
+            .await
+            .unwrap()
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_borsh_account<T: BorshDeserialize>(&self, address: &Pubkey) -> T {
+        self.get_account(address)
+            .await
+            .map(|a| try_from_slice_unchecked(&a.data).unwrap())
+            .unwrap_or_else(|| panic!("GET-TEST-ACCOUNT-ERROR: Account {} not found", address))
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_account_data(&self, address: Pubkey) -> Vec<u8> {
+        self.context
+            .borrow_mut()
+            .banks_client
+            .get_account(address)
+            .await
+            .unwrap()
+            .unwrap()
+            .data()
+            .to_vec()
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_anchor_account<T: AccountDeserialize>(&self, address: Pubkey) -> T {
+        let data = self.get_account_data(address).await;
+        let mut data_slice: &[u8] = &data;
+        AccountDeserialize::try_deserialize(&mut data_slice).unwrap()
     }
 }
