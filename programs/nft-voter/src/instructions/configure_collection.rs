@@ -40,9 +40,9 @@ pub fn configure_collection(
 
     registrar.collection_configs.push(CollectionConfig {
         collection: collection_account.key(),
-        weight: weight,
+        weight,
         reserved: [0; 8],
-        size: size,
+        size,
     });
 
     Ok(())
