@@ -9,7 +9,9 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
-    let registrar_cookie = nft_voter_test.with_registrar().await;
+    let realm_cookie = nft_voter_test.governance.with_realm().await;
+
+    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await;
 
     let voter_weight_record_cookie = nft_voter_test
         .with_voter_weight_record(&registrar_cookie)

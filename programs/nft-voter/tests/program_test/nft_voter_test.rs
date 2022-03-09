@@ -8,20 +8,18 @@ use solana_sdk::instruction::Instruction;
 use solana_sdk::signer::Signer;
 
 use solana_sdk::signature::Keypair;
-use spl_governance::instruction::create_realm;
-use spl_governance::state::enums::MintMaxVoteWeightSource;
-use spl_governance::state::realm::get_realm_address;
 
 use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
 
+use super::governance_test::RealmCookie;
 use super::token_metadata_test::TokenMetadataTest;
 
 const COLLECTION_PUBKEY: &str = "2tNsB373yxWfqznG1TE3GtkXtBtkdG6QtKvyWahju31s";
 
 pub struct NftVoterTest {
     pub bench: Arc<ProgramTestBench>,
-    pub governance_bench: GovernanceTest,
+    pub governance: GovernanceTest,
     pub token_metadata: TokenMetadataTest,
 }
 
@@ -53,51 +51,23 @@ impl NftVoterTest {
         let bench = ProgramTestBench::start_new(program_test).await;
         let bench_rc = Arc::new(bench);
 
-        let governance_bench = GovernanceTest::new();
+        let governance_bench = GovernanceTest::new(bench_rc.clone());
         let token_metadata_bench = TokenMetadataTest::new(bench_rc.clone());
 
         Self {
             bench: bench_rc,
-            governance_bench,
+            governance: governance_bench,
             token_metadata: token_metadata_bench,
         }
     }
 
     #[allow(dead_code)]
-    pub async fn with_registrar(&mut self) -> RegistrarCookie {
-        let governing_token_mint = Keypair::new();
-        let realm_authority = Keypair::new();
-
-        self.bench
-            .create_mint(&governing_token_mint, &realm_authority.pubkey(), None)
-            .await;
-
-        let name = "realm".to_string();
-
-        let realm = get_realm_address(&self.governance_bench.program_id, &name);
-
-        let create_realm_ix = create_realm(
-            &self.governance_bench.program_id,
-            &realm_authority.pubkey(),
-            &governing_token_mint.pubkey(),
-            &self.bench.payer.pubkey(),
-            None,
-            None,
-            None,
-            name.clone(),
-            1,
-            MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
-        );
-
-        self.bench
-            .process_transaction(&[create_realm_ix], None)
-            .await;
-
+    pub async fn with_registrar(&mut self, realm_cookie: &RealmCookie) -> RegistrarCookie {
         let (registrar, _) = Pubkey::find_program_address(
             &[
                 b"registrar".as_ref(),
-                &realm.to_bytes(),
-                &governing_token_mint.pubkey().to_bytes(),
+                &realm_cookie.address.to_bytes(),
+                &realm_cookie.account.community_mint.to_bytes(),
             ],
             &gpl_nft_voter::id(),
         );
@@ -109,10 +79,10 @@ impl NftVoterTest {
 
         let accounts = gpl_nft_voter::accounts::CreateRegistrar {
             registrar,
-            realm,
-            governance_program_id: self.governance_bench.program_id,
-            governing_token_mint: governing_token_mint.pubkey(),
-            realm_authority: realm_authority.pubkey(),
+            realm: realm_cookie.address,
+            governance_program_id: self.governance.program_id,
+            governing_token_mint: realm_cookie.account.community_mint,
+            realm_authority: realm_cookie.account.authority.unwrap(),
             payer: self.bench.context.borrow().payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
         };
@@ -123,16 +93,14 @@ impl NftVoterTest {
             data,
         }];
 
-        // print!("ACCOUNTS {:?}", instructions);
-
         self.bench
-            .process_transaction(&instructions, Some(&[&realm_authority]))
+            .process_transaction(&instructions, Some(&[&realm_cookie.get_realm_authority()]))
             .await;
 
         let account = Registrar {
-            governance_program_id: self.governance_bench.program_id,
-            realm,
-            governing_token_mint: governing_token_mint.pubkey(),
+            governance_program_id: self.governance.program_id,
+            realm: realm_cookie.address,
+            governing_token_mint: realm_cookie.account.community_mint,
             collection_configs: vec![],
             reserved: [0; 64],
         };
@@ -140,7 +108,7 @@ impl NftVoterTest {
         RegistrarCookie {
             address: registrar,
             account,
-            realm_authority,
+            realm_authority: realm_cookie.get_realm_authority(),
         }
     }
 
