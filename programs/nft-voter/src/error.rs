@@ -1,11 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
-pub enum ErrorCode {
-    #[msg("Invalid authority provided")]
-    InvalidAuthority,
-    #[msg("Msg")]
-    RatesFull,
+pub enum NftLockerError {
     #[msg("Invalid Realm Authority")]
     InvalidRealmAuthority,
     #[msg("Failed to decode metadata")]

@@ -1,4 +1,4 @@
-use crate::error::ErrorCode;
+use crate::error::NftLockerError;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
@@ -65,9 +65,10 @@ pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_collections: u8) -> 
         &ctx.accounts.realm.to_account_info(),
         &registrar.governing_token_mint,
     )?;
+
     require!(
         realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
-        ErrorCode::InvalidRealmAuthority
+        NftLockerError::InvalidRealmAuthority
     );
 
     Ok(())
