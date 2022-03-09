@@ -1,7 +1,7 @@
 use std::{str::FromStr, sync::Arc};
 
 use anchor_lang::prelude::Pubkey;
-use solana_program_test::ProgramTest;
+use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::{signature::Keypair, signer::Signer};
 use spl_governance::{
     instruction::create_realm,
@@ -49,13 +49,13 @@ impl GovernanceTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_realm(&mut self) -> RealmCookie {
+    pub async fn with_realm(&mut self) -> Result<RealmCookie, BanksClientError> {
         let governing_token_mint = Keypair::new();
         let realm_authority = Keypair::new();
 
         self.bench
             .create_mint(&governing_token_mint, &realm_authority.pubkey(), None)
-            .await;
+            .await?;
 
         let name = "realm".to_string();
         let min_community_weight_to_create_governance = 1;
@@ -78,7 +78,7 @@ impl GovernanceTest {
 
         self.bench
             .process_transaction(&[create_realm_ix], None)
-            .await;
+            .await?;
 
         let account = RealmV2 {
             account_type: GovernanceAccountType::RealmV2,
@@ -99,10 +99,10 @@ impl GovernanceTest {
             reserved_v2: [0; 128],
         };
 
-        RealmCookie {
+        Ok(RealmCookie {
             address: realm,
             account,
             realm_authority,
-        }
+        })
     }
 }

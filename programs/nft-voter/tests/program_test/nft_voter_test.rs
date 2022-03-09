@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
 use gpl_nft_voter::state::Registrar;
-use solana_program_test::ProgramTest;
+use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signer::Signer;
 
@@ -23,6 +23,7 @@ pub struct NftVoterTest {
     pub token_metadata: TokenMetadataTest,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct RegistrarCookie {
     pub address: Pubkey,
     pub account: Registrar,
@@ -62,7 +63,10 @@ impl NftVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_registrar(&mut self, realm_cookie: &RealmCookie) -> RegistrarCookie {
+    pub async fn with_registrar(
+        &mut self,
+        realm_cookie: &RealmCookie,
+    ) -> Result<RegistrarCookie, BanksClientError> {
         let (registrar, _) = Pubkey::find_program_address(
             &[
                 b"registrar".as_ref(),
@@ -82,7 +86,7 @@ impl NftVoterTest {
             realm: realm_cookie.address,
             governance_program_id: self.governance.program_id,
             governing_token_mint: realm_cookie.account.community_mint,
-            realm_authority: realm_cookie.account.authority.unwrap(),
+            realm_authority: realm_cookie.get_realm_authority().pubkey(),
             payer: self.bench.context.borrow().payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
         };
@@ -95,7 +99,7 @@ impl NftVoterTest {
 
         self.bench
             .process_transaction(&instructions, Some(&[&realm_cookie.get_realm_authority()]))
-            .await;
+            .await?;
 
         let account = Registrar {
             governance_program_id: self.governance.program_id,
@@ -105,18 +109,18 @@ impl NftVoterTest {
             reserved: [0; 64],
         };
 
-        RegistrarCookie {
+        Ok(RegistrarCookie {
             address: registrar,
             account,
             realm_authority: realm_cookie.get_realm_authority(),
-        }
+        })
     }
 
     #[allow(dead_code)]
     pub async fn with_voter_weight_record(
         &mut self,
         registrar_cookie: &RegistrarCookie,
-    ) -> VoterWeightRecordCookie {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         let governing_token_owner = self.bench.context.borrow().payer.pubkey();
 
         let (voter_weight_record, _) = Pubkey::find_program_address(
@@ -150,16 +154,19 @@ impl NftVoterTest {
             data,
         }];
 
-        self.bench.process_transaction(&instructions, None).await;
+        self.bench.process_transaction(&instructions, None).await?;
 
-        VoterWeightRecordCookie {
+        Ok(VoterWeightRecordCookie {
             voter_weight_record,
             governing_token_owner,
-        }
+        })
     }
 
     #[allow(dead_code)]
-    pub async fn with_max_voter_weight_record(&mut self, registrar_cookie: &RegistrarCookie) {
+    pub async fn with_max_voter_weight_record(
+        &mut self,
+        registrar_cookie: &RegistrarCookie,
+    ) -> Result<(), BanksClientError> {
         let (max_voter_weight_record, _) = Pubkey::find_program_address(
             &[
                 b"max_voter-weight-record".as_ref(),
@@ -196,7 +203,7 @@ impl NftVoterTest {
         &mut self,
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &VoterWeightRecordCookie,
-    ) {
+    ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
                 governing_token_owner: voter_weight_record_cookie.governing_token_owner,
@@ -223,7 +230,7 @@ impl NftVoterTest {
         &mut self,
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &VoterWeightRecordCookie,
-    ) {
+    ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
                 governing_token_owner: voter_weight_record_cookie.governing_token_owner,
@@ -246,7 +253,10 @@ impl NftVoterTest {
         self.bench.process_transaction(&instructions, None).await
     }
     #[allow(dead_code)]
-    pub async fn with_configure_collection(&mut self, registrar_cookie: &mut RegistrarCookie) {
+    pub async fn with_configure_collection(
+        &mut self,
+        registrar_cookie: &mut RegistrarCookie,
+    ) -> Result<(), BanksClientError> {
         // TODO: check which collection to use in local testing
         let collection = Pubkey::from_str(COLLECTION_PUBKEY).unwrap();
 
@@ -271,7 +281,7 @@ impl NftVoterTest {
 
         self.bench
             .process_transaction(&instructions, Some(&[&registrar_cookie.realm_authority]))
-            .await;
+            .await
     }
 
     #[allow(dead_code)]

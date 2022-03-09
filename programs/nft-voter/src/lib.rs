@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-mod error;
+pub mod error;
 // use error::*;
 
 mod instructions;
