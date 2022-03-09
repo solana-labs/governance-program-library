@@ -1,5 +1,5 @@
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
-use gpl_nft_voter::error::ErrorCode;
+use gpl_nft_voter::error::NftLockerErrorCode;
 use solana_program::instruction::InstructionError;
 use solana_program_test::BanksClientError;
 use solana_sdk::{signature::Keypair, transaction::TransactionError};
@@ -11,68 +11,70 @@ pub fn clone_keypair(source: &Keypair) -> Keypair {
 
 /// NOP (No Operation) Override function
 #[allow(non_snake_case)]
-#[allow(dead_code)]
 pub fn NopOverride<T>(_: &mut T) {}
 
 #[allow(dead_code)]
-pub fn assert_err(banks_client_error: BanksClientError, error_code: ErrorCode) {
+pub fn assert_nft_locker_err(
+    banks_client_error: BanksClientError,
+    nft_locker_error: NftLockerErrorCode,
+) {
     let tx_error = banks_client_error.unwrap();
 
     match tx_error {
         TransactionError::InstructionError(_, instruction_error) => match instruction_error {
             InstructionError::Custom(e) => {
-                assert_eq!(e, error_code as u32 + ERROR_CODE_OFFSET)
+                assert_eq!(e, nft_locker_error as u32 + ERROR_CODE_OFFSET)
             }
-            _ => panic!("Not Custom InstructionError"),
+            _ => panic!("{:?} Is not InstructionError::Custom()", instruction_error),
         },
-        _ => panic!("Not InstructionError"),
+        _ => panic!("{:?} Is not InstructionError", tx_error),
     };
 }
 
 #[allow(dead_code)]
 pub fn assert_gov_tools_err(
     banks_client_error: BanksClientError,
-    error_code: GovernanceToolsError,
+    gov_tools_error: GovernanceToolsError,
 ) {
     let tx_error = banks_client_error.unwrap();
 
     match tx_error {
         TransactionError::InstructionError(_, instruction_error) => match instruction_error {
             InstructionError::Custom(e) => {
-                assert_eq!(e, error_code as u32)
+                assert_eq!(e, gov_tools_error as u32)
             }
-            _ => panic!("Not Custom InstructionError"),
+            _ => panic!("{:?} Is not InstructionError::Custom()", instruction_error),
         },
-        _ => panic!("Not InstructionError"),
+        _ => panic!("{:?} Is not InstructionError", tx_error),
     };
 }
 
 #[allow(dead_code)]
 pub fn assert_anchor_err(
     banks_client_error: BanksClientError,
-    error_code: anchor_lang::error::ErrorCode,
+    anchor_error: anchor_lang::error::ErrorCode,
 ) {
     let tx_error = banks_client_error.unwrap();
 
     match tx_error {
         TransactionError::InstructionError(_, instruction_error) => match instruction_error {
             InstructionError::Custom(e) => {
-                assert_eq!(e, error_code as u32)
+                assert_eq!(e, anchor_error as u32)
             }
-            _ => panic!("Not Custom InstructionError"),
+            _ => panic!("{:?} Is not InstructionError::Custom()", instruction_error),
         },
-        _ => panic!("Not InstructionError"),
+        _ => panic!("{:?} Is not InstructionError", tx_error),
     };
 }
 
 #[allow(dead_code)]
-pub fn assert_ix_err(banks_client_error: BanksClientError, error_code: InstructionError) {
+pub fn assert_ix_err(banks_client_error: BanksClientError, ix_error: InstructionError) {
     let tx_error = banks_client_error.unwrap();
 
     match tx_error {
         TransactionError::InstructionError(_, instruction_error) => {
-            assert_eq!(instruction_error, error_code);
+            assert_eq!(instruction_error, ix_error);
         }
-        _ => panic!("Not InstructionError"),
+        _ => panic!("{:?} Is not InstructionError", tx_error),
     };
 }

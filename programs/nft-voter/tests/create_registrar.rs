@@ -1,14 +1,16 @@
+mod program_test;
+
 use anchor_lang::prelude::Pubkey;
-use gpl_nft_voter::error::ErrorCode;
+use gpl_nft_voter::error::NftLockerErrorCode;
 use program_test::nft_voter_test::NftVoterTest;
 
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::signature::Keypair;
 
-mod program_test;
-
-use program_test::tools::{assert_anchor_err, assert_err, assert_gov_tools_err, assert_ix_err};
+use program_test::tools::{
+    assert_anchor_err, assert_gov_tools_err, assert_ix_err, assert_nft_locker_err,
+};
 
 use spl_governance_tools::error::GovernanceToolsError;
 
@@ -48,7 +50,7 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
         .err()
         .unwrap();
 
-    assert_err(err, ErrorCode::InvalidRealmAuthority);
+    assert_nft_locker_err(err, NftLockerErrorCode::InvalidRealmAuthority);
 
     Ok(())
 }

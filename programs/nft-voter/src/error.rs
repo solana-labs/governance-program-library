@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
-pub enum ErrorCode {
+pub enum NftLockerErrorCode {
     #[msg("Invalid authority provided")]
     InvalidAuthority,
     #[msg("Msg")]
