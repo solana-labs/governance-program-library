@@ -11,10 +11,14 @@ async fn test_configure_collection() -> Result<(), TransportError> {
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let mut _registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await;
+    let mut registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
 
     // Act
-    // nft_voter_test.with_configure_collection(&mut registrar_cookie).await;
+    nft_voter_test
+        .with_configure_collection(&mut registrar_cookie)
+        .await?;
 
     Ok(())
 }
+
+// TODO: Check ream for registrar

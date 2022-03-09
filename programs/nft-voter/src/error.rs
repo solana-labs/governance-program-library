@@ -4,6 +4,8 @@ use anchor_lang::prelude::*;
 pub enum NftLockerError {
     #[msg("Invalid Realm Authority")]
     InvalidRealmAuthority,
+    #[msg("Invalid Registrar Realm")]
+    InvalidRegistrarRealm,
     #[msg("Failed to decode metadata")]
     DecodeMetadataFailed,
     #[msg("Collection is invalid")]

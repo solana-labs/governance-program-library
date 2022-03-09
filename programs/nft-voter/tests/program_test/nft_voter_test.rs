@@ -282,6 +282,7 @@ impl NftVoterTest {
 
         let accounts = gpl_nft_voter::accounts::ConfigureCollection {
             registrar: registrar_cookie.address,
+            realm: registrar_cookie.account.realm,
             realm_authority: registrar_cookie.realm_authority.pubkey(),
             collection,
             token_program: spl_token::id(),
