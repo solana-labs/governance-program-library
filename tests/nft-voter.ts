@@ -10,7 +10,7 @@ describe("nft-voter", () => {
 
   it("Is initialized!", async () => {
     // Add your test here.
-    const tx = await program.rpc.initialize({});
+    const tx = await program.rpc.createRegistrar({});
     console.log("Your transaction signature", tx);
   });
 });
