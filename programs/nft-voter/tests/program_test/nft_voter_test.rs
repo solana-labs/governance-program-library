@@ -2,18 +2,19 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
-use gpl_nft_voter::state::Registrar;
+
+use gpl_nft_voter::state::{get_registrar_address, Registrar};
 use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
-use solana_sdk::signer::Signer;
-
 use solana_sdk::signature::Keypair;
+use solana_sdk::signer::Signer;
 
 use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
 
 use super::governance_test::RealmCookie;
 use super::token_metadata_test::TokenMetadataTest;
+use super::tools::NopOverride;
 
 const COLLECTION_PUBKEY: &str = "2tNsB373yxWfqznG1TE3GtkXtBtkdG6QtKvyWahju31s";
 
@@ -67,38 +68,51 @@ impl NftVoterTest {
         &mut self,
         realm_cookie: &RealmCookie,
     ) -> Result<RegistrarCookie, BanksClientError> {
-        let (registrar, _) = Pubkey::find_program_address(
-            &[
-                b"registrar".as_ref(),
-                &realm_cookie.address.to_bytes(),
-                &realm_cookie.account.community_mint.to_bytes(),
-            ],
-            &gpl_nft_voter::id(),
-        );
+        self.with_registrar_using_ix(realm_cookie, NopOverride, None)
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_registrar_using_ix<F: Fn(&mut Instruction)>(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        instruction_override: F,
+        signers_override: Option<&[&Keypair]>,
+    ) -> Result<RegistrarCookie, BanksClientError> {
+        let registrar =
+            get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
         let data =
             anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CreateRegistrar {
                 max_collections: 10,
             });
 
-        let accounts = gpl_nft_voter::accounts::CreateRegistrar {
-            registrar,
-            realm: realm_cookie.address,
-            governance_program_id: self.governance.program_id,
-            governing_token_mint: realm_cookie.account.community_mint,
-            realm_authority: realm_cookie.get_realm_authority().pubkey(),
-            payer: self.bench.context.borrow().payer.pubkey(),
-            system_program: solana_sdk::system_program::id(),
+        let accounts = anchor_lang::ToAccountMetas::to_account_metas(
+            &gpl_nft_voter::accounts::CreateRegistrar {
+                registrar,
+                realm: realm_cookie.address,
+                governance_program_id: self.governance.program_id,
+                governing_token_mint: realm_cookie.account.community_mint,
+                realm_authority: realm_cookie.get_realm_authority().pubkey(),
+                payer: self.bench.payer.pubkey(),
+                system_program: solana_sdk::system_program::id(),
+            },
+            None,
+        );
+
+        let mut create_registrar_ix = Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts,
+            data,
         };
 
-        let instructions = vec![Instruction {
-            program_id: gpl_nft_voter::id(),
-            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
-            data,
-        }];
+        instruction_override(&mut create_registrar_ix);
+
+        let default_signers = &[&realm_cookie.realm_authority];
+        let signers = signers_override.unwrap_or(default_signers);
 
         self.bench
-            .process_transaction(&instructions, Some(&[&realm_cookie.get_realm_authority()]))
+            .process_transaction(&[create_registrar_ix], Some(signers))
             .await?;
 
         let account = Registrar {
