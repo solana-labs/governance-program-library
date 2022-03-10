@@ -1,4 +1,10 @@
-use program_test::nft_voter_test::NftVoterTest;
+use anchor_lang::prelude::Pubkey;
+use gpl_nft_voter::error::NftLockerError;
+use program_test::{
+    nft_voter_test::NftVoterTest,
+    tools::{assert_anchor_err, assert_nft_voter_err},
+};
+
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
 
@@ -215,7 +221,78 @@ async fn test_configure_existing_collection() -> Result<(), TransportError> {
     Ok(())
 }
 
-// TODO: Check ream for registrar
-
 // TODO: Remove collection
 // TODO: Check MaxVoterWeight matches realm and mint on registrar
+
+#[tokio::test]
+async fn test_configure_collection_with_invalid_realm_error() -> Result<(), TransportError> {
+    // Arrange
+    let mut nft_voter_test = NftVoterTest::start_new().await;
+
+    let realm_cookie = nft_voter_test.governance.with_realm().await?;
+
+    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+
+    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
+
+    let max_voter_weight_record_cookie = nft_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
+
+    // Act
+    let err = nft_voter_test
+        .with_configure_collection_using_ix(
+            &registrar_cookie,
+            &nft_collection_cookie,
+            &max_voter_weight_record_cookie,
+            None,
+            |i| i.accounts[1].pubkey = Pubkey::new_unique(), // realm
+            None,
+        )
+        .await
+        .err()
+        .unwrap();
+
+    // Assert
+
+    assert_nft_voter_err(err, NftLockerError::InvalidRegistrarRealm);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_configure_collection_with_realm_authority_must_sign_error(
+) -> Result<(), TransportError> {
+    // Arrange
+    let mut nft_voter_test = NftVoterTest::start_new().await;
+
+    let realm_cookie = nft_voter_test.governance.with_realm().await?;
+
+    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+
+    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
+
+    let max_voter_weight_record_cookie = nft_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
+
+    // Act
+    let err = nft_voter_test
+        .with_configure_collection_using_ix(
+            &registrar_cookie,
+            &nft_collection_cookie,
+            &max_voter_weight_record_cookie,
+            None,
+            |i| i.accounts[2].is_signer = false, // realm_authority
+            Some(&[]),
+        )
+        .await
+        .err()
+        .unwrap();
+
+    // Assert
+
+    assert_anchor_err(err, anchor_lang::error::ErrorCode::AccountNotSigner);
+
+    Ok(())
+}

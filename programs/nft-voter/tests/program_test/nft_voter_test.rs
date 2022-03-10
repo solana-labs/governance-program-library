@@ -283,6 +283,7 @@ impl NftVoterTest {
 
         self.bench.process_transaction(&instructions, None).await
     }
+
     #[allow(dead_code)]
     pub async fn with_configure_collection(
         &mut self,
@@ -290,6 +291,27 @@ impl NftVoterTest {
         nft_collection_cookie: &NftCollectionCookie,
         max_voter_weight_record_cookie: &MaxVoterWeightRecordCookie,
         args: Option<ConfigureCollectionArgs>,
+    ) -> Result<CollectionConfigCookie, BanksClientError> {
+        self.with_configure_collection_using_ix(
+            registrar_cookie,
+            nft_collection_cookie,
+            max_voter_weight_record_cookie,
+            args,
+            NopOverride,
+            None,
+        )
+        .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_configure_collection_using_ix<F: Fn(&mut Instruction)>(
+        &mut self,
+        registrar_cookie: &RegistrarCookie,
+        nft_collection_cookie: &NftCollectionCookie,
+        max_voter_weight_record_cookie: &MaxVoterWeightRecordCookie,
+        args: Option<ConfigureCollectionArgs>,
+        instruction_override: F,
+        signers_override: Option<&[&Keypair]>,
     ) -> Result<CollectionConfigCookie, BanksClientError> {
         let args = args.unwrap_or(ConfigureCollectionArgs { weight: 1, size: 3 });
 
@@ -307,14 +329,19 @@ impl NftVoterTest {
             max_voter_weight_record: max_voter_weight_record_cookie.address,
         };
 
-        let instructions = vec![Instruction {
+        let mut configure_collection_ix = Instruction {
             program_id: gpl_nft_voter::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
-        }];
+        };
+
+        instruction_override(&mut configure_collection_ix);
+
+        let default_signers = &[&registrar_cookie.realm_authority];
+        let signers = signers_override.unwrap_or(default_signers);
 
         self.bench
-            .process_transaction(&instructions, Some(&[&registrar_cookie.realm_authority]))
+            .process_transaction(&[configure_collection_ix], Some(signers))
             .await?;
 
         let collection_config = CollectionConfig {
