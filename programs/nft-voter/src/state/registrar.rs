@@ -1,4 +1,4 @@
-use crate::state::CollectionConfig;
+use crate::{id, state::CollectionConfig};
 use anchor_lang::prelude::*;
 
 /// Registrar which stores NFT voting configuration for the given Realm
@@ -23,4 +23,17 @@ pub struct Registrar {
 
     /// Reserved for future upgrades
     pub reserved: [u8; 64],
+}
+
+/// Returns Registrar PDA seeds
+pub fn get_registrar_seeds<'a>(
+    realm: &'a Pubkey,
+    governing_token_mint: &'a Pubkey,
+) -> [&'a [u8]; 3] {
+    [b"registrar", realm.as_ref(), governing_token_mint.as_ref()]
+}
+
+/// Returns Registrar PDA address
+pub fn get_registrar_address(realm: &Pubkey, governing_token_mint: &Pubkey) -> Pubkey {
+    Pubkey::find_program_address(&get_registrar_seeds(realm, governing_token_mint), &id()).0
 }

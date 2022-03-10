@@ -12,6 +12,10 @@ pub struct NftCookie {
     pub metadata_address: Pubkey,
 }
 
+pub struct NftCollectionCookie {
+    pub address: Pubkey,
+}
+
 pub struct TokenMetadataTest {
     pub bench: Arc<ProgramTestBench>,
     pub program_id: Pubkey,
@@ -33,6 +37,86 @@ impl TokenMetadataTest {
             bench,
             program_id: Self::program_id(),
         }
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_nft_collection(&self) -> Result<NftCollectionCookie, BanksClientError> {
+        let update_authority = self.bench.context.borrow().payer.pubkey();
+        let payer = self.bench.context.borrow().payer.pubkey();
+
+        // Create collection
+        let coll_mint_cookie = self.bench.with_mint().await?;
+        self.bench
+            .with_tokens(&coll_mint_cookie, &update_authority, 1)
+            .await?;
+
+        let coll_metadata_seeds = &[
+            b"metadata".as_ref(),
+            self.program_id.as_ref(),
+            &coll_mint_cookie.address.as_ref(),
+        ];
+        let (coll_metadata_address, _) =
+            Pubkey::find_program_address(coll_metadata_seeds, &self.program_id);
+
+        let coll_name = "NFT_C".to_string();
+        let coll_symbol = "NFT_C".to_string();
+        let coll_uri = "URI".to_string();
+
+        let create_coll_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v2(
+            self.program_id,
+            coll_metadata_address,
+            coll_mint_cookie.address,
+            coll_mint_cookie.mint_authority.pubkey(),
+            payer.clone(),
+            update_authority.clone(),
+            coll_name,
+            coll_symbol,
+            coll_uri,
+            None,
+            10,
+            false,
+            false,
+            None,
+            None,
+        );
+
+        self.bench
+            .process_transaction(
+                &[create_coll_metadata_ix],
+                Some(&[&coll_mint_cookie.mint_authority]),
+            )
+            .await?;
+
+        let master_edition_seeds = &[
+            b"metadata".as_ref(),
+            self.program_id.as_ref(),
+            coll_mint_cookie.address.as_ref(),
+            b"edition".as_ref(),
+        ];
+        let (master_edition_address, _) =
+            Pubkey::find_program_address(master_edition_seeds, &self.program_id);
+
+        let create_master_edition_ix = mpl_token_metadata::instruction::create_master_edition_v3(
+            self.program_id,
+            master_edition_address,
+            coll_mint_cookie.address,
+            update_authority,
+            coll_mint_cookie.mint_authority.pubkey(),
+            coll_metadata_address,
+            payer,
+            Some(0),
+        );
+
+        self.bench
+            .process_transaction(
+                &[create_master_edition_ix],
+                Some(&[&coll_mint_cookie.mint_authority]),
+            )
+            .await?;
+
+        Ok(NftCollectionCookie {
+            address: coll_mint_cookie.address,
+        })
     }
 
     #[allow(dead_code)]
