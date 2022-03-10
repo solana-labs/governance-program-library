@@ -28,6 +28,7 @@ impl RealmCookie {
 pub struct GovernanceTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
+    pub next_id: u8,
 }
 
 impl GovernanceTest {
@@ -45,6 +46,7 @@ impl GovernanceTest {
         GovernanceTest {
             bench,
             program_id: Self::program_id(),
+            next_id: 0,
         }
     }
 
@@ -57,21 +59,28 @@ impl GovernanceTest {
             .create_mint(&governing_token_mint, &realm_authority.pubkey(), None)
             .await?;
 
-        let name = "realm".to_string();
+        let council_token_mint = Keypair::new();
+        self.bench
+            .create_mint(&council_token_mint, &realm_authority.pubkey(), None)
+            .await?;
+
+        self.next_id += 1;
+        let realm_name = format!("Realm #{}", self.next_id).to_string();
+
         let min_community_weight_to_create_governance = 1;
         let community_mint_max_vote_weight_source = MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION;
 
-        let realm = get_realm_address(&self.program_id, &name);
+        let realm = get_realm_address(&self.program_id, &realm_name);
 
         let create_realm_ix = create_realm(
             &self.program_id,
             &realm_authority.pubkey(),
             &governing_token_mint.pubkey(),
             &self.bench.payer.pubkey(),
+            Some(council_token_mint.pubkey()),
             None,
             None,
-            None,
-            name.clone(),
+            realm_name.clone(),
             min_community_weight_to_create_governance,
             community_mint_max_vote_weight_source.clone(),
         );
@@ -84,11 +93,11 @@ impl GovernanceTest {
             account_type: GovernanceAccountType::RealmV2,
             community_mint: governing_token_mint.pubkey(),
 
-            name,
+            name: realm_name,
             reserved: [0; 6],
             authority: Some(realm_authority.pubkey()),
             config: RealmConfig {
-                council_mint: None,
+                council_mint: Some(council_token_mint.pubkey()),
                 reserved: [0; 6],
                 min_community_weight_to_create_governance,
                 community_mint_max_vote_weight_source,
