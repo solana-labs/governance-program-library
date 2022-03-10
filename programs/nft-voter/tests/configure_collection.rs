@@ -34,9 +34,21 @@ async fn test_configure_collection() -> Result<(), TransportError> {
         .await;
 
     assert_eq!(registrar.collection_configs.len(), 1);
+
     assert_eq!(
         registrar.collection_configs[0],
         collection_config_cookie.collection_config
+    );
+
+    let max_voter_weight_record = nft_voter_test
+        .get_max_voter_weight_record(&max_voter_weight_record_cookie.address)
+        .await;
+
+    assert_eq!(max_voter_weight_record.max_voter_weight_expiry, None);
+    assert_eq!(
+        max_voter_weight_record.max_voter_weight,
+        (registrar.collection_configs[0].weight as u32 * registrar.collection_configs[0].size)
+            as u64
     );
 
     Ok(())

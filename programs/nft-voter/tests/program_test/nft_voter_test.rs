@@ -8,6 +8,7 @@ use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
+use spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord;
 
 use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
@@ -319,5 +320,13 @@ impl NftVoterTest {
     #[allow(dead_code)]
     pub async fn get_registrar_account(&mut self, registrar: &Pubkey) -> Registrar {
         self.bench.get_anchor_account::<Registrar>(*registrar).await
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_max_voter_weight_record(
+        &self,
+        max_voter_weight_record: &Pubkey,
+    ) -> MaxVoterWeightRecord {
+        self.bench.get_borsh_account(max_voter_weight_record).await
     }
 }
