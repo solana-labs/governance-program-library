@@ -14,9 +14,20 @@ async fn test_max_create_voter_weight_record() -> Result<(), TransportError> {
     let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
 
     // Act
-    nft_voter_test
+    let max_voter_weight_record_cookie = nft_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
+
+    // Assert
+
+    let max_voter_weight_record = nft_voter_test
+        .get_max_voter_weight_record(&max_voter_weight_record_cookie.address)
+        .await;
+
+    assert_eq!(
+        max_voter_weight_record_cookie.account,
+        max_voter_weight_record
+    );
 
     Ok(())
 }

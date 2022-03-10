@@ -39,6 +39,7 @@ pub struct VoterWeightRecordCookie {
 
 pub struct MaxVoterWeightRecordCookie {
     pub address: Pubkey,
+    pub account: MaxVoterWeightRecord,
 }
 
 pub struct CollectionConfigCookie {
@@ -224,7 +225,17 @@ impl NftVoterTest {
 
         self.bench.process_transaction(&instructions, None).await?;
 
+        let account = MaxVoterWeightRecord {
+            account_discriminator: MaxVoterWeightRecord::ACCOUNT_DISCRIMINATOR,
+            realm: registrar_cookie.account.realm,
+            governing_token_mint: registrar_cookie.account.governing_token_mint,
+            max_voter_weight: 0,
+            max_voter_weight_expiry: Some(0),
+            reserved: [0; 8],
+        };
+
         Ok(MaxVoterWeightRecordCookie {
+            account,
             address: max_voter_weight_record_address,
         })
     }
