@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use anchor_lang::prelude::*;
 
 /// Configuration of an NFT collection used for governance power
@@ -18,4 +20,14 @@ pub struct CollectionConfig {
 
     /// Reserved for future upgrades
     pub reserved: [u8; 8],
+}
+
+impl CollectionConfig {
+    pub fn get_max_weight(&self) -> u64 {
+        self.size
+            .checked_mul(self.weight as u32)
+            .unwrap()
+            .try_into()
+            .unwrap()
+    }
 }

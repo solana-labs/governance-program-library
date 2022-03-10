@@ -14,7 +14,7 @@ pub struct CreateMaxVoterWeightRecord<'info> {
 
     #[account(
         init,
-        seeds = [ b"max_voter-weight-record".as_ref(),
+        seeds = [ b"max-voter-weight-record".as_ref(),
                 realm.key().as_ref(),
                 realm_governing_token_mint.key().as_ref()],
         bump,
@@ -53,9 +53,6 @@ pub fn create_max_voter_weight_record(ctx: Context<CreateMaxVoterWeightRecord>) 
 
     // Set expiry to expired
     max_voter_weight_record.max_voter_weight_expiry = Some(0);
-
-    // TODO: Update max_voter_weight when we configure collections
-    // TODO: TODO: Set max_voter_weight_expiry to None after updating because it never expires
 
     Ok(())
 }
