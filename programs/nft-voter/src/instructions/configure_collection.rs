@@ -23,7 +23,7 @@ pub struct ConfigureCollection<'info> {
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     pub realm: UncheckedAccount<'info>,
 
-    /// Authority of the Realm
+    /// Authority of the Realm must sign and much Realm.authority
     pub realm_authority: Signer<'info>,
 
     // Collection which is going to be used for voting
@@ -51,7 +51,7 @@ pub fn configure_collection(
 
     let realm = realm::get_realm_data_for_governing_token_mint(
         &registrar.governance_program_id,
-        &ctx.accounts.realm.to_account_info(),
+        &ctx.accounts.realm,
         &registrar.governing_token_mint,
     )?;
 
