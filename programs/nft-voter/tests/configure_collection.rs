@@ -15,9 +15,17 @@ async fn test_configure_collection() -> Result<(), TransportError> {
 
     let collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
 
+    let max_voter_weight_record_cookie = nft_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
+
     // Act
     let collection_config_cookie = nft_voter_test
-        .with_configure_collection(&registrar_cookie, &collection_cookie)
+        .with_configure_collection(
+            &registrar_cookie,
+            &collection_cookie,
+            &max_voter_weight_record_cookie,
+        )
         .await?;
 
     // Assert
@@ -38,3 +46,4 @@ async fn test_configure_collection() -> Result<(), TransportError> {
 // TODO: Check collection added
 // TODO: Check collection updated
 // TODO: Remove collection
+// TODO: Check MaxVoterWeight matches realm and mint on registrar

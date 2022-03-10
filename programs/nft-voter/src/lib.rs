@@ -6,7 +6,7 @@ pub mod error;
 mod instructions;
 use instructions::*;
 
-mod governance;
+pub mod governance;
 pub mod state;
 
 // use state::*;

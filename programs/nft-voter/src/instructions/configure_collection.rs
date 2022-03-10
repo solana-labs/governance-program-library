@@ -8,14 +8,15 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 
-use crate::error::NftLockerError;
 use crate::state::{CollectionConfig, Registrar};
+use crate::{error::NftLockerError, state::MaxVoterWeightRecord};
 
 #[derive(Accounts)]
 pub struct ConfigureCollection<'info> {
     /// Registrar for which we configure this Collection
     #[account(mut,
-        constraint = registrar.realm == realm.key() @ NftLockerError::InvalidRegistrarRealm
+        constraint = registrar.realm == realm.key() 
+        @ NftLockerError::InvalidRegistrarRealm
     )]
     pub registrar: Account<'info, Registrar>,
 
@@ -27,6 +28,16 @@ pub struct ConfigureCollection<'info> {
 
     // Collection which is going to be used for voting
     pub collection: Account<'info, Mint>,
+
+    #[account(
+        mut,
+        constraint = max_voter_weight_record.realm == registrar.realm 
+        @ NftLockerError::InvalidMaxVoterWeightRecordRealm,
+
+        constraint = max_voter_weight_record.governing_token_mint == registrar.governing_token_mint
+        @ NftLockerError::InvalidMaxVoterWeightRecordMint,
+    )]
+    pub max_voter_weight_record: Account<'info, MaxVoterWeightRecord>,
 }
 
 pub fn configure_collection(
@@ -72,8 +83,16 @@ pub fn configure_collection(
         registrar.collection_configs.push(collection_config);
     }
 
-    // TODO:
-    // check max vote weight
+    // Update MaxVoterWeightRecord based on max voting power of the collections
+    let max_voter_weight_record = &mut ctx.accounts.max_voter_weight_record;
+
+    max_voter_weight_record.max_voter_weight =  registrar.collection_configs
+        .iter()
+        .try_fold(0u64, |sum,cc| sum.checked_add(cc.get_max_weight()))
+    .unwrap();
+
+    // The weight never expires and only changes when collections are configured
+    max_voter_weight_record.max_voter_weight_expiry = None;
 
     Ok(())
 }
