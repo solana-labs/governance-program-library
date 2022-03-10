@@ -217,6 +217,5 @@ async fn test_configure_existing_collection() -> Result<(), TransportError> {
 
 // TODO: Check ream for registrar
 
-// TODO: Check collection updated
 // TODO: Remove collection
 // TODO: Check MaxVoterWeight matches realm and mint on registrar

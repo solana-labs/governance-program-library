@@ -17,9 +17,6 @@ pub enum NftLockerError {
     #[msg("There is no NFT in the account")]
     InsufficientAmountOnNFTAccount,
 
-    #[msg("Invalid Collection Weight")]
-    InvalidCollectionWeight,
-
     #[msg("Invalid Collection Size")]
     InvalidCollectionSize,
 

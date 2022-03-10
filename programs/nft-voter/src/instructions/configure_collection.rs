@@ -45,7 +45,6 @@ pub fn configure_collection(
     weight: u16,
     size: u32,
 ) -> Result<()> {
-    require!(weight > 0, NftLockerError::InvalidCollectionWeight);
     require!(size > 0, NftLockerError::InvalidCollectionSize);
 
     let registrar = &mut ctx.accounts.registrar;
@@ -82,6 +81,8 @@ pub fn configure_collection(
         // max_collections specified when the Registrar was created
         registrar.collection_configs.push(collection_config);
     }
+
+    // TODO: if weight == 0 then remove the collection from config
 
     // Update MaxVoterWeightRecord based on max voting power of the collections
     let max_voter_weight_record = &mut ctx.accounts.max_voter_weight_record;
