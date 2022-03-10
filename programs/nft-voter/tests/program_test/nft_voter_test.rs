@@ -1,9 +1,8 @@
-use std::str::FromStr;
 use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
 
-use gpl_nft_voter::state::{get_registrar_address, Registrar};
+use gpl_nft_voter::state::{get_registrar_address, CollectionConfig, Registrar};
 use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
@@ -13,10 +12,8 @@ use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
 
 use super::governance_test::RealmCookie;
-use super::token_metadata_test::TokenMetadataTest;
+use super::token_metadata_test::{NftCollectionCookie, TokenMetadataTest};
 use super::tools::NopOverride;
-
-const COLLECTION_PUBKEY: &str = "2tNsB373yxWfqznG1TE3GtkXtBtkdG6QtKvyWahju31s";
 
 pub struct NftVoterTest {
     pub bench: Arc<ProgramTestBench>,
@@ -34,6 +31,10 @@ pub struct RegistrarCookie {
 pub struct VoterWeightRecordCookie {
     pub voter_weight_record: Pubkey,
     pub governing_token_owner: Pubkey,
+}
+
+pub struct CollectionConfigCookie {
+    pub collection_config: CollectionConfig,
 }
 
 impl NftVoterTest {
@@ -269,23 +270,23 @@ impl NftVoterTest {
     #[allow(dead_code)]
     pub async fn with_configure_collection(
         &mut self,
-        registrar_cookie: &mut RegistrarCookie,
-    ) -> Result<(), BanksClientError> {
-        // TODO: check which collection to use in local testing
-        let collection = Pubkey::from_str(COLLECTION_PUBKEY).unwrap();
+        registrar_cookie: &RegistrarCookie,
+        collection_cookie: &NftCollectionCookie,
+    ) -> Result<CollectionConfigCookie, BanksClientError> {
+        let coll_size = 3;
+        let coll_weight = 1;
 
         let data =
             anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::ConfigureCollection {
-                weight: 1,
-                size: 3,
+                weight: coll_weight,
+                size: coll_size,
             });
 
         let accounts = gpl_nft_voter::accounts::ConfigureCollection {
             registrar: registrar_cookie.address,
             realm: registrar_cookie.account.realm,
             realm_authority: registrar_cookie.realm_authority.pubkey(),
-            collection,
-            token_program: spl_token::id(),
+            collection: collection_cookie.address,
         };
 
         let instructions = vec![Instruction {
@@ -296,7 +297,16 @@ impl NftVoterTest {
 
         self.bench
             .process_transaction(&instructions, Some(&[&registrar_cookie.realm_authority]))
-            .await
+            .await?;
+
+        let collection_config = CollectionConfig {
+            collection: collection_cookie.address,
+            size: coll_size,
+            weight: coll_weight,
+            reserved: [0; 8],
+        };
+
+        Ok(CollectionConfigCookie { collection_config })
     }
 
     #[allow(dead_code)]

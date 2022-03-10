@@ -8,10 +8,15 @@ pub enum NftLockerError {
     InvalidRegistrarRealm,
     #[msg("Failed to decode metadata")]
     DecodeMetadataFailed,
-    #[msg("Collection is invalid")]
-    InvalidCollection,
+
     #[msg("Collection is not verified")]
     UnverifiedCollection,
     #[msg("There is no NFT in the account")]
     InsufficientAmountOnNFTAccount,
+
+    #[msg("Invalid Collection Weight")]
+    InvalidCollectionWeight,
+
+    #[msg("Invalid Collection Size")]
+    InvalidCollectionSize,
 }

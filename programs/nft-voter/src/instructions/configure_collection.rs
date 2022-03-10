@@ -5,7 +5,7 @@ use anchor_lang::{
 };
 
 use anchor_lang::prelude::*;
-use anchor_spl::token::Token;
+use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 
 use crate::error::NftLockerError;
@@ -23,16 +23,10 @@ pub struct ConfigureCollection<'info> {
     pub realm: UncheckedAccount<'info>,
 
     /// Authority of the Realm
-    #[account(mut)]
     pub realm_authority: Signer<'info>,
 
     // Collection which is going to be used for voting
-    // #[account(
-    // constraint = collection.owner == token_program.key() @ ErrorCode::AccountOwnedByWrongProgram
-    // )]
-    pub collection: UncheckedAccount<'info>,
-
-    pub token_program: Program<'info, Token>,
+    pub collection: Account<'info, Mint>,
 }
 
 pub fn configure_collection(
@@ -40,6 +34,9 @@ pub fn configure_collection(
     weight: u16,
     size: u32,
 ) -> Result<()> {
+    require!(weight > 0, NftLockerError::InvalidCollectionWeight);
+    require!(size > 0, NftLockerError::InvalidCollectionSize);
+
     let registrar = &mut ctx.accounts.registrar;
 
     let realm = realm::get_realm_data_for_governing_token_mint(
@@ -53,19 +50,30 @@ pub fn configure_collection(
         NftLockerError::InvalidRealmAuthority
     );
 
-    let collection_account = &ctx.accounts.collection;
+    let collection = &ctx.accounts.collection;
 
-    // TODO:
-    // check max vote weight
-    // Validate multiplier
-    // Ensure realm.authority signed
-
-    registrar.collection_configs.push(CollectionConfig {
-        collection: collection_account.key(),
+    let collection_config = CollectionConfig {
+        collection: collection.key(),
         weight,
         reserved: [0; 8],
         size,
-    });
+    };
+
+    let collection_idx = registrar
+        .collection_configs
+        .iter()
+        .position(|cc| cc.collection == collection.key());
+
+    if let Some(collection_idx) = collection_idx {
+        registrar.collection_configs[collection_idx] = collection_config;
+    } else {
+        // Note: In the current runtime version push() would throw an error if we exceed
+        // max_collections specified when the Registrar was created
+        registrar.collection_configs.push(collection_config);
+    }
+
+    // TODO:
+    // check max vote weight
 
     Ok(())
 }

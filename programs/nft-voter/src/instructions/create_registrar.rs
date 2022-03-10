@@ -36,7 +36,6 @@ pub struct CreateRegistrar<'info> {
     /// Either the realm community mint or the council mint.
     pub governing_token_mint: Account<'info, Mint>,
 
-    #[account(mut)]
     pub realm_authority: Signer<'info>,
 
     #[account(mut)]
