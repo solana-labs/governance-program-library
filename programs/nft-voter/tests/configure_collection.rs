@@ -160,6 +160,61 @@ async fn test_configure_max_collections() -> Result<(), TransportError> {
     Ok(())
 }
 
+#[tokio::test]
+async fn test_configure_existing_collection() -> Result<(), TransportError> {
+    // Arrange
+    let mut nft_voter_test = NftVoterTest::start_new().await;
+
+    let realm_cookie = nft_voter_test.governance.with_realm().await?;
+
+    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+
+    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
+
+    let max_voter_weight_record_cookie = nft_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
+
+    nft_voter_test
+        .with_configure_collection(
+            &registrar_cookie,
+            &nft_collection_cookie,
+            &max_voter_weight_record_cookie,
+            None,
+        )
+        .await?;
+
+    // Act
+
+    nft_voter_test
+        .with_configure_collection(
+            &registrar_cookie,
+            &nft_collection_cookie,
+            &max_voter_weight_record_cookie,
+            Some(ConfigureCollectionArgs {
+                weight: 2,
+                size: 10,
+            }),
+        )
+        .await?;
+
+    // Assert
+    let registrar = nft_voter_test
+        .get_registrar_account(&registrar_cookie.address)
+        .await;
+
+    assert_eq!(registrar.collection_configs.len(), 1);
+
+    let max_voter_weight_record = nft_voter_test
+        .get_max_voter_weight_record(&max_voter_weight_record_cookie.address)
+        .await;
+
+    assert_eq!(max_voter_weight_record.max_voter_weight_expiry, None);
+    assert_eq!(max_voter_weight_record.max_voter_weight, 20);
+
+    Ok(())
+}
+
 // TODO: Check ream for registrar
 
 // TODO: Check collection updated
