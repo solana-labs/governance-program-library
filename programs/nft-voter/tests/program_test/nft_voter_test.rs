@@ -27,7 +27,9 @@ pub struct NftVoterTest {
 pub struct RegistrarCookie {
     pub address: Pubkey,
     pub account: Registrar,
+
     pub realm_authority: Keypair,
+    pub max_collections: u8,
 }
 
 pub struct VoterWeightRecordCookie {
@@ -41,6 +43,11 @@ pub struct MaxVoterWeightRecordCookie {
 
 pub struct CollectionConfigCookie {
     pub collection_config: CollectionConfig,
+}
+
+pub struct ConfigureCollectionArgs {
+    pub weight: u16,
+    pub size: u32,
 }
 
 impl NftVoterTest {
@@ -89,9 +96,11 @@ impl NftVoterTest {
         let registrar =
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
+        let max_collections = 10;
+
         let data =
             anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CreateRegistrar {
-                max_collections: 10,
+                max_collections,
             });
 
         let accounts = anchor_lang::ToAccountMetas::to_account_metas(
@@ -134,6 +143,7 @@ impl NftVoterTest {
             address: registrar,
             account,
             realm_authority: realm_cookie.get_realm_authority(),
+            max_collections,
         })
     }
 
@@ -277,23 +287,23 @@ impl NftVoterTest {
     pub async fn with_configure_collection(
         &mut self,
         registrar_cookie: &RegistrarCookie,
-        collection_cookie: &NftCollectionCookie,
+        nft_collection_cookie: &NftCollectionCookie,
         max_voter_weight_record_cookie: &MaxVoterWeightRecordCookie,
+        args: Option<ConfigureCollectionArgs>,
     ) -> Result<CollectionConfigCookie, BanksClientError> {
-        let coll_size = 3;
-        let coll_weight = 1;
+        let args = args.unwrap_or(ConfigureCollectionArgs { weight: 1, size: 3 });
 
         let data =
             anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::ConfigureCollection {
-                weight: coll_weight,
-                size: coll_size,
+                weight: args.weight,
+                size: args.size,
             });
 
         let accounts = gpl_nft_voter::accounts::ConfigureCollection {
             registrar: registrar_cookie.address,
             realm: registrar_cookie.account.realm,
             realm_authority: registrar_cookie.realm_authority.pubkey(),
-            collection: collection_cookie.address,
+            collection: nft_collection_cookie.address,
             max_voter_weight_record: max_voter_weight_record_cookie.address,
         };
 
@@ -308,9 +318,9 @@ impl NftVoterTest {
             .await?;
 
         let collection_config = CollectionConfig {
-            collection: collection_cookie.address,
-            size: coll_size,
-            weight: coll_weight,
+            collection: nft_collection_cookie.address,
+            size: args.size,
+            weight: args.weight,
             reserved: [0; 8],
         };
 
