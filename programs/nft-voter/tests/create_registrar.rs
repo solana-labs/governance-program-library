@@ -9,7 +9,7 @@ use solana_program_test::*;
 use solana_sdk::signature::Keypair;
 
 use program_test::tools::{
-    assert_anchor_err, assert_gov_tools_err, assert_ix_err, assert_nft_locker_err,
+    assert_anchor_err, assert_gov_tools_err, assert_ix_err, assert_nft_voter_err,
 };
 
 use spl_governance_tools::error::GovernanceToolsError;
@@ -50,7 +50,7 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
         .err()
         .unwrap();
 
-    assert_nft_locker_err(err, NftLockerError::InvalidRealmAuthority);
+    assert_nft_voter_err(err, NftLockerError::InvalidRealmAuthority);
 
     Ok(())
 }

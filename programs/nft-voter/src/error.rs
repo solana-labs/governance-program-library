@@ -4,12 +4,25 @@ use anchor_lang::prelude::*;
 pub enum NftLockerError {
     #[msg("Invalid Realm Authority")]
     InvalidRealmAuthority,
+
+    #[msg("Invalid Registrar Realm")]
+    InvalidRegistrarRealm,
+
     #[msg("Failed to decode metadata")]
     DecodeMetadataFailed,
-    #[msg("Collection is invalid")]
-    InvalidCollection,
+
     #[msg("Collection is not verified")]
     UnverifiedCollection,
+
     #[msg("There is no NFT in the account")]
     InsufficientAmountOnNFTAccount,
+
+    #[msg("Invalid Collection Size")]
+    InvalidCollectionSize,
+
+    #[msg("Invalid MaxVoterWeightRecord Realm")]
+    InvalidMaxVoterWeightRecordRealm,
+
+    #[msg("Invalid MaxVoterWeightRecord Mint")]
+    InvalidMaxVoterWeightRecordMint,
 }

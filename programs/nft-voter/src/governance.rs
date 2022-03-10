@@ -1,3 +1,6 @@
+use crate::id;
+use anchor_lang::prelude::Pubkey;
+
 /// A macro is exposed so that we can embed the program ID.
 #[macro_export]
 macro_rules! voter_weight_record {
@@ -159,4 +162,28 @@ macro_rules! max_voter_weight_record {
             }
         }
     };
+}
+
+/// Returns MaxVoterWeightRecord PDA seeds
+pub fn get_max_voter_weight_record_seeds<'a>(
+    realm: &'a Pubkey,
+    governing_token_mint: &'a Pubkey,
+) -> [&'a [u8]; 3] {
+    [
+        b"max-voter-weight-record",
+        realm.as_ref(),
+        governing_token_mint.as_ref(),
+    ]
+}
+
+/// Returns MaxVoterWeightRecord PDA address
+pub fn get_max_voter_weight_record_address(
+    realm: &Pubkey,
+    governing_token_mint: &Pubkey,
+) -> Pubkey {
+    Pubkey::find_program_address(
+        &get_max_voter_weight_record_seeds(realm, governing_token_mint),
+        &id(),
+    )
+    .0
 }

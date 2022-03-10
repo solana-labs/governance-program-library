@@ -26,7 +26,7 @@ pub struct Registrar {
 }
 
 /// Returns Registrar PDA seeds
-pub fn get_registrar_address_seeds<'a>(
+pub fn get_registrar_seeds<'a>(
     realm: &'a Pubkey,
     governing_token_mint: &'a Pubkey,
 ) -> [&'a [u8]; 3] {
@@ -35,9 +35,5 @@ pub fn get_registrar_address_seeds<'a>(
 
 /// Returns Registrar PDA address
 pub fn get_registrar_address(realm: &Pubkey, governing_token_mint: &Pubkey) -> Pubkey {
-    Pubkey::find_program_address(
-        &get_registrar_address_seeds(realm, governing_token_mint),
-        &id(),
-    )
-    .0
+    Pubkey::find_program_address(&get_registrar_seeds(realm, governing_token_mint), &id()).0
 }

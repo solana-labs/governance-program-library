@@ -14,7 +14,7 @@ pub fn clone_keypair(source: &Keypair) -> Keypair {
 pub fn NopOverride<T>(_: &mut T) {}
 
 #[allow(dead_code)]
-pub fn assert_nft_locker_err(
+pub fn assert_nft_voter_err(
     banks_client_error: BanksClientError,
     nft_locker_error: NftLockerError,
 ) {
