@@ -1,35 +1,38 @@
+use crate::{
+    error::NftLockerError,
+    state::{Registrar, VoterWeightRecord},
+};
 use anchor_lang::prelude::*;
-
-use crate::state::{Registrar, VoterWeightRecord};
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 #[derive(Accounts)]
-#[instruction(realm:Pubkey, governing_token_mint:Pubkey, governing_token_owner: Pubkey)]
+#[instruction(voter_weight_action:VoterWeightAction)]
 pub struct UpdateVoterWeightRecord<'info> {
-    #[account(
-        seeds = [b"registrar".as_ref(),realm.as_ref(),  governing_token_mint.as_ref()],
-        bump,
-    )]
     pub registrar: Account<'info, Registrar>,
 
     #[account(
         mut,
-        seeds = [ b"voter-weight-record".as_ref(),
-                realm.as_ref(),
-                governing_token_mint.as_ref(),
-                governing_token_owner.as_ref()],
-        bump,
+        constraint = voter_weight_record.realm == registrar.realm 
+        @ NftLockerError::InvalidVoterWeightRecordRealm,
+
+        constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
+        @ NftLockerError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 }
 
 pub fn update_voter_weight_record(
     ctx: Context<UpdateVoterWeightRecord>,
-    _realm: Pubkey,
-    _governing_token_mint: Pubkey,
-    _governing_token_owner: Pubkey,
+    voter_weight_action: VoterWeightAction,
 ) -> Result<()> {
-    // TODO: Validate registrar vs VoterWeightRecord
-    // TODO: Validate governing_token_owner
+
+    require!(
+        voter_weight_action != VoterWeightAction::CastVote,
+        NftLockerError::CastVoteIsNotAllowed
+    );
+
+    // TODO: Validate voter_weight_record.owner owns NFTs
+    // TODO: Check collection is verified
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
@@ -38,8 +41,9 @@ pub fn update_voter_weight_record(
 
     // Record is only valid as of the current slot
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
-    // TODO: Always set action
-    voter_weight_record.weight_action = None;
+
+    // Set the action to make it specific and prevent being used for voting
+    voter_weight_record.weight_action = Some(voter_weight_action);
     voter_weight_record.weight_action_target = None;
 
     Ok(())

@@ -9,7 +9,7 @@ use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
 use spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord;
-use spl_governance_addin_api::voter_weight::VoterWeightRecord;
+use spl_governance_addin_api::voter_weight::{VoterWeightAction, VoterWeightRecord};
 
 use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
@@ -291,13 +291,12 @@ impl NftVoterTest {
     pub async fn update_voter_weight_record(
         &mut self,
         registrar_cookie: &RegistrarCookie,
-        voter_weight_record_cookie: &VoterWeightRecordCookie,
+        voter_weight_record_cookie: &mut VoterWeightRecordCookie,
+        voter_weight_action: VoterWeightAction,
     ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
-                governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
-                realm: registrar_cookie.account.realm,
-                governing_token_mint: registrar_cookie.account.governing_token_mint,
+                voter_weight_action,
             },
         );
 
@@ -311,6 +310,7 @@ impl NftVoterTest {
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         }];
+
         self.bench.process_transaction(&instructions, None).await
     }
 
@@ -320,11 +320,11 @@ impl NftVoterTest {
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &VoterWeightRecordCookie,
     ) -> Result<(), BanksClientError> {
+        let voter_weight_action = VoterWeightAction::CreateProposal;
+
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
-                governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
-                realm: registrar_cookie.account.realm,
-                governing_token_mint: registrar_cookie.account.governing_token_mint,
+                voter_weight_action,
             },
         );
 

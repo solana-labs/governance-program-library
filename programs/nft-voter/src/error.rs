@@ -8,15 +8,6 @@ pub enum NftLockerError {
     #[msg("Invalid Registrar Realm")]
     InvalidRegistrarRealm,
 
-    #[msg("Failed to decode metadata")]
-    DecodeMetadataFailed,
-
-    #[msg("Collection is not verified")]
-    UnverifiedCollection,
-
-    #[msg("There is no NFT in the account")]
-    InsufficientAmountOnNFTAccount,
-
     #[msg("Invalid Collection Size")]
     InvalidCollectionSize,
 
@@ -25,4 +16,13 @@ pub enum NftLockerError {
 
     #[msg("Invalid MaxVoterWeightRecord Mint")]
     InvalidMaxVoterWeightRecordMint,
+
+    #[msg("CastVote Is Not Allowed")]
+    CastVoteIsNotAllowed,
+
+    #[msg("Invalid VoterWeightRecord Realm")]
+    InvalidVoterWeightRecordRealm,
+
+    #[msg("Invalid VoterWeightRecord Mint")]
+    InvalidVoterWeightRecordMint,
 }
