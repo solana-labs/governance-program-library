@@ -16,6 +16,8 @@ use solana_sdk::{
 
 use borsh::BorshDeserialize;
 
+use super::tools::clone_keypair;
+
 pub struct MintCookie {
     pub address: Pubkey,
     pub mint_authority: Keypair,
@@ -28,9 +30,6 @@ pub struct TokenAccountCookie {
 pub struct ProgramTestBench {
     pub context: RefCell<ProgramTestContext>,
     pub payer: Keypair,
-}
-pub fn clone_keypair(source: &Keypair) -> Keypair {
-    Keypair::from_bytes(&source.to_bytes()).unwrap()
 }
 
 impl ProgramTestBench {
@@ -63,9 +62,6 @@ impl ProgramTestBench {
         if let Some(signers) = signers {
             all_signers.extend_from_slice(signers);
         }
-
-        // This fails when warping is involved - https://gitmemory.com/issue/solana-labs/solana/18201/868325078
-        // let recent_blockhash = self.context.banks_client.get_recent_blockhash().await.unwrap();
 
         transaction.sign(&all_signers, context.last_blockhash);
 
