@@ -1,5 +1,7 @@
 use crate::program_test::nft_voter_test::ConfigureCollectionArgs;
+use gpl_nft_voter::error::NftVoterError;
 use program_test::nft_voter_test::NftVoterTest;
+use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
@@ -73,6 +75,60 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
         Some(VoterWeightAction::CreateProposal)
     );
     assert_eq!(voter_weight_record.weight_action_target, None);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_update_voter_weight_with_cast_vote_error() -> Result<(), TransportError> {
+    // Arrange
+    let mut nft_voter_test = NftVoterTest::start_new().await;
+
+    let realm_cookie = nft_voter_test.governance.with_realm().await?;
+
+    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+
+    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
+
+    let max_voter_weight_record_cookie = nft_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
+
+    nft_voter_test
+        .with_collection(
+            &registrar_cookie,
+            &nft_collection_cookie,
+            &max_voter_weight_record_cookie,
+            Some(ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            }),
+        )
+        .await?;
+
+    let mut voter_weight_record_cookie = nft_voter_test
+        .with_voter_weight_record(&registrar_cookie)
+        .await?;
+
+    let nft1_cookie = nft_voter_test
+        .token_metadata
+        .with_nft_v2(&nft_collection_cookie)
+        .await?;
+
+    // Act
+    let err = nft_voter_test
+        .update_voter_weight_record(
+            &registrar_cookie,
+            &mut voter_weight_record_cookie,
+            VoterWeightAction::CastVote,
+            &nft1_cookie,
+        )
+        .await
+        .err()
+        .unwrap();
+
+    // Assert
+    assert_nft_voter_err(err, NftVoterError::CastVoteIsNotAllowed);
 
     Ok(())
 }
