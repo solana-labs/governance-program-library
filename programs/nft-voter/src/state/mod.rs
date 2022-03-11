@@ -10,12 +10,8 @@ pub mod proposal_nft_vote;
 use crate::max_voter_weight_record;
 use crate::voter_weight_record;
 
-// Generate a VoteWeightRecord Anchor wrapper, owned by the current program.
-// VoteWeightRecords are unique in that they are defined by the SPL governance
-// program, but they are actually owned by this program.
+// Generate a VoterWeightRecord and MaxVoterWeightRecord Anchor wrapper, owned by the current program
+// The Records accounts  are unique in that they are defined by the SPL governance program as ABI
+// but they are actually owned by this program
 voter_weight_record!(crate::ID);
 max_voter_weight_record!(crate::ID);
-
-// pub fn do() {
-//     let wr =
-// }

@@ -157,7 +157,7 @@ impl GovernanceTest {
             &token_owner_record,
             &self.bench.payer.pubkey(),
             &realm_cookie.realm_authority.pubkey(),
-            Some(voter_weight_record_cookie.voter_weight_record),
+            Some(voter_weight_record_cookie.address),
             spl_governance::state::governance::GovernanceConfig { 
                 vote_threshold_percentage: VoteThresholdPercentage::YesVote(60), 
                 min_community_weight_to_create_proposal: 1, 
@@ -183,7 +183,7 @@ impl GovernanceTest {
             &self.bench.payer.pubkey(), 
             &self.bench.payer.pubkey(), 
             &self.bench.payer.pubkey(), 
-            Some(voter_weight_record_cookie.voter_weight_record), 
+            Some(voter_weight_record_cookie.address), 
             &realm_cookie.address, 
             String::from("Proposal #1"), 
             String::from("Proposal #1 link"), 

@@ -1,4 +1,4 @@
-use crate::{id, state::CollectionConfig, error::NftLockerError};
+use crate::{id, state::CollectionConfig, error::NftVoterError};
 use anchor_lang::prelude::*;
 
 /// Registrar which stores NFT voting configuration for the given Realm
@@ -46,7 +46,7 @@ impl Registrar {
             .any(|r| r.collection == collection)
             {
                 true => Ok(true),
-                false => Err(NftLockerError::InvalidCollection.into())
+                false => Err(NftVoterError::InvalidCollection.into())
             }
     }
 
@@ -54,7 +54,7 @@ impl Registrar {
         self.collection_configs
             .iter()
             .position(|r| r.collection == collection)
-            .ok_or(Error::from(NftLockerError::InvalidCollection))
+            .ok_or(Error::from(NftVoterError::InvalidCollection))
             
     }
 }

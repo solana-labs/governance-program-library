@@ -5,7 +5,7 @@ use mpl_token_metadata::state::{Collection, Metadata};
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use std::mem::size_of;
 use crate::state::*;
-use crate::error::NftLockerError;
+use crate::error::NftVoterError;
 use crate::ErrorCode::AccountOwnedByWrongProgram;
 
 #[derive(Accounts)]
@@ -32,7 +32,7 @@ pub struct VoteWithNFT<'info> {
     pub proposal: UncheckedAccount<'info>,
     /// Account holding the NFT
     #[account(
-        constraint = nft_account.amount > 0 @ NftLockerError::InsufficientAmountOnNFTAccount,
+        constraint = nft_account.amount > 0 @ NftVoterError::InsufficientAmountOnNFTAccount,
         constraint = nft_account.owner == token_program.key() @ AccountOwnedByWrongProgram
     )]
     pub nft_account: Account<'info, TokenAccount>,
@@ -62,19 +62,19 @@ pub fn vote_with_nft(ctx: Context<VoteWithNFT>, _realm:Pubkey, _governing_token_
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
     let nft_metadata = &ctx.accounts.nft_metadata;
     let metadata = Metadata::from_account_info(nft_metadata)?;
-    let collection: Collection = metadata.collection.ok_or(NftLockerError::NotPartOfCollection)?;
+    let collection: Collection = metadata.collection.ok_or(NftVoterError::NotPartOfCollection)?;
     let collection_idx = registrar.collection_config_index(collection.key)?;
     let collection_config = &registrar.collection_configs[collection_idx];
     let proposal = &ctx.accounts.proposal;
 
     require!(
         registrar.is_in_collection_configs(collection.key)?,
-        NftLockerError::InvalidCollection
+        NftVoterError::InvalidCollection
     );
 
     require!(
         collection.verified,
-        NftLockerError::UnverifiedCollection
+        NftVoterError::UnverifiedCollection
     );
 
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
