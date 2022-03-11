@@ -296,7 +296,7 @@ impl NftVoterTest {
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &mut VoterWeightRecordCookie,
         voter_weight_action: VoterWeightAction,
-        nft_cookie: &NftCookie,
+        nft_cookies: &[&NftCookie],
     ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
@@ -311,8 +311,10 @@ impl NftVoterTest {
 
         let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
-        account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
-        account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
+        for nft_cookie in nft_cookies {
+            account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
+            account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
+        }
 
         let instructions = vec![Instruction {
             program_id: gpl_nft_voter::id(),
