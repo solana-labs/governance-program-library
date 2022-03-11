@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use anchor_lang::prelude::Pubkey;
+use anchor_lang::prelude::{AccountMeta, Pubkey};
 
 use gpl_nft_voter::governance::get_max_voter_weight_record_address;
 use gpl_nft_voter::state::{get_registrar_address, CollectionConfig, Registrar};
@@ -307,13 +307,16 @@ impl NftVoterTest {
         let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            nft_token: nft_cookie.address,
-            nft_metadata: nft_cookie.metadata,
         };
+
+        let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
+
+        account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
+        account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
 
         let instructions = vec![Instruction {
             program_id: gpl_nft_voter::id(),
-            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            accounts: account_metas,
             data,
         }];
 
@@ -323,31 +326,37 @@ impl NftVoterTest {
     #[allow(dead_code)]
     pub async fn relinquish_vote(
         &mut self,
-        registrar_cookie: &RegistrarCookie,
-        voter_weight_record_cookie: &VoterWeightRecordCookie,
+        _registrar_cookie: &RegistrarCookie,
+        _voter_weight_record_cookie: &VoterWeightRecordCookie,
     ) -> Result<(), BanksClientError> {
         let voter_weight_action = VoterWeightAction::CreateProposal;
 
-        let data = anchor_lang::InstructionData::data(
+        let _data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
                 voter_weight_action,
             },
         );
 
-        let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
-            registrar: registrar_cookie.address,
-            voter_weight_record: voter_weight_record_cookie.address,
-            nft_token: Pubkey::new_unique(),
-            nft_metadata: Pubkey::new_unique(),
-        };
+        // let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
+        //     registrar: registrar_cookie.address,
+        //     voter_weight_record: voter_weight_record_cookie.address,
+        //     nft_token: Pubkey::new_unique(),
+        //     nft_metadata: Pubkey::new_unique(),
+        // };
 
-        let instructions = vec![Instruction {
-            program_id: gpl_nft_voter::id(),
-            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
-            data,
-        }];
+        // let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
-        self.bench.process_transaction(&instructions, None).await
+        // account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
+        // account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
+        // let instructions = vec![Instruction {
+        //     program_id: gpl_nft_voter::id(),
+        //     accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+        //     data,
+        // }];
+
+        // self.bench.process_transaction(&instructions, None).await
+
+        Ok(())
     }
 
     #[allow(dead_code)]

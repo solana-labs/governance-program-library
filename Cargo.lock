@@ -1067,6 +1067,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "borsh",
+ "itertools",
  "mpl-token-metadata",
  "solana-program",
  "solana-program-test",
