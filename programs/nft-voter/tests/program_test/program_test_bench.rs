@@ -78,6 +78,24 @@ impl ProgramTestBench {
             .await
     }
 
+    pub async fn get_clock(&self) -> solana_program::clock::Clock {
+        self.context
+            .borrow_mut()
+            .banks_client
+            .get_sysvar::<solana_program::clock::Clock>()
+            .await
+            .unwrap()
+    }
+
+    #[allow(dead_code)]
+    pub async fn advance_clock(&self) {
+        let clock = self.get_clock().await;
+        self.context
+            .borrow_mut()
+            .warp_to_slot(clock.slot + 2)
+            .unwrap();
+    }
+
     pub async fn with_mint(&self) -> Result<MintCookie, BanksClientError> {
         let mint_keypair = Keypair::new();
         let mint_authority = Keypair::new();
