@@ -1,3 +1,4 @@
+use crate::program_test::nft_voter_test::ConfigureCollectionArgs;
 use program_test::nft_voter_test::NftVoterTest;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
@@ -25,7 +26,10 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
             &registrar_cookie,
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,
-            None,
+            Some(ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            }),
         )
         .await?;
 
@@ -44,7 +48,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
     //     .await;
 
     nft_voter_test.bench.advance_clock().await;
-    let _clock = nft_voter_test.bench.get_clock().await;
+    let clock = nft_voter_test.bench.get_clock().await;
 
     // Act
     nft_voter_test
@@ -56,19 +60,19 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
         )
         .await?;
 
-    // // Assert
+    // Assert
 
-    // let voter_weight_record = nft_voter_test
-    //     .get_voter_weight_record(&voter_weight_record_cookie.address)
-    //     .await;
+    let voter_weight_record = nft_voter_test
+        .get_voter_weight_record(&voter_weight_record_cookie.address)
+        .await;
 
-    // assert_eq!(voter_weight_record.voter_weight, 10);
-    // assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
-    // assert_eq!(
-    //     voter_weight_record.weight_action,
-    //     Some(VoterWeightAction::CreateProposal)
-    // );
-    // assert_eq!(voter_weight_record.weight_action_target, None);
+    assert_eq!(voter_weight_record.voter_weight, 10);
+    assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
+    assert_eq!(
+        voter_weight_record.weight_action,
+        Some(VoterWeightAction::CreateProposal)
+    );
+    assert_eq!(voter_weight_record.weight_action_target, None);
 
     Ok(())
 }

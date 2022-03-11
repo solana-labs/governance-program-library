@@ -304,7 +304,6 @@ impl NftVoterTest {
         let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            nft_mint: nft_cookie.mint_cookie.address,
             nft_token: nft_cookie.address,
             nft_metadata: nft_cookie.metadata,
         };
@@ -335,7 +334,6 @@ impl NftVoterTest {
         let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            nft_mint: Pubkey::new_unique(),
             nft_token: Pubkey::new_unique(),
             nft_metadata: Pubkey::new_unique(),
         };
