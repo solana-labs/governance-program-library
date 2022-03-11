@@ -38,6 +38,7 @@ pub fn update_voter_weight_record(
 
     // Record is only valid as of the current slot
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
+    // TODO: Always set action
     voter_weight_record.weight_action = None;
     voter_weight_record.weight_action_target = None;
 

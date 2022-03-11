@@ -1,19 +1,12 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
-use spl_governance::state::realm::get_realm_data;
+use spl_governance::state::realm;
 
-use crate::state::{Registrar, VoterWeightRecord};
+use crate::state::VoterWeightRecord;
 
 #[derive(Accounts)]
 #[instruction(governing_token_owner: Pubkey)]
 pub struct CreateVoterWeightRecord<'info> {
-    #[account(
-        seeds = [b"registrar".as_ref(),realm.key().as_ref(), realm_governing_token_mint.key().as_ref()],
-        bump,
-
-    )]
-    pub registrar: Account<'info, Registrar>,
-
     #[account(
         init,
         seeds = [ b"voter-weight-record".as_ref(),
@@ -22,10 +15,15 @@ pub struct CreateVoterWeightRecord<'info> {
                 governing_token_owner.as_ref()],
         bump,
         payer = payer
+        //TODO: Do we need size?
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
-    /// CHECK: Owned by spl-gov
+    /// The program id of the spl-governance program the realm belongs to
+    /// CHECK: Can be any instance of spl-governance and it's not known at the compilation time
+    pub governance_program_id: UncheckedAccount<'info>,
+
+    /// CHECK: Owned by spl-governance instance specified in governance_program_id
     pub realm: UncheckedAccount<'info>,
 
     /// Either the realm community mint or the council mint.
@@ -41,13 +39,12 @@ pub fn create_voter_weight_record(
     ctx: Context<CreateVoterWeightRecord>,
     governing_token_owner: Pubkey,
 ) -> Result<()> {
-    let realm = get_realm_data(
-        &ctx.accounts.registrar.governance_program_id,
+    // Deserialize the Realm to validate it
+    let _realm = realm::get_realm_data_for_governing_token_mint(
+        &ctx.accounts.governance_program_id.key(),
         &ctx.accounts.realm,
+        &ctx.accounts.realm_governing_token_mint.key(),
     )?;
-    realm.assert_is_valid_governing_token_mint(&ctx.accounts.realm_governing_token_mint.key())?;
-
-    // TODO: Assert register matched realm and  realm_governing_token_mint
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 

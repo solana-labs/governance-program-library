@@ -77,7 +77,7 @@ async fn test_create_max_voter_weight_record_with_invalid_mint_error() -> Result
     // Act
     let err = nft_voter_test
         .with_max_voter_weight_record_using_ix(&registrar_cookie, |i| {
-            i.accounts[2].pubkey = realm_cookie2.address // Realm
+            i.accounts[2].pubkey = realm_cookie2.address // Mint
         })
         .await
         .err()
