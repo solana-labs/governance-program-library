@@ -145,7 +145,7 @@ impl NftVoterTest {
             realm: realm_cookie.address,
             governing_token_mint: realm_cookie.account.community_mint,
             collection_configs: vec![],
-            reserved: [0; 64],
+            reserved: [0; 128],
         };
 
         Ok(RegistrarCookie {
