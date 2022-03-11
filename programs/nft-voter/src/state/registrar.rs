@@ -1,4 +1,4 @@
-use crate::{id, state::CollectionConfig};
+use crate::{id, state::CollectionConfig, error::NftLockerError};
 use anchor_lang::prelude::*;
 
 /// Registrar which stores NFT voting configuration for the given Realm
@@ -36,4 +36,25 @@ pub fn get_registrar_seeds<'a>(
 /// Returns Registrar PDA address
 pub fn get_registrar_address(realm: &Pubkey, governing_token_mint: &Pubkey) -> Pubkey {
     Pubkey::find_program_address(&get_registrar_seeds(realm, governing_token_mint), &id()).0
+}
+
+impl Registrar {
+    pub fn is_in_collection_configs(&self, collection: Pubkey) -> Result<bool> {
+
+        match self.collection_configs
+            .iter()
+            .any(|r| r.collection == collection)
+            {
+                true => Ok(true),
+                false => Err(NftLockerError::InvalidCollection.into())
+            }
+    }
+
+    pub fn collection_config_index(&self, collection: Pubkey) -> Result<usize> {
+        self.collection_configs
+            .iter()
+            .position(|r| r.collection == collection)
+            .ok_or(Error::from(NftLockerError::InvalidCollection))
+            
+    }
 }

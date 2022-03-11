@@ -1,18 +1,25 @@
 use anchor_lang::prelude::*;
 use anchor_lang::{Accounts};
 use anchor_spl::token::{TokenAccount, Token};
-use mpl_token_metadata::state::Metadata;
-// use spl_governance::state::realm;
+use mpl_token_metadata::state::{Collection, Metadata};
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use std::mem::size_of;
-use crate::error::ErrorCode;
 use crate::state::*;
-// use crate::error::ErrorCode;
+use crate::error::NftLockerError;
+use crate::ErrorCode::AccountOwnedByWrongProgram;
 
 #[derive(Accounts)]
+#[instruction(realm:Pubkey, governing_token_mint:Pubkey, governing_token_owner: Pubkey)]
 pub struct VoteWithNFT<'info> {
+    /// Record that nft from nft_account was used to vote on the proposal
     #[account(
-        init_if_needed,
-        seeds = [registrar.key().as_ref(), b"nft-vote".as_ref(), proposal.key().as_ref()],
+        init,
+        seeds = [
+            registrar.key().as_ref(), 
+            b"nft-vote".as_ref(), 
+            proposal.key().as_ref(),
+            nft_account.mint.as_ref()
+            ],
         bump,
         payer = payer,
         space = 8 + size_of::<ProposalNFTVote>()
@@ -25,12 +32,21 @@ pub struct VoteWithNFT<'info> {
     pub proposal: UncheckedAccount<'info>,
     /// Account holding the NFT
     #[account(
-        constraint = nft_account.amount > 0 @ ErrorCode::InsufficientAmountOnNFTAccount,
-        constraint =  nft_account.owner == token_program.key() @ anchor_lang::error::ErrorCode::AccountOwnedByWrongProgram
+        constraint = nft_account.amount > 0 @ NftLockerError::InsufficientAmountOnNFTAccount,
+        constraint = nft_account.owner == token_program.key() @ AccountOwnedByWrongProgram
     )]
     pub nft_account: Account<'info, TokenAccount>,
     /// Metadata account of the NFT
     pub nft_metadata: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        seeds = [ b"voter-weight-record".as_ref(),
+                realm.as_ref(),
+                governing_token_mint.as_ref(),
+                governing_token_owner.as_ref()],
+        bump,
+    )]
+    pub voter_weight_record: Account<'info, VoterWeightRecord>,
     /// Voter is a signer  
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -41,41 +57,31 @@ pub struct VoteWithNFT<'info> {
 }
 
 /// Casts vote with the NFT
-/// 
-/// User presents his NFT - nft_token_account
-/// Program checks if the user has the NFT
-/// Program checks if the NFT is part of the verified collection defined in the registrar
-/// Program initializes the PDA ['nft-vote', realmId, nftId] which represents persons vote and populates it (with checking if it
-/// already exists)
-/// Program updates the VoterWeightRecord
-///
-pub fn vote_with_nft(ctx: Context<VoteWithNFT>) -> Result<()> {
+pub fn vote_with_nft(ctx: Context<VoteWithNFT>, _realm:Pubkey, _governing_token_mint:Pubkey, _governing_token_owner: Pubkey) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
+    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
     let nft_metadata = &ctx.accounts.nft_metadata;
     let metadata = Metadata::from_account_info(nft_metadata)?;
+    let collection: Collection = metadata.collection.ok_or(NftLockerError::NotPartOfCollection)?;
+    let collection_idx = registrar.collection_config_index(collection.key)?;
+    let collection_config = &registrar.collection_configs[collection_idx];
+    let proposal = &ctx.accounts.proposal;
 
-    if 
-    metadata.collection.ok_or(anchor_lang::error::ErrorCode::AccountOwnedByWrongProgram)?.key
-    !=  registrar.collection.key  
-    {
-      return Err(ErrorCode::InvalidCollection.into());
-    }
-    // let registrar = &mut ctx.accounts.registrar;
-    // registrar.governance_program_id = ctx.accounts.governance_program_id.key();
-    // registrar.realm = ctx.accounts.realm.key();
-    // registrar.realm_governing_token_mint = ctx.accounts.realm_governing_token_mint.key();
+    require!(
+        registrar.is_in_collection_configs(collection.key)?,
+        NftLockerError::InvalidCollection
+    );
 
-    // // Verify that "realm_authority" is the expected authority on "realm"
-    // // and that the mint matches one of the realm mints too.
-    // let realm = realm::get_realm_data_for_governing_token_mint(
-    //     &registrar.governance_program_id,
-    //     &ctx.accounts.realm.to_account_info(),
-    //     &registrar.realm_governing_token_mint,
-    // )?;
-    // require!(
-    //     realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
-    //     ErrorCode::InvalidRealmAuthority
-    // );
+    require!(
+        collection.verified,
+        NftLockerError::UnverifiedCollection
+    );
+
+    voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
+    // TODO: add multiplication with number of NFTs used for voting
+    voter_weight_record.voter_weight = collection_config.weight as u64;
+    voter_weight_record.weight_action = Some(VoterWeightAction::CastVote);
+    voter_weight_record.weight_action_target = Some(proposal.key());
 
     Ok(())
 }

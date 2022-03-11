@@ -11,6 +11,12 @@ pub enum NftLockerError {
     #[msg("Failed to decode metadata")]
     DecodeMetadataFailed,
 
+    #[msg("Given collection is not valid")]
+    InvalidCollection,
+
+    #[msg("Given NFT is not part of a collection or metadata format is not V2")]
+    NotPartOfCollection,
+
     #[msg("Collection is not verified")]
     UnverifiedCollection,
 
@@ -25,4 +31,7 @@ pub enum NftLockerError {
 
     #[msg("Invalid MaxVoterWeightRecord Mint")]
     InvalidMaxVoterWeightRecordMint,
+
+    #[msg("Proposal is not in voting state")]
+    ProposalNotInVotingState,
 }
