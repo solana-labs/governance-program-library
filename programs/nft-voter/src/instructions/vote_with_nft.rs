@@ -2,11 +2,13 @@ use anchor_lang::prelude::*;
 use anchor_lang::{Accounts};
 use anchor_spl::token::{TokenAccount, Token};
 use mpl_token_metadata::state::{Collection, Metadata};
+use spl_governance::tools::spl_token::get_spl_token_mint;
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use std::mem::size_of;
 use crate::state::*;
 use crate::error::NftVoterError;
 use crate::ErrorCode::AccountOwnedByWrongProgram;
+use crate::tools::token_metadata::get_token_metadata_for_mint;
 
 #[derive(Accounts)]
 #[instruction(realm:Pubkey, governing_token_mint:Pubkey, governing_token_owner: Pubkey)]
@@ -18,7 +20,7 @@ pub struct VoteWithNFT<'info> {
             registrar.key().as_ref(), 
             b"nft-vote".as_ref(), 
             proposal.key().as_ref(),
-            nft_account.mint.as_ref()
+            nft_token.mint.as_ref()
             ],
         bump,
         payer = payer,
@@ -32,10 +34,10 @@ pub struct VoteWithNFT<'info> {
     pub proposal: UncheckedAccount<'info>,
     /// Account holding the NFT
     #[account(
-        constraint = nft_account.amount > 0 @ NftVoterError::InsufficientAmountOnNFTAccount,
-        constraint = nft_account.owner == token_program.key() @ AccountOwnedByWrongProgram
+        constraint = nft_token.amount > 0 @ NftVoterError::InsufficientAmountOnNFTAccount,
+        constraint = nft_token.owner == token_program.key() @ AccountOwnedByWrongProgram
     )]
-    pub nft_account: Account<'info, TokenAccount>,
+    pub nft_token: Account<'info, TokenAccount>,
     /// Metadata account of the NFT
     pub nft_metadata: UncheckedAccount<'info>,
     #[account(
@@ -60,12 +62,14 @@ pub struct VoteWithNFT<'info> {
 pub fn vote_with_nft(ctx: Context<VoteWithNFT>, _realm:Pubkey, _governing_token_mint:Pubkey, _governing_token_owner: Pubkey) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
-    let nft_metadata = &ctx.accounts.nft_metadata;
-    let metadata = Metadata::from_account_info(nft_metadata)?;
-    let collection: Collection = metadata.collection.ok_or(NftVoterError::NotPartOfCollection)?;
+    let proposal = &ctx.accounts.proposal;
+
+    let nft_token_mint = get_spl_token_mint(&ctx.accounts.nft_token.to_account_info())?;
+    let nft_metadata = get_token_metadata_for_mint(&ctx.accounts.nft_metadata,nft_token_mint)?;
+
+    let collection: Collection = nft_metadata.collection.ok_or(NftVoterError::NotPartOfCollection)?;
     let collection_idx = registrar.collection_config_index(collection.key)?;
     let collection_config = &registrar.collection_configs[collection_idx];
-    let proposal = &ctx.accounts.proposal;
 
     require!(
         registrar.is_in_collection_configs(collection.key)?,

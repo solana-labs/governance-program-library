@@ -444,7 +444,7 @@ impl NftVoterTest {
             voter_weight_record: voter_weight_record_cookie.address,
             proposal_vote_record: proposal_nft_vote_address,
             proposal: proposal_cookie.address,
-            nft_account: nft_cookie.address,
+            nft_token: nft_cookie.address,
             nft_metadata: nft_cookie.metadata,
             payer: self.bench.payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
