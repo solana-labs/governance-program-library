@@ -9,14 +9,14 @@ use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 
 use crate::state::{CollectionConfig, Registrar};
-use crate::{error::NftLockerError, state::MaxVoterWeightRecord};
+use crate::{error::NftVoterError, state::MaxVoterWeightRecord};
 
 #[derive(Accounts)]
 pub struct ConfigureCollection<'info> {
     /// Registrar for which we configure this Collection
     #[account(mut,
         constraint = registrar.realm == realm.key() 
-        @ NftLockerError::InvalidRegistrarRealm
+        @ NftVoterError::InvalidRegistrarRealm
     )]
     pub registrar: Account<'info, Registrar>,
 
@@ -32,10 +32,10 @@ pub struct ConfigureCollection<'info> {
     #[account(
         mut,
         constraint = max_voter_weight_record.realm == registrar.realm 
-        @ NftLockerError::InvalidMaxVoterWeightRecordRealm,
+        @ NftVoterError::InvalidMaxVoterWeightRecordRealm,
 
         constraint = max_voter_weight_record.governing_token_mint == registrar.governing_token_mint
-        @ NftLockerError::InvalidMaxVoterWeightRecordMint,
+        @ NftVoterError::InvalidMaxVoterWeightRecordMint,
     )]
     pub max_voter_weight_record: Account<'info, MaxVoterWeightRecord>,
 }
@@ -45,7 +45,7 @@ pub fn configure_collection(
     weight: u16,
     size: u32,
 ) -> Result<()> {
-    require!(size > 0, NftLockerError::InvalidCollectionSize);
+    require!(size > 0, NftVoterError::InvalidCollectionSize);
 
     let registrar = &mut ctx.accounts.registrar;
 
@@ -57,7 +57,7 @@ pub fn configure_collection(
 
     require!(
         realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
-        NftLockerError::InvalidRealmAuthority
+        NftVoterError::InvalidRealmAuthority
     );
 
     let collection = &ctx.accounts.collection;

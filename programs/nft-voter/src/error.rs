@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
-pub enum NftLockerError {
+pub enum NftVoterError {
     #[msg("Invalid Realm Authority")]
     InvalidRealmAuthority,
 

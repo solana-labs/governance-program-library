@@ -1,5 +1,5 @@
 use anchor_lang::prelude::Pubkey;
-use gpl_nft_voter::error::NftLockerError;
+use gpl_nft_voter::error::NftVoterError;
 use program_test::{
     nft_voter_test::NftVoterTest,
     tools::{assert_anchor_err, assert_nft_voter_err},
@@ -254,7 +254,7 @@ async fn test_configure_collection_with_invalid_realm_error() -> Result<(), Tran
 
     // Assert
 
-    assert_nft_voter_err(err, NftLockerError::InvalidRegistrarRealm);
+    assert_nft_voter_err(err, NftVoterError::InvalidRegistrarRealm);
 
     Ok(())
 }
@@ -330,7 +330,7 @@ async fn test_configure_collection_with_invalid_realm_authority_error() -> Resul
 
     // Assert
 
-    assert_nft_voter_err(err, NftLockerError::InvalidRealmAuthority);
+    assert_nft_voter_err(err, NftVoterError::InvalidRealmAuthority);
 
     Ok(())
 }
@@ -367,7 +367,7 @@ async fn test_configure_collection_with_invalid_max_voter_weight_realm_error(
 
     // Assert
 
-    assert_nft_voter_err(err, NftLockerError::InvalidMaxVoterWeightRecordRealm);
+    assert_nft_voter_err(err, NftVoterError::InvalidMaxVoterWeightRecordRealm);
 
     Ok(())
 }
@@ -405,7 +405,7 @@ async fn test_configure_collection_with_invalid_max_voter_weight_mint_error(
 
     // Assert
 
-    assert_nft_voter_err(err, NftLockerError::InvalidMaxVoterWeightRecordMint);
+    assert_nft_voter_err(err, NftVoterError::InvalidMaxVoterWeightRecordMint);
 
     Ok(())
 }
