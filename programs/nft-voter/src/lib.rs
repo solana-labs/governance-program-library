@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 pub mod error;
 // use error::*;
@@ -30,16 +31,9 @@ pub mod nft_voter {
     }
     pub fn update_voter_weight_record(
         ctx: Context<UpdateVoterWeightRecord>,
-        realm: Pubkey,
-        governing_token_mint: Pubkey,
-        governing_token_owner: Pubkey,
+        voter_weight_action: VoterWeightAction,
     ) -> Result<()> {
-        instructions::update_voter_weight_record(
-            ctx,
-            realm,
-            governing_token_mint,
-            governing_token_owner,
-        )
+        instructions::update_voter_weight_record(ctx, voter_weight_action)
     }
     pub fn relinquish_vote(
         ctx: Context<RelinquishVote>,

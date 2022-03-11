@@ -13,19 +13,23 @@ async fn test_relinquish_vote() -> Result<(), TransportError> {
 
     let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
 
-    let voter_weight_record_cookie = nft_voter_test
+    let mut _voter_weight_record_cookie = nft_voter_test
         .with_voter_weight_record(&registrar_cookie)
         .await?;
 
-    nft_voter_test
-        .update_voter_weight_record(&registrar_cookie, &voter_weight_record_cookie)
-        .await?;
+    // nft_voter_test
+    //     .update_voter_weight_record(
+    //         &registrar_cookie,
+    //         &mut voter_weight_record_cookie,
+    //         VoterWeightAction::CreateProposal,
+    //     )
+    //     .await?;
 
     // Act
 
-    nft_voter_test
-        .relinquish_vote(&registrar_cookie, &voter_weight_record_cookie)
-        .await?;
+    // nft_voter_test
+    //     .relinquish_vote(&registrar_cookie, &voter_weight_record_cookie)
+    //     .await?;
 
     Ok(())
 }

@@ -29,7 +29,7 @@ async fn test_configure_collection() -> Result<(), TransportError> {
 
     // Act
     let collection_config_cookie = nft_voter_test
-        .with_configure_collection(
+        .with_collection(
             &registrar_cookie,
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,
@@ -81,7 +81,7 @@ async fn test_configure_multiple_collections() -> Result<(), TransportError> {
 
     // Act
     nft_voter_test
-        .with_configure_collection(
+        .with_collection(
             &registrar_cookie,
             &nft_collection_cookie1,
             &max_voter_weight_record_cookie,
@@ -90,7 +90,7 @@ async fn test_configure_multiple_collections() -> Result<(), TransportError> {
         .await?;
 
     nft_voter_test
-        .with_configure_collection(
+        .with_collection(
             &registrar_cookie,
             &nft_collection_cookie2,
             &max_voter_weight_record_cookie,
@@ -137,7 +137,7 @@ async fn test_configure_max_collections() -> Result<(), TransportError> {
         let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
 
         nft_voter_test
-            .with_configure_collection(
+            .with_collection(
                 &registrar_cookie,
                 &nft_collection_cookie,
                 &max_voter_weight_record_cookie,
@@ -182,7 +182,7 @@ async fn test_configure_existing_collection() -> Result<(), TransportError> {
         .await?;
 
     nft_voter_test
-        .with_configure_collection(
+        .with_collection(
             &registrar_cookie,
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,
@@ -193,7 +193,7 @@ async fn test_configure_existing_collection() -> Result<(), TransportError> {
     // Act
 
     nft_voter_test
-        .with_configure_collection(
+        .with_collection(
             &registrar_cookie,
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,
@@ -221,8 +221,7 @@ async fn test_configure_existing_collection() -> Result<(), TransportError> {
     Ok(())
 }
 
-// TODO: Remove collection
-// TODO: Check MaxVoterWeight matches realm and mint on registrar
+// TODO: Remove collection test
 
 #[tokio::test]
 async fn test_configure_collection_with_invalid_realm_error() -> Result<(), TransportError> {
@@ -241,7 +240,7 @@ async fn test_configure_collection_with_invalid_realm_error() -> Result<(), Tran
 
     // Act
     let err = nft_voter_test
-        .with_configure_collection_using_ix(
+        .with_collection_using_ix(
             &registrar_cookie,
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,
@@ -278,7 +277,7 @@ async fn test_configure_collection_with_realm_authority_must_sign_error(
 
     // Act
     let err = nft_voter_test
-        .with_configure_collection_using_ix(
+        .with_collection_using_ix(
             &registrar_cookie,
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,
@@ -317,7 +316,7 @@ async fn test_configure_collection_with_invalid_realm_authority_error() -> Resul
 
     // Act
     let err = nft_voter_test
-        .with_configure_collection_using_ix(
+        .with_collection_using_ix(
             &registrar_cookie,
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,
@@ -356,7 +355,7 @@ async fn test_configure_collection_with_invalid_max_voter_weight_realm_error(
 
     // Act
     let err = nft_voter_test
-        .with_configure_collection(
+        .with_collection(
             &registrar_cookie,
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,
@@ -394,7 +393,7 @@ async fn test_configure_collection_with_invalid_max_voter_weight_mint_error(
 
     // Act
     let err = nft_voter_test
-        .with_configure_collection(
+        .with_collection(
             &registrar_cookie,
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,

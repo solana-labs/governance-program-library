@@ -5,15 +5,18 @@ use mpl_token_metadata::state::Collection;
 use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::signer::Signer;
 
-use super::program_test_bench::ProgramTestBench;
+use super::program_test_bench::{MintCookie, ProgramTestBench};
 
 pub struct NftCookie {
     pub address: Pubkey,
-    pub metadata_address: Pubkey,
+    pub metadata: Pubkey,
+    pub mint_cookie: MintCookie,
 }
 
 pub struct NftCollectionCookie {
-    pub address: Pubkey,
+    pub mint: Pubkey,
+    pub metadata: Pubkey,
+    pub master_edition: Pubkey,
 }
 
 pub struct TokenMetadataTest {
@@ -115,85 +118,19 @@ impl TokenMetadataTest {
             .await?;
 
         Ok(NftCollectionCookie {
-            address: coll_mint_cookie.address,
+            mint: coll_mint_cookie.address,
+            metadata: coll_metadata_address,
+            master_edition: master_edition_address,
         })
     }
 
     #[allow(dead_code)]
-    pub async fn with_nft_v2(&self) -> Result<NftCookie, BanksClientError> {
+    pub async fn with_nft_v2(
+        &self,
+        nft_collection_cookie: &NftCollectionCookie,
+    ) -> Result<NftCookie, BanksClientError> {
         let nft_owner = self.bench.context.borrow().payer.pubkey();
         let payer = self.bench.context.borrow().payer.pubkey();
-
-        // Create collection
-        let coll_mint_cookie = self.bench.with_mint().await?;
-        let _coll_nft_account_cookie = self
-            .bench
-            .with_tokens(&coll_mint_cookie, &nft_owner, 1)
-            .await;
-
-        let coll_metadata_seeds = &[
-            b"metadata".as_ref(),
-            self.program_id.as_ref(),
-            &coll_mint_cookie.address.as_ref(),
-        ];
-        let (coll_metadata_address, _) =
-            Pubkey::find_program_address(coll_metadata_seeds, &self.program_id);
-
-        let coll_name = "TestNFT".to_string();
-        let coll_symbol = "NFT".to_string();
-        let coll_uri = "URI".to_string();
-
-        let create_coll_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v2(
-            self.program_id,
-            coll_metadata_address,
-            coll_mint_cookie.address,
-            coll_mint_cookie.mint_authority.pubkey(),
-            nft_owner.clone(),
-            nft_owner.clone(),
-            coll_name,
-            coll_symbol,
-            coll_uri,
-            None,
-            10,
-            false,
-            false,
-            None,
-            None,
-        );
-
-        self.bench
-            .process_transaction(
-                &[create_coll_metadata_ix],
-                Some(&[&coll_mint_cookie.mint_authority]),
-            )
-            .await?;
-
-        let master_edition_seeds = &[
-            b"metadata".as_ref(),
-            self.program_id.as_ref(),
-            coll_mint_cookie.address.as_ref(),
-            b"edition".as_ref(),
-        ];
-        let (master_edition_address, _) =
-            Pubkey::find_program_address(master_edition_seeds, &self.program_id);
-
-        let create_master_edition_ix = mpl_token_metadata::instruction::create_master_edition_v3(
-            self.program_id,
-            master_edition_address,
-            coll_mint_cookie.address,
-            nft_owner,
-            coll_mint_cookie.mint_authority.pubkey(),
-            coll_metadata_address,
-            payer,
-            Some(0),
-        );
-
-        self.bench
-            .process_transaction(
-                &[create_master_edition_ix],
-                Some(&[&coll_mint_cookie.mint_authority]),
-            )
-            .await?;
 
         // Crate NFT
         let mint_cookie = self.bench.with_mint().await?;
@@ -212,7 +149,7 @@ impl TokenMetadataTest {
 
         let collection = Collection {
             verified: false,
-            key: coll_mint_cookie.address.clone(),
+            key: nft_collection_cookie.mint,
         };
 
         let create_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v2(
@@ -242,9 +179,9 @@ impl TokenMetadataTest {
             metadata_address,
             nft_owner,
             payer,
-            coll_mint_cookie.address,
-            coll_metadata_address,
-            master_edition_address,
+            nft_collection_cookie.mint,
+            nft_collection_cookie.metadata,
+            nft_collection_cookie.master_edition,
             None,
         );
 
@@ -254,7 +191,8 @@ impl TokenMetadataTest {
 
         Ok(NftCookie {
             address: nft_account_cookie.address,
-            metadata_address,
+            metadata: metadata_address,
+            mint_cookie,
         })
     }
 }
