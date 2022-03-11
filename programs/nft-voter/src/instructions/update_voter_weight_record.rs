@@ -23,6 +23,7 @@ pub struct UpdateVoterWeightRecord<'info> {
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
     pub nft_token: Account<'info, TokenAccount>,
+
     pub nft_metadata: UncheckedAccount<'info>,
 }
 
@@ -37,7 +38,7 @@ pub fn update_voter_weight_record(
         NftVoterError::CastVoteIsNotAllowed
     );
 
-    // TODO: Validate token owner / initialized 
+    // TODO: nft_token account owner/initialized 
 
     // voter_weight_record.governing_token_owner must be the owner of the NFT
     require!(
@@ -45,15 +46,15 @@ pub fn update_voter_weight_record(
         NftVoterError::VoterDoesNotOwnNft
     );
 
+    // TODO: change to get for_token
     let nft_metadata = Metadata::from_account_info(&ctx.accounts.nft_metadata)?;
-    // TODO: Verify the owner of the account and it's initialized 
+    // TODO: Verify metadata account owner/initialized 
 
-        // The metadata mint must be the same as the token mint
-        // TODO: check if this is correct 
-        require!(
-            nft_metadata.mint == ctx.accounts.nft_token.mint,
-            NftVoterError::CastVoteIsNotAllowed
-        );
+    // The metadata mint must be the same as the token mint
+    require!(
+        nft_metadata.mint == ctx.accounts.nft_token.mint,
+        NftVoterError::TokenMetadataDoesNotMatch
+    );
 
     let collection = nft_metadata.collection.unwrap();
 
@@ -76,7 +77,6 @@ pub fn update_voter_weight_record(
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
-    // TODO: Pass NFTs and evaluate the same way as Vote does
     voter_weight_record.voter_weight = collection_config.weight as u64;
 
     // Record is only valid as of the current slot
