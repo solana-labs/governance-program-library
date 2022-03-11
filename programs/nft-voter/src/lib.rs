@@ -10,6 +10,8 @@ use instructions::*;
 pub mod governance;
 pub mod state;
 
+pub mod tools;
+
 // use state::*;
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 

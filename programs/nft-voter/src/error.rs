@@ -37,4 +37,7 @@ pub enum NftVoterError {
 
     #[msg("Token Metadata doesn't match")]
     TokenMetadataDoesNotMatch,
+
+    #[msg("Invalid account owner")]
+    InvalidAccountOwner,
 }

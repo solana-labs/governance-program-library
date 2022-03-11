@@ -1,10 +1,10 @@
 use crate::{
     error::NftVoterError,
-    state::{Registrar, VoterWeightRecord},
+    state::{Registrar, VoterWeightRecord}, tools::token_metadata::{ get_token_metadata_for_mint},
 };
 use anchor_lang::prelude::*;
-use anchor_spl::token::{TokenAccount};
-use mpl_token_metadata::state::Metadata;
+
+use spl_governance::tools::spl_token::{get_spl_token_owner, get_spl_token_mint};
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 #[derive(Accounts)]
@@ -22,7 +22,7 @@ pub struct UpdateVoterWeightRecord<'info> {
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
-    pub nft_token: Account<'info, TokenAccount>,
+    pub nft_token: UncheckedAccount<'info>,
 
     pub nft_metadata: UncheckedAccount<'info>,
 }
@@ -38,35 +38,26 @@ pub fn update_voter_weight_record(
         NftVoterError::CastVoteIsNotAllowed
     );
 
-    // TODO: nft_token account owner/initialized 
+    let nft_token_owner = get_spl_token_owner(&ctx.accounts.nft_token.to_account_info())?;
 
     // voter_weight_record.governing_token_owner must be the owner of the NFT
     require!(
-        ctx.accounts.nft_token.owner == ctx.accounts.voter_weight_record.governing_token_owner,
+        nft_token_owner == ctx.accounts.voter_weight_record.governing_token_owner,
         NftVoterError::VoterDoesNotOwnNft
     );
 
-    // TODO: change to get for_token
-    let nft_metadata = Metadata::from_account_info(&ctx.accounts.nft_metadata)?;
-    // TODO: Verify metadata account owner/initialized 
+    let nft_token_mint = get_spl_token_mint(&ctx.accounts.nft_token.to_account_info())?;
+    let nft_metadata = get_token_metadata_for_mint(&ctx.accounts.nft_metadata,nft_token_mint)?;
 
-    // The metadata mint must be the same as the token mint
-    require!(
-        nft_metadata.mint == ctx.accounts.nft_token.mint,
-        NftVoterError::TokenMetadataDoesNotMatch
-    );
-
+    // The NFT must have a collection and the collection must be verified 
     let collection = nft_metadata.collection.unwrap();
 
-    // It must have a collection and the collection must be verified 
     require!(
         collection.verified,
         NftVoterError::CollectionMustBeVerified
     );
 
-
     let registrar = &mut ctx.accounts.registrar;
-
 
     let collection_config = registrar                                                   
         .collection_configs
