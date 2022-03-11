@@ -23,7 +23,7 @@ pub struct ConfigureCollection<'info> {
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     pub realm: UncheckedAccount<'info>,
 
-    /// Authority of the Realm must sign and much Realm.authority
+    /// Authority of the Realm must sign and match Realm.authority
     pub realm_authority: Signer<'info>,
 
     // Collection which is going to be used for voting

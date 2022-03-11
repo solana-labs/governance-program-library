@@ -17,7 +17,7 @@ pub struct CreateMaxVoterWeightRecord<'info> {
     pub max_voter_weight_record: Account<'info, MaxVoterWeightRecord>,
 
     /// The program id of the spl-governance program the realm belongs to
-    /// CHECK: Can be any instance of spl-governance and it's no known at the compilation time
+    /// CHECK: Can be any instance of spl-governance and it's not known at the compilation time
     pub governance_program_id: UncheckedAccount<'info>,
 
     /// CHECK: Owned by spl-governance instance specified in governance_program_id
