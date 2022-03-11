@@ -16,6 +16,7 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
+itertools = "0.10.2"
 solana-program = "1.9.5"
 anchor-lang = { version = "0.22.1", features = ["init-if-needed"] }
 spl-governance = { version = "2.2.2", features = ["no-entrypoint"] }

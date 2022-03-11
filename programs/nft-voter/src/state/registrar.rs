@@ -22,7 +22,7 @@ pub struct Registrar {
     pub collection_configs: Vec<CollectionConfig>,
 
     /// Reserved for future upgrades
-    pub reserved: [u8; 64],
+    pub reserved: [u8; 128],
 }
 
 /// Returns Registrar PDA seeds

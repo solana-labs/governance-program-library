@@ -3,6 +3,7 @@ use crate::{
     state::{Registrar, VoterWeightRecord}, tools::token_metadata::{ get_token_metadata_for_mint},
 };
 use anchor_lang::prelude::*;
+use itertools::Itertools;
 
 use spl_governance::tools::spl_token::{get_spl_token_owner, get_spl_token_mint};
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
@@ -21,10 +22,6 @@ pub struct UpdateVoterWeightRecord<'info> {
         @ NftVoterError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
-
-    pub nft_token: UncheckedAccount<'info>,
-
-    pub nft_metadata: UncheckedAccount<'info>,
 }
 
 pub fn update_voter_weight_record(
@@ -38,37 +35,42 @@ pub fn update_voter_weight_record(
         NftVoterError::CastVoteIsNotAllowed
     );
 
-    let nft_token_owner = get_spl_token_owner(&ctx.accounts.nft_token.to_account_info())?;
+    let mut voter_weight = 0u64;
 
-    // voter_weight_record.governing_token_owner must be the owner of the NFT
-    require!(
-        nft_token_owner == ctx.accounts.voter_weight_record.governing_token_owner,
-        NftVoterError::VoterDoesNotOwnNft
-    );
+    for (nft_token_info, nft_metadata_info) in ctx.remaining_accounts.into_iter().tuples() {
+        let nft_token_owner = get_spl_token_owner(nft_token_info)?;
 
-    let nft_token_mint = get_spl_token_mint(&ctx.accounts.nft_token.to_account_info())?;
-    let nft_metadata = get_token_metadata_for_mint(&ctx.accounts.nft_metadata,nft_token_mint)?;
+        // voter_weight_record.governing_token_owner must be the owner of the NFT
+        require!(
+            nft_token_owner == ctx.accounts.voter_weight_record.governing_token_owner,
+            NftVoterError::VoterDoesNotOwnNft
+        );
 
-    // The NFT must have a collection and the collection must be verified 
-    let collection = nft_metadata.collection.unwrap();
+        let nft_token_mint = get_spl_token_mint(nft_token_info)?;
+        let nft_metadata = get_token_metadata_for_mint(nft_metadata_info, &nft_token_mint)?;
 
-    require!(
-        collection.verified,
-        NftVoterError::CollectionMustBeVerified
-    );
+        // The NFT must have a collection and the collection must be verified 
+        let collection = nft_metadata.collection.unwrap();
 
-    let registrar = &mut ctx.accounts.registrar;
+        require!(
+            collection.verified,
+            NftVoterError::CollectionMustBeVerified
+        );
 
-    let collection_config = registrar                                                   
-        .collection_configs
-        .iter()
-        .find(|cc| cc.collection == collection.key)
-        .ok_or(NftVoterError::CollectionNotFound)?;
+        let registrar = &mut ctx.accounts.registrar;
 
+        let collection_config = registrar                                                   
+            .collection_configs
+            .iter()
+            .find(|cc| cc.collection == collection.key)
+            .ok_or(NftVoterError::CollectionNotFound)?;
+
+            voter_weight = voter_weight.checked_add(collection_config.weight as u64).unwrap();
+    };
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
-    voter_weight_record.voter_weight = collection_config.weight as u64;
+    voter_weight_record.voter_weight = voter_weight;
 
     // Record is only valid as of the current slot
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
