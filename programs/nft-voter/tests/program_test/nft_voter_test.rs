@@ -219,7 +219,7 @@ impl NftVoterTest {
         );
 
         let accounts = gpl_nft_voter::accounts::CreateMaxVoterWeightRecord {
-            registrar: registrar_cookie.address,
+            governance_program_id: self.governance.program_id,
             realm: registrar_cookie.account.realm,
             realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
             max_voter_weight_record: max_voter_weight_record_address,
