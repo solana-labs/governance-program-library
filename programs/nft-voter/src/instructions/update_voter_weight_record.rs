@@ -66,17 +66,18 @@ pub fn update_voter_weight_record(
 
     let registrar = &mut ctx.accounts.registrar;
 
-    // TODO: error for not found
-    let collection_idx = registrar                                                   
+
+    let collection_config = registrar                                                   
         .collection_configs
         .iter()
-        .position(|cc| cc.collection == collection.key).unwrap();
+        .find(|cc| cc.collection == collection.key)
+        .ok_or(NftVoterError::CollectionNotFound)?;
+
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     // TODO: Pass NFTs and evaluate the same way as Vote does
-    voter_weight_record.voter_weight = registrar                                                   
-    .collection_configs[collection_idx].weight as u64;
+    voter_weight_record.voter_weight = collection_config.weight as u64;
 
     // Record is only valid as of the current slot
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);

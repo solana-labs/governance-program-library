@@ -31,4 +31,7 @@ pub enum NftVoterError {
 
     #[msg("Voter does not own NFT")]
     VoterDoesNotOwnNft,
+
+    #[msg("Collection not found")]
+    CollectionNotFound,
 }
