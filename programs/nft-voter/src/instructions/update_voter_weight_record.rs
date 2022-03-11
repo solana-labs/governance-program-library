@@ -1,5 +1,5 @@
 use crate::{
-    error::NftLockerError,
+    error::NftVoterError,
     state::{Registrar, VoterWeightRecord},
 };
 use anchor_lang::prelude::*;
@@ -15,10 +15,10 @@ pub struct UpdateVoterWeightRecord<'info> {
     #[account(
         mut,
         constraint = voter_weight_record.realm == registrar.realm 
-        @ NftLockerError::InvalidVoterWeightRecordRealm,
+        @ NftVoterError::InvalidVoterWeightRecordRealm,
 
         constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
-        @ NftLockerError::InvalidVoterWeightRecordMint,
+        @ NftVoterError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
@@ -34,7 +34,7 @@ pub fn update_voter_weight_record(
     // CastVote can't be evaluated using this instruction 
     require!(
         voter_weight_action != VoterWeightAction::CastVote,
-        NftLockerError::CastVoteIsNotAllowed
+        NftVoterError::CastVoteIsNotAllowed
     );
 
     // TODO: Validate token owner / initialized 
@@ -42,7 +42,7 @@ pub fn update_voter_weight_record(
     // voter_weight_record.governing_token_owner must be the owner of the NFT
     require!(
         ctx.accounts.nft_token.owner == ctx.accounts.voter_weight_record.governing_token_owner,
-        NftLockerError::CastVoteIsNotAllowed
+        NftVoterError::CastVoteIsNotAllowed
     );
 
     let nft_metadata = Metadata::from_account_info(&ctx.accounts.nft_metadata)?;
@@ -52,7 +52,7 @@ pub fn update_voter_weight_record(
         // TODO: check if this is correct 
         require!(
             nft_metadata.mint == ctx.accounts.nft_token.mint,
-            NftLockerError::CastVoteIsNotAllowed
+            NftVoterError::CastVoteIsNotAllowed
         );
 
     let collection = nft_metadata.collection.unwrap();
@@ -60,7 +60,7 @@ pub fn update_voter_weight_record(
     // It must have a collection and the collection must be verified 
     require!(
         collection.verified,
-        NftLockerError::CastVoteIsNotAllowed
+        NftVoterError::CastVoteIsNotAllowed
     );
 
 
