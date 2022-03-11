@@ -15,6 +15,7 @@ use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
 
 use super::governance_test::RealmCookie;
+use super::program_test_bench::WalletCookie;
 use super::token_metadata_test::{NftCollectionCookie, NftCookie, TokenMetadataTest};
 use crate::program_test::tools::NopOverride;
 
@@ -157,20 +158,22 @@ impl NftVoterTest {
 
     #[allow(dead_code)]
     pub async fn with_voter_weight_record(
-        &mut self,
+        &self,
         registrar_cookie: &RegistrarCookie,
+        voter_cookie: &WalletCookie,
     ) -> Result<VoterWeightRecordCookie, BanksClientError> {
-        self.with_voter_weight_record_using_ix(registrar_cookie, NopOverride)
+        self.with_voter_weight_record_using_ix(registrar_cookie, voter_cookie, NopOverride)
             .await
     }
 
     #[allow(dead_code)]
     pub async fn with_voter_weight_record_using_ix<F: Fn(&mut Instruction)>(
-        &mut self,
+        &self,
         registrar_cookie: &RegistrarCookie,
+        voter_cookie: &WalletCookie,
         instruction_override: F,
     ) -> Result<VoterWeightRecordCookie, BanksClientError> {
-        let governing_token_owner = self.bench.context.borrow().payer.pubkey();
+        let governing_token_owner = voter_cookie.address;
 
         let (voter_weight_record, _) = Pubkey::find_program_address(
             &[
@@ -184,7 +187,7 @@ impl NftVoterTest {
 
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::CreateVoterWeightRecord {
-                governing_token_owner: self.bench.payer.pubkey(),
+                governing_token_owner,
             },
         );
 
@@ -193,7 +196,7 @@ impl NftVoterTest {
             realm: registrar_cookie.account.realm,
             realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
             voter_weight_record,
-            payer: governing_token_owner,
+            payer: self.bench.payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
         };
 
@@ -289,7 +292,7 @@ impl NftVoterTest {
 
     #[allow(dead_code)]
     pub async fn update_voter_weight_record(
-        &mut self,
+        &self,
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &mut VoterWeightRecordCookie,
         voter_weight_action: VoterWeightAction,

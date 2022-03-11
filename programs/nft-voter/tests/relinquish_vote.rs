@@ -7,15 +7,15 @@ mod program_test;
 #[tokio::test]
 async fn test_relinquish_vote() -> Result<(), TransportError> {
     // Arrange
-    let mut nft_voter_test = NftVoterTest::start_new().await;
+    let mut _nft_voter_test = NftVoterTest::start_new().await;
 
-    let realm_cookie = nft_voter_test.governance.with_realm().await?;
+    // let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+    // let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
 
-    let mut _voter_weight_record_cookie = nft_voter_test
-        .with_voter_weight_record(&registrar_cookie)
-        .await?;
+    // let mut _voter_weight_record_cookie = nft_voter_test
+    //     .with_voter_weight_record(&registrar_cookie)
+    //     .await?;
 
     // nft_voter_test
     //     .update_voter_weight_record(

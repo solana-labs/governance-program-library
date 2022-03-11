@@ -1,8 +1,11 @@
 use std::cell::RefCell;
 
-use anchor_lang::{prelude::Pubkey, AccountDeserialize};
+use anchor_lang::{
+    prelude::{Pubkey, Rent},
+    AccountDeserialize,
+};
 
-use solana_program::borsh::try_from_slice_unchecked;
+use solana_program::{borsh::try_from_slice_unchecked, system_program};
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
     account::{Account, ReadableAccount},
@@ -27,22 +30,34 @@ pub struct TokenAccountCookie {
     pub address: Pubkey,
 }
 
+#[derive(Debug)]
+pub struct WalletCookie {
+    pub address: Pubkey,
+    pub account: Account,
+
+    pub signer: Keypair,
+}
+
 pub struct ProgramTestBench {
     pub context: RefCell<ProgramTestContext>,
     pub payer: Keypair,
+    pub rent: Rent,
 }
 
 impl ProgramTestBench {
     /// Create new bench given a ProgramTest instance populated with all of the
     /// desired programs.
     pub async fn start_new(program_test: ProgramTest) -> Self {
-        let context = program_test.start_with_context().await;
+        let mut context = program_test.start_with_context().await;
 
         let payer = clone_keypair(&context.payer);
+
+        let rent = context.banks_client.get_rent().await.unwrap();
 
         Self {
             payer,
             context: RefCell::new(context),
+            rent,
         }
     }
 
@@ -114,14 +129,7 @@ impl ProgramTestBench {
         mint_authority: &Pubkey,
         freeze_authority: Option<&Pubkey>,
     ) -> Result<(), BanksClientError> {
-        let rent = self
-            .context
-            .borrow_mut()
-            .banks_client
-            .get_rent()
-            .await
-            .unwrap();
-        let mint_rent = rent.minimum_balance(spl_token::state::Mint::LEN);
+        let mint_rent = self.rent.minimum_balance(spl_token::state::Mint::LEN);
 
         let instructions = [
             system_instruction::create_account(
@@ -241,6 +249,38 @@ impl ProgramTestBench {
             Some(&[token_account_keypair]),
         )
         .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_wallet(&self) -> WalletCookie {
+        let account_rent = self.rent.minimum_balance(0);
+        let account_keypair = Keypair::new();
+
+        let create_account_ix = system_instruction::create_account(
+            &self.context.borrow().payer.pubkey(),
+            &account_keypair.pubkey(),
+            account_rent,
+            0,
+            &system_program::id(),
+        );
+
+        self.process_transaction(&[create_account_ix], Some(&[&account_keypair]))
+            .await
+            .unwrap();
+
+        let account = Account {
+            lamports: account_rent,
+            data: vec![],
+            owner: system_program::id(),
+            executable: false,
+            rent_epoch: 0,
+        };
+
+        WalletCookie {
+            address: account_keypair.pubkey(),
+            account,
+            signer: account_keypair,
+        }
     }
 
     #[allow(dead_code)]
