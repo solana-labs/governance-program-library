@@ -154,6 +154,16 @@ impl NftVoterTest {
         &mut self,
         registrar_cookie: &RegistrarCookie,
     ) -> Result<VoterWeightRecordCookie, BanksClientError> {
+        self.with_voter_weight_record_using_ix(registrar_cookie, NopOverride)
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_voter_weight_record_using_ix<F: Fn(&mut Instruction)>(
+        &mut self,
+        registrar_cookie: &RegistrarCookie,
+        instruction_override: F,
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         let governing_token_owner = self.bench.context.borrow().payer.pubkey();
 
         let (voter_weight_record, _) = Pubkey::find_program_address(
@@ -181,13 +191,17 @@ impl NftVoterTest {
             system_program: solana_sdk::system_program::id(),
         };
 
-        let instructions = vec![Instruction {
+        let mut create_voter_weight_record_ix = Instruction {
             program_id: gpl_nft_voter::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
-        }];
+        };
 
-        self.bench.process_transaction(&instructions, None).await?;
+        instruction_override(&mut create_voter_weight_record_ix);
+
+        self.bench
+            .process_transaction(&[create_voter_weight_record_ix], None)
+            .await?;
 
         let account = VoterWeightRecord {
             account_discriminator: VoterWeightRecord::ACCOUNT_DISCRIMINATOR,
