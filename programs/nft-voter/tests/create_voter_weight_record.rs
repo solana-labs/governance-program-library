@@ -15,9 +15,11 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
 
     let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
 
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
+
     // Act
     let voter_weight_record_cookie = nft_voter_test
-        .with_voter_weight_record(&registrar_cookie)
+        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
     // Assert
@@ -42,9 +44,11 @@ async fn test_create_voter_weight_record_with_invalid_realm_error() -> Result<()
 
     let realm_cookie2 = nft_voter_test.governance.with_realm().await?;
 
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
+
     // Act
     let err = nft_voter_test
-        .with_voter_weight_record_using_ix(&registrar_cookie, |i| {
+        .with_voter_weight_record_using_ix(&registrar_cookie, &voter_cookie, |i| {
             i.accounts[2].pubkey = realm_cookie2.address // Realm
         })
         .await
@@ -70,9 +74,11 @@ async fn test_create_voter_weight_record_with_invalid_mint_error() -> Result<(),
 
     let realm_cookie2 = nft_voter_test.governance.with_realm().await?;
 
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
+
     // Act
     let err = nft_voter_test
-        .with_voter_weight_record_using_ix(&registrar_cookie, |i| {
+        .with_voter_weight_record_using_ix(&registrar_cookie, &voter_cookie, |i| {
             i.accounts[2].pubkey = realm_cookie2.address // Mint
         })
         .await
@@ -96,15 +102,17 @@ async fn test_create_voter_weight_record_with_already_exists_error() -> Result<(
 
     let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
 
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
+
     nft_voter_test
-        .with_voter_weight_record(&registrar_cookie)
+        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
     nft_voter_test.bench.advance_clock().await;
 
     // Act
     let err = nft_voter_test
-        .with_voter_weight_record(&registrar_cookie)
+        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await
         .err()
         .unwrap();

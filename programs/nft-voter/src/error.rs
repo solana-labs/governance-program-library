@@ -25,4 +25,7 @@ pub enum NftVoterError {
 
     #[msg("Invalid VoterWeightRecord Mint")]
     InvalidVoterWeightRecordMint,
+
+    #[msg("Collection must be verified")]
+    CollectionMustBeVerified,
 }

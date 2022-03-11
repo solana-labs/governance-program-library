@@ -35,19 +35,16 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
         )
         .await?;
 
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
+
     let mut voter_weight_record_cookie = nft_voter_test
-        .with_voter_weight_record(&registrar_cookie)
+        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
     let nft1_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
         .await?;
-
-    // let _nft2 = nft_voter_test
-    //     .token_metadata
-    //     .with_nft_v2(&nft_collection_cookie)
-    //     .await;
 
     nft_voter_test.bench.advance_clock().await;
     let clock = nft_voter_test.bench.get_clock().await;
@@ -106,13 +103,15 @@ async fn test_update_voter_weight_with_cast_vote_error() -> Result<(), Transport
         )
         .await?;
 
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
+
     let mut voter_weight_record_cookie = nft_voter_test
-        .with_voter_weight_record(&registrar_cookie)
+        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
     let nft1_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
         .await?;
 
     // Act
@@ -129,6 +128,118 @@ async fn test_update_voter_weight_with_cast_vote_error() -> Result<(), Transport
 
     // Assert
     assert_nft_voter_err(err, NftVoterError::CastVoteIsNotAllowed);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_update_voter_weight_with_unverified_collection_error() -> Result<(), TransportError> {
+    // Arrange
+    let mut nft_voter_test = NftVoterTest::start_new().await;
+
+    let realm_cookie = nft_voter_test.governance.with_realm().await?;
+
+    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+
+    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
+
+    let max_voter_weight_record_cookie = nft_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
+
+    nft_voter_test
+        .with_collection(
+            &registrar_cookie,
+            &nft_collection_cookie,
+            &max_voter_weight_record_cookie,
+            Some(ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            }),
+        )
+        .await?;
+
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
+
+    let mut voter_weight_record_cookie = nft_voter_test
+        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
+        .await?;
+
+    let nft1_cookie = nft_voter_test
+        .token_metadata
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, false)
+        .await?;
+
+    // Act
+    let err = nft_voter_test
+        .update_voter_weight_record(
+            &registrar_cookie,
+            &mut voter_weight_record_cookie,
+            VoterWeightAction::CreateGovernance,
+            &nft1_cookie,
+        )
+        .await
+        .err()
+        .unwrap();
+
+    // Assert
+    assert_nft_voter_err(err, NftVoterError::CollectionMustBeVerified);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_update_voter_weight_with_invalid_owner_error() -> Result<(), TransportError> {
+    // Arrange
+    let mut nft_voter_test = NftVoterTest::start_new().await;
+
+    let realm_cookie = nft_voter_test.governance.with_realm().await?;
+
+    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+
+    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
+
+    let max_voter_weight_record_cookie = nft_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
+
+    nft_voter_test
+        .with_collection(
+            &registrar_cookie,
+            &nft_collection_cookie,
+            &max_voter_weight_record_cookie,
+            Some(ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            }),
+        )
+        .await?;
+
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
+
+    let mut voter_weight_record_cookie = nft_voter_test
+        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
+        .await?;
+
+    let nft1_cookie = nft_voter_test
+        .token_metadata
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, false)
+        .await?;
+
+    // Act
+    let err = nft_voter_test
+        .update_voter_weight_record(
+            &registrar_cookie,
+            &mut voter_weight_record_cookie,
+            VoterWeightAction::CreateGovernance,
+            &nft1_cookie,
+        )
+        .await
+        .err()
+        .unwrap();
+
+    // Assert
+    assert_nft_voter_err(err, NftVoterError::CollectionMustBeVerified);
 
     Ok(())
 }

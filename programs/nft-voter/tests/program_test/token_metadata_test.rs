@@ -5,7 +5,7 @@ use mpl_token_metadata::state::Collection;
 use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::signer::Signer;
 
-use super::program_test_bench::{MintCookie, ProgramTestBench};
+use super::program_test_bench::{MintCookie, ProgramTestBench, WalletCookie};
 
 pub struct NftCookie {
     pub address: Pubkey,
@@ -128,13 +128,15 @@ impl TokenMetadataTest {
     pub async fn with_nft_v2(
         &self,
         nft_collection_cookie: &NftCollectionCookie,
+        nft_owner_cookie: &WalletCookie,
+        verify_collection: bool,
     ) -> Result<NftCookie, BanksClientError> {
-        let nft_owner = self.bench.context.borrow().payer.pubkey();
-        let payer = self.bench.context.borrow().payer.pubkey();
-
         // Crate NFT
         let mint_cookie = self.bench.with_mint().await?;
-        let nft_account_cookie = self.bench.with_tokens(&mint_cookie, &nft_owner, 1).await?;
+        let nft_account_cookie = self
+            .bench
+            .with_tokens(&mint_cookie, &nft_owner_cookie.address, 1)
+            .await?;
 
         let metadata_seeds = &[
             b"metadata".as_ref(),
@@ -157,8 +159,8 @@ impl TokenMetadataTest {
             metadata_address,
             mint_cookie.address,
             mint_cookie.mint_authority.pubkey(),
-            nft_owner.clone(),
-            nft_owner.clone(),
+            self.bench.payer.pubkey(),
+            self.bench.payer.pubkey(),
             name,
             symbol,
             uri,
@@ -174,20 +176,22 @@ impl TokenMetadataTest {
             .process_transaction(&[create_metadata_ix], Some(&[&mint_cookie.mint_authority]))
             .await?;
 
-        let verify_collection = mpl_token_metadata::instruction::verify_collection(
-            self.program_id,
-            metadata_address,
-            nft_owner,
-            payer,
-            nft_collection_cookie.mint,
-            nft_collection_cookie.metadata,
-            nft_collection_cookie.master_edition,
-            None,
-        );
+        if verify_collection {
+            let verify_collection = mpl_token_metadata::instruction::verify_collection(
+                self.program_id,
+                metadata_address,
+                self.bench.payer.pubkey(),
+                self.bench.payer.pubkey(),
+                nft_collection_cookie.mint,
+                nft_collection_cookie.metadata,
+                nft_collection_cookie.master_edition,
+                None,
+            );
 
-        self.bench
-            .process_transaction(&[verify_collection], None)
-            .await?;
+            self.bench
+                .process_transaction(&[verify_collection], None)
+                .await?;
+        }
 
         Ok(NftCookie {
             address: nft_account_cookie.address,

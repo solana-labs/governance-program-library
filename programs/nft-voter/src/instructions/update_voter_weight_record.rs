@@ -60,7 +60,7 @@ pub fn update_voter_weight_record(
     // It must have a collection and the collection must be verified 
     require!(
         collection.verified,
-        NftVoterError::CastVoteIsNotAllowed
+        NftVoterError::CollectionMustBeVerified
     );
 
 
