@@ -13,6 +13,7 @@ pub struct CreateMaxVoterWeightRecord<'info> {
                 realm_governing_token_mint.key().as_ref()],
         bump,
         payer = payer
+           //TODO: Do we need size?
     )]
     pub max_voter_weight_record: Account<'info, MaxVoterWeightRecord>,
 

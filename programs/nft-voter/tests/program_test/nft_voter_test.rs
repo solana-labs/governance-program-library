@@ -9,6 +9,7 @@ use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
 use spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord;
+use spl_governance_addin_api::voter_weight::VoterWeightRecord;
 
 use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
@@ -33,8 +34,8 @@ pub struct RegistrarCookie {
 }
 
 pub struct VoterWeightRecordCookie {
-    pub voter_weight_record: Pubkey,
-    pub governing_token_owner: Pubkey,
+    pub address: Pubkey,
+    pub account: VoterWeightRecord,
 }
 
 pub struct MaxVoterWeightRecordCookie {
@@ -172,7 +173,7 @@ impl NftVoterTest {
         );
 
         let accounts = gpl_nft_voter::accounts::CreateVoterWeightRecord {
-            registrar: registrar_cookie.address,
+            governance_program_id: self.governance.program_id,
             realm: registrar_cookie.account.realm,
             realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
             voter_weight_record,
@@ -188,9 +189,21 @@ impl NftVoterTest {
 
         self.bench.process_transaction(&instructions, None).await?;
 
-        Ok(VoterWeightRecordCookie {
-            voter_weight_record,
+        let account = VoterWeightRecord {
+            account_discriminator: VoterWeightRecord::ACCOUNT_DISCRIMINATOR,
+            realm: registrar_cookie.account.realm,
+            governing_token_mint: registrar_cookie.account.governing_token_mint,
             governing_token_owner,
+            voter_weight: 0,
+            voter_weight_expiry: Some(0),
+            weight_action: None,
+            weight_action_target: None,
+            reserved: [0; 8],
+        };
+
+        Ok(VoterWeightRecordCookie {
+            address: voter_weight_record,
+            account,
         })
     }
 
@@ -262,7 +275,7 @@ impl NftVoterTest {
     ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
-                governing_token_owner: voter_weight_record_cookie.governing_token_owner,
+                governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
                 realm: registrar_cookie.account.realm,
                 governing_token_mint: registrar_cookie.account.governing_token_mint,
             },
@@ -270,7 +283,7 @@ impl NftVoterTest {
 
         let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
-            voter_weight_record: voter_weight_record_cookie.voter_weight_record,
+            voter_weight_record: voter_weight_record_cookie.address,
         };
 
         let instructions = vec![Instruction {
@@ -289,7 +302,7 @@ impl NftVoterTest {
     ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
-                governing_token_owner: voter_weight_record_cookie.governing_token_owner,
+                governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
                 realm: registrar_cookie.account.realm,
                 governing_token_mint: registrar_cookie.account.governing_token_mint,
             },
@@ -297,7 +310,7 @@ impl NftVoterTest {
 
         let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
-            voter_weight_record: voter_weight_record_cookie.voter_weight_record,
+            voter_weight_record: voter_weight_record_cookie.address,
         };
 
         let instructions = vec![Instruction {
@@ -390,5 +403,10 @@ impl NftVoterTest {
         max_voter_weight_record: &Pubkey,
     ) -> MaxVoterWeightRecord {
         self.bench.get_borsh_account(max_voter_weight_record).await
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_voter_weight_record(&self, voter_weight_record: &Pubkey) -> VoterWeightRecord {
+        self.bench.get_borsh_account(voter_weight_record).await
     }
 }
