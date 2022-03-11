@@ -3,6 +3,7 @@ use crate::{
     state::{Registrar, VoterWeightRecord},
 };
 use anchor_lang::prelude::*;
+use anchor_spl::token::{Mint, TokenAccount};
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 #[derive(Accounts)]
@@ -19,6 +20,10 @@ pub struct UpdateVoterWeightRecord<'info> {
         @ NftLockerError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
+
+    pub nft_mint: Account<'info, Mint>,
+    pub nft_token: Account<'info, TokenAccount>,
+    pub nft_metadata: UncheckedAccount<'info>,
 }
 
 pub fn update_voter_weight_record(

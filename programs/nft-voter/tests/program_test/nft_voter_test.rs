@@ -15,7 +15,7 @@ use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
 
 use super::governance_test::RealmCookie;
-use super::token_metadata_test::{NftCollectionCookie, TokenMetadataTest};
+use super::token_metadata_test::{NftCollectionCookie, NftCookie, TokenMetadataTest};
 use crate::program_test::tools::NopOverride;
 
 #[derive(Debug, PartialEq)]
@@ -293,6 +293,7 @@ impl NftVoterTest {
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &mut VoterWeightRecordCookie,
         voter_weight_action: VoterWeightAction,
+        nft_cookie: &NftCookie,
     ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
@@ -303,6 +304,9 @@ impl NftVoterTest {
         let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
+            nft_mint: nft_cookie.mint_cookie.address,
+            nft_token: nft_cookie.address,
+            nft_metadata: nft_cookie.metadata,
         };
 
         let instructions = vec![Instruction {
@@ -331,6 +335,9 @@ impl NftVoterTest {
         let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
+            nft_mint: Pubkey::new_unique(),
+            nft_token: Pubkey::new_unique(),
+            nft_metadata: Pubkey::new_unique(),
         };
 
         let instructions = vec![Instruction {
@@ -383,7 +390,7 @@ impl NftVoterTest {
             registrar: registrar_cookie.address,
             realm: registrar_cookie.account.realm,
             realm_authority: registrar_cookie.realm_authority.pubkey(),
-            collection: nft_collection_cookie.address,
+            collection: nft_collection_cookie.mint,
             max_voter_weight_record: max_voter_weight_record_cookie.address,
         };
 
@@ -403,7 +410,7 @@ impl NftVoterTest {
             .await?;
 
         let collection_config = CollectionConfig {
-            collection: nft_collection_cookie.address,
+            collection: nft_collection_cookie.mint,
             size: args.size,
             weight: args.weight,
             reserved: [0; 8],
