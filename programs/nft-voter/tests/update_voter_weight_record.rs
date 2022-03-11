@@ -221,9 +221,11 @@ async fn test_update_voter_weight_with_invalid_owner_error() -> Result<(), Trans
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
+    let voter_cookie2 = nft_voter_test.bench.with_wallet().await;
+
     let nft1_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, false)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie2, true)
         .await?;
 
     // Act
@@ -239,7 +241,7 @@ async fn test_update_voter_weight_with_invalid_owner_error() -> Result<(), Trans
         .unwrap();
 
     // Assert
-    assert_nft_voter_err(err, NftVoterError::CollectionMustBeVerified);
+    assert_nft_voter_err(err, NftVoterError::VoterDoesNotOwnNft);
 
     Ok(())
 }

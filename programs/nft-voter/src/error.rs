@@ -28,4 +28,7 @@ pub enum NftVoterError {
 
     #[msg("Collection must be verified")]
     CollectionMustBeVerified,
+
+    #[msg("Voter does not own NFT")]
+    VoterDoesNotOwnNft,
 }

@@ -42,7 +42,7 @@ pub fn update_voter_weight_record(
     // voter_weight_record.governing_token_owner must be the owner of the NFT
     require!(
         ctx.accounts.nft_token.owner == ctx.accounts.voter_weight_record.governing_token_owner,
-        NftVoterError::CastVoteIsNotAllowed
+        NftVoterError::VoterDoesNotOwnNft
     );
 
     let nft_metadata = Metadata::from_account_info(&ctx.accounts.nft_metadata)?;
