@@ -4,8 +4,8 @@ pub mod registrar;
 pub use collection_config::*;
 pub mod collection_config;
 
-pub use proposal_nft_vote::*;
-pub mod proposal_nft_vote;
+pub use proposal_nft_vote_record::*;
+pub mod proposal_nft_vote_record;
 
 use crate::max_voter_weight_record;
 use crate::voter_weight_record;

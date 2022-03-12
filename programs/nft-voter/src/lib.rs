@@ -50,4 +50,11 @@ pub mod nft_voter {
     ) -> Result<()> {
         instructions::configure_collection(ctx, weight, size)
     }
+
+    pub fn vote_with_nft(
+        ctx: Context<VoteWithNFT>,
+        proposal: Pubkey,
+    ) -> Result<()> {
+        instructions::vote_with_nft(ctx, proposal)
+    }
 }
