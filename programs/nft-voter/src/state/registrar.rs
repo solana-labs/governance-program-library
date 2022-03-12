@@ -57,4 +57,11 @@ impl Registrar {
             .ok_or(Error::from(NftVoterError::InvalidCollection))
             
     }
+
+    pub fn get_collection_config(&self, collection: Pubkey) -> Result<&CollectionConfig>{
+        return self.collection_configs
+            .iter()
+            .find(|cc| cc.collection == collection)
+            .ok_or(Error::from(NftVoterError::CollectionNotFound));
+    }
 }

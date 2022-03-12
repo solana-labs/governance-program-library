@@ -4,7 +4,7 @@ use crate::id;
 
 #[account]
 #[derive(Default)]
-pub struct ProposalNFTVote {
+pub struct ProposalNFTVoteRecord {
     /// Proposal which was voted on
     pub proposal: Pubkey,
     /// NFT which was used for the vote
@@ -12,7 +12,7 @@ pub struct ProposalNFTVote {
 }
 
 /// Returns ProposalNFTVote PDA seeds
-pub fn get_proposal_nft_vote_seeds<'a>(
+pub fn get_proposal_nft_vote_record_seeds<'a>(
     registrar: &'a Pubkey,
     proposal: &'a Pubkey,
     nft_mint: &'a Pubkey,
@@ -21,6 +21,6 @@ pub fn get_proposal_nft_vote_seeds<'a>(
 }
 
 /// Returns ProposalNFTVote PDA address
-pub fn get_proposal_nft_vote_address(registrar: &Pubkey, proposal: &Pubkey, nft_mint: &Pubkey) -> Pubkey {
-    Pubkey::find_program_address(&get_proposal_nft_vote_seeds(registrar, proposal, nft_mint), &id()).0
+pub fn get_proposal_nft_vote_record_address(registrar: &Pubkey, proposal: &Pubkey, nft_mint: &Pubkey) -> Pubkey {
+    Pubkey::find_program_address(&get_proposal_nft_vote_record_seeds(registrar, proposal, nft_mint), &id()).0
 }

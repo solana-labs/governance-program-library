@@ -37,7 +37,7 @@ pub fn update_voter_weight_record(
 
     let mut voter_weight = 0u64;
 
-    for (nft_token_info, nft_metadata_info) in ctx.remaining_accounts.into_iter().tuples() {
+    for (nft_token_info, nft_metadata_info) in ctx.remaining_accounts.iter().tuples() {
         let nft_token_owner = get_spl_token_owner(nft_token_info)?;
 
         // voter_weight_record.governing_token_owner must be the owner of the NFT
@@ -59,11 +59,7 @@ pub fn update_voter_weight_record(
 
         let registrar = &mut ctx.accounts.registrar;
 
-        let collection_config = registrar                                                   
-            .collection_configs
-            .iter()
-            .find(|cc| cc.collection == collection.key)
-            .ok_or(NftVoterError::CollectionNotFound)?;
+        let collection_config = registrar.get_collection_config(collection.key)?;                                                
 
             voter_weight = voter_weight.checked_add(collection_config.weight as u64).unwrap();
     };

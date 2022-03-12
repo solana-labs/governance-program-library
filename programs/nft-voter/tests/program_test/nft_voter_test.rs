@@ -3,7 +3,7 @@ use std::sync::Arc;
 use anchor_lang::prelude::{AccountMeta, Pubkey};
 
 use gpl_nft_voter::governance::get_max_voter_weight_record_address;
-use gpl_nft_voter::state::{CollectionConfig, Registrar, get_registrar_address, get_proposal_nft_vote_address};
+use gpl_nft_voter::state::{CollectionConfig, Registrar, get_registrar_address, get_proposal_nft_vote_record_address};
 use solana_program::sysvar::rent;
 use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
@@ -440,19 +440,16 @@ impl NftVoterTest {
     ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::VoteWithNft {
-                governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
-                realm: registrar_cookie.account.realm,
-                governing_token_mint: registrar_cookie.account.governing_token_mint,
-            },
+                proposal: proposal_cookie.address,
+                },
         );
 
-        let proposal_nft_vote_address = get_proposal_nft_vote_address(&registrar_cookie.address, &proposal_cookie.address, &nft_cookie.address);
+        let proposal_nft_vote_address = get_proposal_nft_vote_record_address(&registrar_cookie.address, &proposal_cookie.address, &nft_cookie.address);
 
         let accounts = gpl_nft_voter::accounts::VoteWithNFT {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            proposal_vote_record: proposal_nft_vote_address,
-            proposal: proposal_cookie.address,
+            proposal_nft_vote_record: proposal_nft_vote_address,
             nft_token: nft_cookie.address,
             nft_metadata: nft_cookie.metadata,
             payer: self.bench.payer.pubkey(),

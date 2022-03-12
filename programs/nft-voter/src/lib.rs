@@ -55,10 +55,8 @@ pub mod nft_voter {
 
     pub fn vote_with_nft(
         ctx: Context<VoteWithNFT>,
-        realm: Pubkey,
-        governing_token_mint: Pubkey,
-        governing_token_owner: Pubkey,
+        proposal: Pubkey,
     ) -> Result<()> {
-        instructions::vote_with_nft(ctx, realm, governing_token_mint, governing_token_owner)
+        instructions::vote_with_nft(ctx, proposal)
     }
 }
