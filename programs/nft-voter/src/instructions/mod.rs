@@ -16,5 +16,5 @@ mod update_voter_weight_record;
 pub use relinquish_vote::*;
 mod relinquish_vote;
 
-pub use vote_with_nft::*;
-mod vote_with_nft;
+pub use cast_nft_vote::*;
+mod cast_nft_vote;
