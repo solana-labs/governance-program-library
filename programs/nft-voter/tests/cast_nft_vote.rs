@@ -45,7 +45,7 @@ async fn test_cast_nft_vote() -> Result<(), TransportError> {
         .await?;
 
     // Act
-    nft_voter_test
+    let nft_vote_record_cookie = nft_voter_test
         .cast_nft_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
@@ -53,6 +53,13 @@ async fn test_cast_nft_vote() -> Result<(), TransportError> {
             &nft_cookie1,
         )
         .await?;
+
+    // Assert
+    let nft_vote_record = nft_voter_test
+        .get_nf_vote_record_account(&nft_vote_record_cookie.address)
+        .await;
+
+    assert_eq!(nft_vote_record_cookie.account, nft_vote_record);
 
     Ok(())
 }

@@ -28,7 +28,7 @@ pub struct CastNftVote<'info> {
         payer = payer,
         space = 8 + size_of::<NftVoteRecord>()
     )]
-    pub proposal_nft_vote_record: Account<'info, NftVoteRecord>,
+    pub nft_vote_record: Account<'info, NftVoteRecord>,
 
     /// Account holding the NFT
     #[account(
@@ -93,6 +93,11 @@ pub fn cast_nft_vote(ctx: Context<CastNftVote>, proposal:Pubkey) -> Result<()> {
     voter_weight_record.voter_weight = collection_config.weight as u64;
     voter_weight_record.weight_action = Some(VoterWeightAction::CastVote);
     voter_weight_record.weight_action_target = Some(proposal);
+
+    let nft_vote_record = &mut ctx.accounts.nft_vote_record;
+    nft_vote_record.proposal = proposal;
+    nft_vote_record.nft_mint = nft_token_mint;
+    nft_vote_record.governing_token_owner = nft_token_owner;
 
     Ok(())
 }

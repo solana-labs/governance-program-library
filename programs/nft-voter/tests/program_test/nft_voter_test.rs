@@ -4,7 +4,7 @@ use anchor_lang::prelude::{AccountMeta, Pubkey};
 
 use gpl_nft_voter::governance::get_max_voter_weight_record_address;
 use gpl_nft_voter::state::{
-    get_nft_vote_record_address, get_registrar_address, CollectionConfig, Registrar,
+    get_nft_vote_record_address, get_registrar_address, CollectionConfig, NftVoteRecord, Registrar,
 };
 
 use solana_program_test::{BanksClientError, ProgramTest};
@@ -54,6 +54,11 @@ impl Default for ConfigureCollectionArgs {
     fn default() -> Self {
         Self { weight: 1, size: 3 }
     }
+}
+
+pub struct NftVoteRecordCookie {
+    pub address: Pubkey,
+    pub account: NftVoteRecord,
 }
 
 pub struct NftVoterTest {
@@ -439,18 +444,18 @@ impl NftVoterTest {
         voter_weight_record_cookie: &VoterWeightRecordCookie,
         proposal_cookie: &ProposalCookie,
         nft_cookie: &NftCookie,
-    ) -> Result<(), BanksClientError> {
+    ) -> Result<NftVoteRecordCookie, BanksClientError> {
         let data = anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CastNftVote {
             proposal: proposal_cookie.address,
         });
 
-        let proposal_nft_vote_address =
+        let nft_vote_address =
             get_nft_vote_record_address(&proposal_cookie.address, &nft_cookie.mint_cookie.address);
 
         let accounts = gpl_nft_voter::accounts::CastNftVote {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            proposal_nft_vote_record: proposal_nft_vote_address,
+            nft_vote_record: nft_vote_address,
             nft_token: nft_cookie.address,
             nft_metadata: nft_cookie.metadata,
             payer: self.bench.payer.pubkey(),
@@ -462,12 +467,30 @@ impl NftVoterTest {
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         }];
-        self.bench.process_transaction(&instructions, None).await
+        self.bench.process_transaction(&instructions, None).await?;
+
+        let account = NftVoteRecord {
+            proposal: proposal_cookie.address,
+            nft_mint: nft_cookie.mint_cookie.address,
+            governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
+        };
+
+        Ok(NftVoteRecordCookie {
+            address: nft_vote_address,
+            account,
+        })
     }
 
     #[allow(dead_code)]
     pub async fn get_registrar_account(&mut self, registrar: &Pubkey) -> Registrar {
         self.bench.get_anchor_account::<Registrar>(*registrar).await
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_nf_vote_record_account(&mut self, nft_vote_record: &Pubkey) -> NftVoteRecord {
+        self.bench
+            .get_anchor_account::<NftVoteRecord>(*nft_vote_record)
+            .await
     }
 
     #[allow(dead_code)]
