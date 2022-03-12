@@ -40,4 +40,10 @@ pub enum NftVoterError {
 
     #[msg("Invalid account owner")]
     InvalidAccountOwner,
+
+    #[msg("Invalid token metadata account")]
+    InvalidTokenMetadataAccount,
+
+    #[msg("Duplicated NFT detected")]
+    DuplicatedNftDetected,
 }
