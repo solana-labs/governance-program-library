@@ -440,7 +440,7 @@ impl NftVoterTest {
         proposal_cookie: &ProposalCookie,
         nft_cookie: &NftCookie,
     ) -> Result<(), BanksClientError> {
-        let data = anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::VoteWithNft {
+        let data = anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CastNftVote {
             proposal: proposal_cookie.address,
         });
 

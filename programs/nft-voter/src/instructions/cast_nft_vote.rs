@@ -34,6 +34,7 @@ pub struct CastNftVote<'info> {
     )]
     pub nft_token: Account<'info, TokenAccount>,
     /// Metadata account of the NFT
+    /// CHECK: token-metadata
     pub nft_metadata: UncheckedAccount<'info>,
     #[account(
         mut,
