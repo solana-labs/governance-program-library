@@ -4,7 +4,10 @@ use anchor_lang::prelude::Pubkey;
 use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::{signature::Keypair, signer::Signer};
 use spl_governance::{
-    instruction::{create_governance, create_proposal, create_realm, create_token_owner_record},
+    instruction::{
+        create_governance, create_proposal, create_realm, create_token_owner_record,
+        deposit_governing_tokens,
+    },
     state::{
         enums::{
             GovernanceAccountType, MintMaxVoteWeightSource, ProposalState, VoteThresholdPercentage,
@@ -18,7 +21,6 @@ use spl_governance::{
 };
 
 use super::{
-    nft_voter_test::VoterWeightRecordCookie,
     program_test_bench::{MintCookie, ProgramTestBench},
     tools::clone_keypair,
 };
@@ -131,33 +133,52 @@ impl GovernanceTest {
     pub async fn with_proposal(
         &mut self,
         realm_cookie: &RealmCookie,
-        voter_weight_record_cookie: &VoterWeightRecordCookie,
     ) -> Result<ProposalCookie, BanksClientError> {
         let token_account_cookie = self
             .bench
             .with_token_account(&realm_cookie.account.community_mint)
             .await?;
 
-        //    self.bench.with_tokens(mint_cookie, owner, amount)
+        let token_owner = self.bench.payer.pubkey();
+        let council_mint_cookie = realm_cookie.council_mint_cookie.as_ref().unwrap();
+        let governing_token_mint = council_mint_cookie.address;
+
+        let governing_token_account_cookie = self
+            .bench
+            .with_tokens(council_mint_cookie, &token_owner, 1)
+            .await?;
 
         let token_owner_record = get_token_owner_record_address(
             &self.program_id,
             &realm_cookie.address,
-            &realm_cookie.account.community_mint,
-            &self.bench.payer.pubkey(),
+            &governing_token_mint,
+            &token_owner,
         );
 
         let create_tor_ix = create_token_owner_record(
             &self.program_id,
             &realm_cookie.address,
             &self.bench.payer.pubkey(),
-            &realm_cookie.account.community_mint,
+            &governing_token_mint,
             &self.bench.payer.pubkey(),
         );
 
         self.bench
             .process_transaction(&[create_tor_ix], None)
             .await?;
+
+        let deposit_ix = deposit_governing_tokens(
+            &self.program_id,
+            &realm_cookie.address,
+            &governing_token_account_cookie.address,
+            &token_owner,
+            &token_owner,
+            &self.bench.payer.pubkey(),
+            1,
+            &governing_token_mint,
+        );
+
+        self.bench.process_transaction(&[deposit_ix], None).await?;
 
         let governance_address = get_governance_address(
             &self.program_id,
@@ -172,15 +193,15 @@ impl GovernanceTest {
             &token_owner_record,
             &self.bench.payer.pubkey(),
             &realm_cookie.realm_authority.pubkey(),
-            Some(voter_weight_record_cookie.address),
+            None,
             spl_governance::state::governance::GovernanceConfig {
                 vote_threshold_percentage: VoteThresholdPercentage::YesVote(60),
                 min_community_weight_to_create_proposal: 1,
-                min_transaction_hold_up_time: 10,
+                min_transaction_hold_up_time: 0,
                 max_voting_time: 600,
                 vote_tipping: VoteTipping::Disabled,
                 proposal_cool_off_time: 0,
-                min_council_weight_to_create_proposal: 0,
+                min_council_weight_to_create_proposal: 1,
             },
         );
 
@@ -194,7 +215,7 @@ impl GovernanceTest {
         let proposal_address = get_proposal_address(
             &self.program_id,
             &governance_address,
-            &realm_cookie.account.community_mint,
+            &governing_token_mint,
             &[0],
         );
 
@@ -202,17 +223,17 @@ impl GovernanceTest {
             &self.program_id,
             &governance_address,
             &token_owner_record,
+            &token_owner,
             &self.bench.payer.pubkey(),
-            &self.bench.payer.pubkey(),
-            Some(voter_weight_record_cookie.address),
+            None,
             &realm_cookie.address,
             String::from("Proposal #1"),
             String::from("Proposal #1 link"),
-            &realm_cookie.account.community_mint,
+            &governing_token_mint,
             spl_governance::state::proposal::VoteType::SingleChoice,
             vec!["Yes".to_string(), "No".to_string()],
             true,
-            1_u32,
+            0_u32,
         );
 
         self.bench
@@ -221,7 +242,7 @@ impl GovernanceTest {
 
         let account = ProposalV2 {
             account_type: GovernanceAccountType::GovernanceV2,
-            governing_token_mint: realm_cookie.account.community_mint,
+            governing_token_mint: governing_token_mint,
             state: ProposalState::Voting,
             governance: governance_address,
             token_owner_record: token_owner_record,
