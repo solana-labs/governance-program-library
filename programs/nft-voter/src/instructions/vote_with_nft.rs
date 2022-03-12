@@ -20,7 +20,6 @@ pub struct VoteWithNFT<'info> {
     #[account(
         init,
         seeds = [
-            registrar.key().as_ref(), 
             b"nft-vote".as_ref(), 
             proposal.as_ref(),
             nft_token.mint.as_ref()
