@@ -10,7 +10,7 @@ pub struct NftVoteRecord {
     pub proposal: Pubkey,
 
     /// The mint of the NFT which was used for the vote
-    pub nft_mint: u64,
+    pub nft_mint: Pubkey,
 
     /// The voter who casted this vote
     /// It's a Realm member pubkey corresponding to TokenOwnerRecord.governing_token_owner
