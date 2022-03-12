@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 pub mod error;
 // use error::*;
@@ -8,6 +9,8 @@ use instructions::*;
 
 pub mod governance;
 pub mod state;
+
+pub mod tools;
 
 // use state::*;
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
@@ -30,16 +33,9 @@ pub mod nft_voter {
     }
     pub fn update_voter_weight_record(
         ctx: Context<UpdateVoterWeightRecord>,
-        realm: Pubkey,
-        governing_token_mint: Pubkey,
-        governing_token_owner: Pubkey,
+        voter_weight_action: VoterWeightAction,
     ) -> Result<()> {
-        instructions::update_voter_weight_record(
-            ctx,
-            realm,
-            governing_token_mint,
-            governing_token_owner,
-        )
+        instructions::update_voter_weight_record(ctx, voter_weight_action)
     }
     pub fn relinquish_vote(
         ctx: Context<RelinquishVote>,
@@ -55,5 +51,12 @@ pub mod nft_voter {
         size: u32,
     ) -> Result<()> {
         instructions::configure_collection(ctx, weight, size)
+    }
+
+    pub fn vote_with_nft(
+        ctx: Context<VoteWithNFT>,
+        proposal: Pubkey,
+    ) -> Result<()> {
+        instructions::vote_with_nft(ctx, proposal)
     }
 }
