@@ -18,7 +18,7 @@ pub struct NftVoteRecord {
 
 /// Returns NftVoteRecord PDA seeds
 pub fn get_nft_vote_record_seeds<'a>(proposal: &'a Pubkey, nft_mint: &'a Pubkey) -> [&'a [u8]; 3] {
-    [b"nft-vote", proposal.as_ref(), nft_mint.as_ref()]
+    [b"nft-vote-record", proposal.as_ref(), nft_mint.as_ref()]
 }
 
 /// Returns NftVoteRecord PDA address

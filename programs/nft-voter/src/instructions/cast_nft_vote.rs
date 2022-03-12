@@ -15,11 +15,12 @@ pub struct CastNftVote<'info> {
     /// The voting registrar
     #[account()]
     pub registrar: Account<'info, Registrar>,
+
     /// Record that nft from nft_account was used to vote on the proposal
     #[account(
         init,
         seeds = [
-            b"nft-vote".as_ref(), 
+            b"nft-vote-record".as_ref(), 
             proposal.as_ref(),
             nft_token.mint.as_ref()
             ],
@@ -28,14 +29,17 @@ pub struct CastNftVote<'info> {
         space = 8 + size_of::<NftVoteRecord>()
     )]
     pub proposal_nft_vote_record: Account<'info, NftVoteRecord>,
+
     /// Account holding the NFT
     #[account(
         constraint = nft_token.amount > 0 @ NftVoterError::InsufficientAmountOnNFTAccount,
     )]
     pub nft_token: Account<'info, TokenAccount>,
+
     /// Metadata account of the NFT
     /// CHECK: token-metadata
     pub nft_metadata: UncheckedAccount<'info>,
+
     #[account(
         mut,
         constraint = voter_weight_record.realm == registrar.realm 
@@ -45,6 +49,7 @@ pub struct CastNftVote<'info> {
         @ NftVoterError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
+    
     /// Voter is a signer  
     #[account(mut)]
     pub payer: Signer<'info>,
