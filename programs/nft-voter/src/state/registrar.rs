@@ -1,4 +1,4 @@
-use crate::{id, state::CollectionConfig, error::NftVoterError};
+use crate::{error::NftVoterError, id, state::CollectionConfig};
 use anchor_lang::prelude::*;
 
 /// Registrar which stores NFT voting configuration for the given Realm
@@ -40,28 +40,28 @@ pub fn get_registrar_address(realm: &Pubkey, governing_token_mint: &Pubkey) -> P
 
 impl Registrar {
     pub fn is_in_collection_configs(&self, collection: Pubkey) -> Result<bool> {
-
-        match self.collection_configs
+        match self
+            .collection_configs
             .iter()
             .any(|r| r.collection == collection)
-            {
-                true => Ok(true),
-                false => Err(NftVoterError::InvalidCollection.into())
-            }
+        {
+            true => Ok(true),
+            false => Err(NftVoterError::InvalidCollection.into()),
+        }
     }
 
     pub fn collection_config_index(&self, collection: Pubkey) -> Result<usize> {
         self.collection_configs
             .iter()
             .position(|r| r.collection == collection)
-            .ok_or(Error::from(NftVoterError::InvalidCollection))
-            
+            .ok_or_else(|| NftVoterError::InvalidCollection.into())
     }
 
-    pub fn get_collection_config(&self, collection: Pubkey) -> Result<&CollectionConfig>{
-        return self.collection_configs
+    pub fn get_collection_config(&self, collection: Pubkey) -> Result<&CollectionConfig> {
+        return self
+            .collection_configs
             .iter()
             .find(|cc| cc.collection == collection)
-            .ok_or(Error::from(NftVoterError::CollectionNotFound));
+            .ok_or_else(|| NftVoterError::CollectionNotFound.into());
     }
 }

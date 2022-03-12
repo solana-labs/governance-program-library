@@ -8,9 +8,6 @@ pub enum NftVoterError {
     #[msg("Invalid Registrar Realm")]
     InvalidRegistrarRealm,
 
-    #[msg("Failed to decode metadata")]
-    DecodeMetadataFailed,
-
     #[msg("Given collection is not valid")]
     InvalidCollection,
 
@@ -32,9 +29,6 @@ pub enum NftVoterError {
     #[msg("Invalid MaxVoterWeightRecord Mint")]
     InvalidMaxVoterWeightRecordMint,
 
-    #[msg("Proposal is not in voting state")]
-    ProposalNotInVotingState,
-    
     #[msg("CastVote Is Not Allowed")]
     CastVoteIsNotAllowed,
 
