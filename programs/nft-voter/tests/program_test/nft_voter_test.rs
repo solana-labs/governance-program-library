@@ -4,7 +4,7 @@ use anchor_lang::prelude::{AccountMeta, Pubkey};
 
 use gpl_nft_voter::governance::get_max_voter_weight_record_address;
 use gpl_nft_voter::state::{
-    get_proposal_nft_vote_record_address, get_registrar_address, CollectionConfig, Registrar,
+    get_nft_vote_record_address, get_registrar_address, CollectionConfig, Registrar,
 };
 
 use solana_program_test::{BanksClientError, ProgramTest};
@@ -444,12 +444,10 @@ impl NftVoterTest {
             proposal: proposal_cookie.address,
         });
 
-        let proposal_nft_vote_address = get_proposal_nft_vote_record_address(
-            &proposal_cookie.address,
-            &nft_cookie.mint_cookie.address,
-        );
+        let proposal_nft_vote_address =
+            get_nft_vote_record_address(&proposal_cookie.address, &nft_cookie.mint_cookie.address);
 
-        let accounts = gpl_nft_voter::accounts::VoteWithNFT {
+        let accounts = gpl_nft_voter::accounts::CastNftVote {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
             proposal_nft_vote_record: proposal_nft_vote_address,
