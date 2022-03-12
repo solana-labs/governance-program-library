@@ -433,7 +433,7 @@ impl NftVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn vote_with_nft(
+    pub async fn cast_nft_vote(
         &mut self,
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &VoterWeightRecordCookie,

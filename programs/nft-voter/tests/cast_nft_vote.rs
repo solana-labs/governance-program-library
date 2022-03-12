@@ -5,7 +5,7 @@ use solana_sdk::transport::TransportError;
 mod program_test;
 
 #[tokio::test]
-async fn test_vote_with_nft() -> Result<(), TransportError> {
+async fn test_cast_nft_vote() -> Result<(), TransportError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -46,7 +46,7 @@ async fn test_vote_with_nft() -> Result<(), TransportError> {
 
     // Act
     nft_voter_test
-        .vote_with_nft(
+        .cast_nft_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &proposal_cookie,
