@@ -444,7 +444,7 @@ impl NftVoterTest {
                 },
         );
 
-        let proposal_nft_vote_address = get_proposal_nft_vote_record_address(&registrar_cookie.address, &proposal_cookie.address, &nft_cookie.address);
+        let proposal_nft_vote_address = get_proposal_nft_vote_record_address(&proposal_cookie.address, &nft_cookie.address);
 
         let accounts = gpl_nft_voter::accounts::VoteWithNFT {
             registrar: registrar_cookie.address,
