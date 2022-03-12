@@ -65,7 +65,7 @@ pub fn vote_with_nft(ctx: Context<VoteWithNFT>, _realm:Pubkey, _governing_token_
     let proposal = &ctx.accounts.proposal;
 
     let nft_token_mint = get_spl_token_mint(&ctx.accounts.nft_token.to_account_info())?;
-    let nft_metadata = get_token_metadata_for_mint(&ctx.accounts.nft_metadata,nft_token_mint)?;
+    let nft_metadata = get_token_metadata_for_mint(&ctx.accounts.nft_metadata,&nft_token_mint)?;
 
     let collection: Collection = nft_metadata.collection.ok_or(NftVoterError::NotPartOfCollection)?;
     let collection_idx = registrar.collection_config_index(collection.key)?;

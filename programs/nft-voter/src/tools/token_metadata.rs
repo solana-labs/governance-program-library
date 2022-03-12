@@ -14,10 +14,10 @@ pub fn get_token_metadata(account_info: &AccountInfo) -> Result<Metadata> {
     Ok(metadata)
 }
 
-pub fn get_token_metadata_for_mint(account_info: &AccountInfo, mint: Pubkey) -> Result<Metadata> {
+pub fn get_token_metadata_for_mint(account_info: &AccountInfo, mint: &Pubkey) -> Result<Metadata> {
     let token_metadata = get_token_metadata(account_info)?;
 
-    if token_metadata.mint != mint {
+    if token_metadata.mint != *mint {
         return Err(NftVoterError::TokenMetadataDoesNotMatch.into());
     }
 
