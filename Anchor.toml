@@ -1,13 +1,14 @@
 [features]
 seeds = false
+
 [programs.localnet]
-nft_voter = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+gpl_nft_voter = "FDfF7jzJDCEkFWNi3is487k8rFPJxFkU821t2pQ1vDr1"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "mainnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

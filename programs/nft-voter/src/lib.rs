@@ -2,7 +2,6 @@ use anchor_lang::prelude::*;
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 pub mod error;
-// use error::*;
 
 mod instructions;
 use instructions::*;
@@ -12,8 +11,7 @@ pub mod state;
 
 pub mod tools;
 
-// use state::*;
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("FDfF7jzJDCEkFWNi3is487k8rFPJxFkU821t2pQ1vDr1");
 
 #[program]
 pub mod nft_voter {
