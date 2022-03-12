@@ -13,6 +13,21 @@ async fn test_vote_with_nft() -> Result<(), TransportError> {
 
     let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
 
+    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
+
+    let max_voter_weight_record_cookie = nft_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
+
+    nft_voter_test
+        .with_collection(
+            &registrar_cookie,
+            &nft_collection_cookie,
+            &max_voter_weight_record_cookie,
+            None,
+        )
+        .await?;
+
     let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_weight_record_cookie = nft_voter_test
@@ -24,22 +39,20 @@ async fn test_vote_with_nft() -> Result<(), TransportError> {
         .with_proposal(&realm_cookie)
         .await?;
 
-    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
-
-    let nft1 = nft_voter_test
+    let nft_cookie1 = nft_voter_test
         .token_metadata
         .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
         .await?;
 
     // Act
-    // nft_voter_test
-    //     .vote_with_nft(
-    //         &registrar_cookie,
-    //         &voter_weight_record_cookie,
-    //         &proposal_cookie,
-    //         &nft1,
-    //     )
-    //     .await?;
+    nft_voter_test
+        .vote_with_nft(
+            &registrar_cookie,
+            &voter_weight_record_cookie,
+            &proposal_cookie,
+            &nft_cookie1,
+        )
+        .await?;
 
     Ok(())
 }

@@ -1,13 +1,12 @@
 use anchor_lang::prelude::*;
 use anchor_lang::{Accounts};
-use anchor_spl::token::{TokenAccount, Token};
+use anchor_spl::token::{TokenAccount};
 use mpl_token_metadata::state::{Collection};
 use spl_governance::tools::spl_token::{get_spl_token_mint, get_spl_token_owner};
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use std::mem::size_of;
 use crate::state::*;
 use crate::error::NftVoterError;
-use crate::ErrorCode::AccountOwnedByWrongProgram;
 use crate::tools::token_metadata::get_token_metadata_for_mint;
 
 #[derive(Accounts)]
@@ -32,7 +31,6 @@ pub struct VoteWithNFT<'info> {
     /// Account holding the NFT
     #[account(
         constraint = nft_token.amount > 0 @ NftVoterError::InsufficientAmountOnNFTAccount,
-        constraint = nft_token.owner == token_program.key() @ AccountOwnedByWrongProgram
     )]
     pub nft_token: Account<'info, TokenAccount>,
     /// Metadata account of the NFT
@@ -51,8 +49,7 @@ pub struct VoteWithNFT<'info> {
     pub payer: Signer<'info>,
 
     pub system_program: Program<'info, System>,
-    pub rent: Sysvar<'info, Rent>,
-    pub token_program: Program<'info, Token>,
+
 }
 
 /// Casts vote with the NFT
