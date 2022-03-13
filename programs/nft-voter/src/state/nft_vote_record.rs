@@ -4,7 +4,7 @@ use crate::id;
 
 /// Vote record indicating the given NFT voted on the Proposal
 #[account]
-#[derive(Default)]
+#[derive(Default, PartialEq, Debug)]
 pub struct NftVoteRecord {
     /// Proposal which was voted on
     pub proposal: Pubkey,
