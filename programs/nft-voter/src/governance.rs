@@ -1,5 +1,49 @@
 use crate::id;
-use anchor_lang::prelude::Pubkey;
+use anchor_lang::prelude::*;
+use anchor_lang::{prelude::Pubkey, AnchorDeserialize, AnchorSerialize};
+
+// Copy of the enum from spl-gov
+// Anchor needs it to be part of the project to be exported to IDL
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq)]
+pub enum VoterWeightAction {
+    /// Cast vote for a proposal. Target: Proposal
+    CastVote,
+
+    /// Comment a proposal. Target: Proposal
+    CommentProposal,
+
+    /// Create Governance within a realm. Target: Realm
+    CreateGovernance,
+
+    /// Create a proposal for a governance. Target: Governance
+    CreateProposal,
+
+    /// Signs off a proposal for a governance. Target: Proposal
+    /// Note: SignOffProposal is not supported in the current version
+    SignOffProposal,
+}
+
+impl From<VoterWeightAction> for spl_governance_addin_api::voter_weight::VoterWeightAction {
+    fn from(voter_weight_action: VoterWeightAction) -> Self {
+        match voter_weight_action {
+            VoterWeightAction::CastVote => {
+                spl_governance_addin_api::voter_weight::VoterWeightAction::CastVote
+            }
+            VoterWeightAction::CommentProposal => {
+                spl_governance_addin_api::voter_weight::VoterWeightAction::CommentProposal
+            }
+            VoterWeightAction::CreateGovernance => {
+                spl_governance_addin_api::voter_weight::VoterWeightAction::CreateGovernance
+            }
+            VoterWeightAction::CreateProposal => {
+                spl_governance_addin_api::voter_weight::VoterWeightAction::CreateProposal
+            }
+            VoterWeightAction::SignOffProposal => {
+                spl_governance_addin_api::voter_weight::VoterWeightAction::SignOffProposal
+            }
+        }
+    }
+}
 
 /// A macro is exposed so that we can embed the program ID.
 #[macro_export]

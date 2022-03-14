@@ -8,7 +8,7 @@ gpl_nft_voter = "FDfF7jzJDCEkFWNi3is487k8rFPJxFkU821t2pQ1vDr1"
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "devnet"
+cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

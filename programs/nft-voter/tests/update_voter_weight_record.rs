@@ -1,10 +1,10 @@
 use crate::program_test::nft_voter_test::ConfigureCollectionArgs;
 use gpl_nft_voter::error::NftVoterError;
+use gpl_nft_voter::governance::VoterWeightAction;
 use program_test::nft_voter_test::NftVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 mod program_test;
 
@@ -69,7 +69,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
     assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
     assert_eq!(
         voter_weight_record.weight_action,
-        Some(VoterWeightAction::CreateProposal)
+        Some(VoterWeightAction::CreateProposal.into())
     );
     assert_eq!(voter_weight_record.weight_action_target, None);
 
@@ -142,7 +142,7 @@ async fn test_update_voter_weight_with_multiple_nfts() -> Result<(), TransportEr
     assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
     assert_eq!(
         voter_weight_record.weight_action,
-        Some(VoterWeightAction::CreateProposal)
+        Some(VoterWeightAction::CreateProposal.into())
     );
     assert_eq!(voter_weight_record.weight_action_target, None);
 
