@@ -444,6 +444,7 @@ impl NftVoterTest {
         voter_weight_record_cookie: &VoterWeightRecordCookie,
         proposal_cookie: &ProposalCookie,
         nft_cookie: &NftCookie,
+        nft_voter_cookie: &WalletCookie,
     ) -> Result<NftVoteRecordCookie, BanksClientError> {
         let data = anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CastNftVote {
             proposal: proposal_cookie.address,
@@ -455,6 +456,7 @@ impl NftVoterTest {
         let accounts = gpl_nft_voter::accounts::CastNftVote {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
+            governing_token_owner: nft_voter_cookie.address,
             nft_vote_record: nft_vote_address,
             nft_token: nft_cookie.address,
             nft_metadata: nft_cookie.metadata,
@@ -467,7 +469,9 @@ impl NftVoterTest {
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         }];
-        self.bench.process_transaction(&instructions, None).await?;
+        self.bench
+            .process_transaction(&instructions, Some(&[&nft_voter_cookie.signer]))
+            .await?;
 
         let account = NftVoteRecord {
             proposal: proposal_cookie.address,

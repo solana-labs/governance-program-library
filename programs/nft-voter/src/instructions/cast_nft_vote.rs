@@ -11,19 +11,8 @@ use crate::tools::token_metadata::get_token_metadata_for_mint;
 #[derive(Accounts)]
 #[instruction(proposal: Pubkey)]
 pub struct CastNftVote<'info> {
-    /// The voting registrar
+    /// The NFT voting registrar
     pub registrar: Account<'info, Registrar>,
-
-    /// Record that nft from nft_account was used to vote on the proposal
-    #[account(mut)]
-    pub nft_vote_record: UncheckedAccount<'info>,
-
-    /// Account holding the NFT
-    pub nft_token: UncheckedAccount<'info>,
-
-    /// Metadata account of the NFT
-    /// CHECK: token-metadata
-    pub nft_metadata: UncheckedAccount<'info>,
 
     #[account(
         mut,
@@ -32,14 +21,33 @@ pub struct CastNftVote<'info> {
 
         constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
         @ NftVoterError::InvalidVoterWeightRecordMint,
+
+        constraint = voter_weight_record.governing_token_owner == governing_token_owner.key()
+        @ NftVoterError::InvalidVoterWeightRecordOwner,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
+
+    /// The token owner who casts the vote
+    #[account(mut)]
+    pub governing_token_owner: Signer<'info>,
     
-    /// Voter is a signer  
+    /// The account which pays for the transaction 
     #[account(mut)]
     pub payer: Signer<'info>,
 
     pub system_program: Program<'info, System>,
+
+
+        /// Record that nft from nft_account was used to vote on the proposal
+        #[account(mut)]
+        pub nft_vote_record: UncheckedAccount<'info>,
+    
+        /// Account holding the NFT
+        pub nft_token: UncheckedAccount<'info>,
+    
+        /// Metadata account of the NFT
+        /// CHECK: token-metadata
+        pub nft_metadata: UncheckedAccount<'info>,
 
 }
 

@@ -53,6 +53,7 @@ async fn test_cast_nft_vote() -> Result<(), TransportError> {
             &voter_weight_record_cookie,
             &proposal_cookie,
             &nft_cookie1,
+            &voter_cookie,
         )
         .await?;
 
@@ -112,6 +113,7 @@ async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), Transpo
             &voter_weight_record_cookie,
             &proposal_cookie,
             &nft_cookie1,
+            &voter_cookie,
         )
         .await?;
 
@@ -125,6 +127,7 @@ async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), Transpo
             &voter_weight_record_cookie,
             &proposal_cookie,
             &nft_cookie1,
+            &voter_cookie,
         )
         .await
         .err()

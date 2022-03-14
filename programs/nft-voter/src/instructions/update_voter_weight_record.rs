@@ -12,6 +12,7 @@ use crate::governance::VoterWeightAction;
 #[derive(Accounts)]
 #[instruction(voter_weight_action:VoterWeightAction)]
 pub struct UpdateVoterWeightRecord<'info> {
+    /// The NFT voting Registrar
     pub registrar: Account<'info, Registrar>,
 
     #[account(
@@ -73,7 +74,7 @@ pub fn update_voter_weight_record(
 
         let collection_config = registrar.get_collection_config(collection.key)?;                                                
 
-            voter_weight = voter_weight.checked_add(collection_config.weight as u64).unwrap();
+        voter_weight = voter_weight.checked_add(collection_config.weight as u64).unwrap();
     };
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
