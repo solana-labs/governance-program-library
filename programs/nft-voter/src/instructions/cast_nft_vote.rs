@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
 use anchor_lang::{Accounts};
-use anchor_spl::token::{TokenAccount};
 use mpl_token_metadata::state::{Collection};
 use spl_governance::tools::spl_token::{get_spl_token_mint, get_spl_token_owner};
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
@@ -20,10 +19,7 @@ pub struct CastNftVote<'info> {
     pub nft_vote_record: UncheckedAccount<'info>,
 
     /// Account holding the NFT
-    #[account(
-        constraint = nft_token.amount > 0 @ NftVoterError::InsufficientAmountOnNFTAccount,
-    )]
-    pub nft_token: Account<'info, TokenAccount>,
+    pub nft_token: UncheckedAccount<'info>,
 
     /// Metadata account of the NFT
     /// CHECK: token-metadata
@@ -83,7 +79,10 @@ pub fn cast_nft_vote(ctx: Context<CastNftVote>, proposal:Pubkey) -> Result<()> {
     voter_weight_record.weight_action = Some(VoterWeightAction::CastVote);
     voter_weight_record.weight_action_target = Some(proposal);
 
-
+    require!(
+        ctx.accounts.nft_vote_record.data_is_empty(),
+        NftVoterError::NftAlreadyVoted
+    );
 
     let nft_vote_record = NftVoteRecord {
         account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
