@@ -36,13 +36,13 @@ pub mod nft_voter {
     ) -> Result<()> {
         instructions::update_voter_weight_record(ctx, voter_weight_action)
     }
-    pub fn relinquish_vote(
-        ctx: Context<RelinquishVote>,
+    pub fn relinquish_nft_vote(
+        ctx: Context<RelinquishNftVote>,
         realm: Pubkey,
         governing_token_mint: Pubkey,
         governing_token_owner: Pubkey,
     ) -> Result<()> {
-        instructions::relinquish_vote(ctx, realm, governing_token_mint, governing_token_owner)
+        instructions::relinquish_nft_vote(ctx, realm, governing_token_mint, governing_token_owner)
     }
     pub fn configure_collection(
         ctx: Context<ConfigureCollection>,
