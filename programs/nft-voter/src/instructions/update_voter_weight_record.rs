@@ -41,25 +41,25 @@ pub fn update_voter_weight_record(
     // Ensure all nfts are unique
     let mut unique_nft_mints = vec![];
 
-    for (nft_token_info, nft_metadata_info) in ctx.remaining_accounts.iter().tuples() {
-        let nft_token_owner = get_spl_token_owner(nft_token_info)?;
+    for (nft_info, nft_metadata_info) in ctx.remaining_accounts.iter().tuples() {
+        let nft_owner = get_spl_token_owner(nft_info)?;
 
         // voter_weight_record.governing_token_owner must be the owner of the NFT
         require!(
-            nft_token_owner == ctx.accounts.voter_weight_record.governing_token_owner,
+            nft_owner == ctx.accounts.voter_weight_record.governing_token_owner,
             NftVoterError::VoterDoesNotOwnNft
         );
 
         // Ensure the same NFT was not provided more than once
-        let nft_token_mint = get_spl_token_mint(nft_token_info)?;
-        if unique_nft_mints.contains(&nft_token_mint) 
+        let nft_mint = get_spl_token_mint(nft_info)?;
+        if unique_nft_mints.contains(&nft_mint) 
         {
             return Err(NftVoterError::DuplicatedNftDetected.into());
         }
 
-        unique_nft_mints.push(nft_token_mint);
+        unique_nft_mints.push(nft_mint);
 
-        let nft_metadata = get_token_metadata_for_mint(nft_metadata_info, &nft_token_mint)?;
+        let nft_metadata = get_token_metadata_for_mint(nft_metadata_info, &nft_mint)?;
 
         // The NFT must have a collection and the collection must be verified 
         let collection = nft_metadata.collection.unwrap();

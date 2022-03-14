@@ -473,6 +473,7 @@ impl NftVoterTest {
             proposal: proposal_cookie.address,
             nft_mint: nft_cookie.mint_cookie.address,
             governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
+            account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
         };
 
         Ok(NftVoteRecordCookie {
@@ -489,7 +490,7 @@ impl NftVoterTest {
     #[allow(dead_code)]
     pub async fn get_nf_vote_record_account(&mut self, nft_vote_record: &Pubkey) -> NftVoteRecord {
         self.bench
-            .get_anchor_account::<NftVoteRecord>(*nft_vote_record)
+            .get_borsh_account::<NftVoteRecord>(nft_vote_record)
             .await
     }
 
