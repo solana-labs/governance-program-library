@@ -3,8 +3,7 @@ use std::convert::TryInto;
 use anchor_lang::prelude::*;
 
 /// Configuration of an NFT collection used for governance power
-#[account]
-#[derive(Default, Debug, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq)]
 pub struct CollectionConfig {
     /// The NFT collection used for governance
     pub collection: Pubkey,

@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 pub mod error;
 
@@ -10,6 +9,8 @@ pub mod governance;
 pub mod state;
 
 pub mod tools;
+
+use crate::governance::VoterWeightAction;
 
 declare_id!("FDfF7jzJDCEkFWNi3is487k8rFPJxFkU821t2pQ1vDr1");
 
