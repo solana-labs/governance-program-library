@@ -47,22 +47,22 @@ async fn test_cast_nft_vote() -> Result<(), TransportError> {
         .await?;
 
     // Act
-    let nft_vote_record_cookie = nft_voter_test
+    let nft_vote_record_cookies = nft_voter_test
         .cast_nft_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &proposal_cookie,
-            &nft_cookie1,
             &voter_cookie,
+            &[&nft_cookie1],
         )
         .await?;
 
     // Assert
     let nft_vote_record = nft_voter_test
-        .get_nf_vote_record_account(&nft_vote_record_cookie.address)
+        .get_nf_vote_record_account(&nft_vote_record_cookies[0].address)
         .await;
 
-    assert_eq!(nft_vote_record_cookie.account, nft_vote_record);
+    assert_eq!(nft_vote_record_cookies[0].account, nft_vote_record);
 
     Ok(())
 }
@@ -112,8 +112,8 @@ async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), Transpo
             &registrar_cookie,
             &voter_weight_record_cookie,
             &proposal_cookie,
-            &nft_cookie1,
             &voter_cookie,
+            &[&nft_cookie1],
         )
         .await?;
 
@@ -126,8 +126,8 @@ async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), Transpo
             &registrar_cookie,
             &voter_weight_record_cookie,
             &proposal_cookie,
-            &nft_cookie1,
             &voter_cookie,
+            &[&nft_cookie1],
         )
         .await
         .err()
@@ -188,8 +188,8 @@ async fn test_cast_nft_vote_invalid_voter_error() -> Result<(), TransportError> 
             &registrar_cookie,
             &voter_weight_record_cookie,
             &proposal_cookie,
-            &nft_cookie1,
             &voter_cookie2,
+            &[&nft_cookie1],
         )
         .await
         .err()

@@ -443,15 +443,12 @@ impl NftVoterTest {
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &VoterWeightRecordCookie,
         proposal_cookie: &ProposalCookie,
-        nft_cookie: &NftCookie,
         nft_voter_cookie: &WalletCookie,
-    ) -> Result<NftVoteRecordCookie, BanksClientError> {
+        nft_cookies: &[&NftCookie],
+    ) -> Result<Vec<NftVoteRecordCookie>, BanksClientError> {
         let data = anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CastNftVote {
             proposal: proposal_cookie.address,
         });
-
-        let nft_vote_address =
-            get_nft_vote_record_address(&proposal_cookie.address, &nft_cookie.mint_cookie.address);
 
         let accounts = gpl_nft_voter::accounts::CastNftVote {
             registrar: registrar_cookie.address,
@@ -462,10 +459,30 @@ impl NftVoterTest {
         };
 
         let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
+        let mut nft_vote_record_cookies = vec![];
 
-        account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
-        account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
-        account_metas.push(AccountMeta::new(nft_vote_address, false));
+        for nft_cookie in nft_cookies {
+            account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
+            account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
+
+            let nft_vote_record_address = get_nft_vote_record_address(
+                &proposal_cookie.address,
+                &nft_cookie.mint_cookie.address,
+            );
+            account_metas.push(AccountMeta::new(nft_vote_record_address, false));
+
+            let account = NftVoteRecord {
+                proposal: proposal_cookie.address,
+                nft_mint: nft_cookies[0].mint_cookie.address,
+                governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
+                account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
+            };
+
+            nft_vote_record_cookies.push(NftVoteRecordCookie {
+                address: nft_vote_record_address,
+                account,
+            })
+        }
 
         let instructions = vec![Instruction {
             program_id: gpl_nft_voter::id(),
@@ -476,17 +493,7 @@ impl NftVoterTest {
             .process_transaction(&instructions, Some(&[&nft_voter_cookie.signer]))
             .await?;
 
-        let account = NftVoteRecord {
-            proposal: proposal_cookie.address,
-            nft_mint: nft_cookie.mint_cookie.address,
-            governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
-            account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
-        };
-
-        Ok(NftVoteRecordCookie {
-            address: nft_vote_address,
-            account,
-        })
+        Ok(nft_vote_record_cookies)
     }
 
     #[allow(dead_code)]
