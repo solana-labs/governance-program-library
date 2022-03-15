@@ -11,6 +11,10 @@ use spl_governance::state::realm;
 use crate::state::{CollectionConfig, Registrar};
 use crate::{error::NftVoterError, state::MaxVoterWeightRecord};
 
+/// Configures NFT voting collection which defines what NFTs can be used for governances
+/// and what weight they have
+/// The instruction updates MaxVoterWeightRecord which is used by spl-gov to determine max voting power
+/// used to calculate voting quorum    
 #[derive(Accounts)]
 pub struct ConfigureCollection<'info> {
     /// Registrar for which we configure this Collection
@@ -83,6 +87,7 @@ pub fn configure_collection(
     }
 
     // TODO: if weight == 0 then remove the collection from config
+    // Currently if weight is set to 0 then the collection won't be removed but it won't have any governance power
 
     // Update MaxVoterWeightRecord based on max voting power of the collections
     let max_voter_weight_record = &mut ctx.accounts.max_voter_weight_record;

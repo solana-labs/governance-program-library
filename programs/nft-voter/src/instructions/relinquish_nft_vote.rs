@@ -2,6 +2,8 @@ use anchor_lang::prelude::*;
 
 use crate::state::Registrar;
 
+/// Disposes NftVoteRecord and recovers the rent from the accounts   
+/// It can only be executed when voting on the target Proposal ended or voter withdrew vote from the Proposal
 #[derive(Accounts)]
 #[instruction(realm:Pubkey, governing_token_mint:Pubkey, governing_token_owner: Pubkey)]
 pub struct RelinquishNftVote<'info> {

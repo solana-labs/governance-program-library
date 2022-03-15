@@ -6,6 +6,9 @@ use spl_governance_tools::account::create_and_serialize_account_signed;
 use crate::{state::*, id};
 use crate::error::NftVoterError;
 
+/// Casts NFT vote. The NFTs used for voting are tracked using NftVoteRecord accounts
+/// This instruction updates VoterWeightRecord which is valid for the current Slot and the target Proposal only
+/// and hance the instruction has to be executed inside the same transaction as spl-gov CastVote
 #[derive(Accounts)]
 #[instruction(proposal: Pubkey)]
 pub struct CastNftVote<'info> {

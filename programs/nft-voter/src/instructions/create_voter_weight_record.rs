@@ -4,6 +4,9 @@ use spl_governance::state::realm;
 
 use crate::state::VoterWeightRecord;
 
+/// Creates VoterWeightRecord used by spl-gov
+/// This instruction should only be executed once per realm/governing_token_mint/governing_token_owner
+/// to create the account
 #[derive(Accounts)]
 #[instruction(governing_token_owner: Pubkey)]
 pub struct CreateVoterWeightRecord<'info> {
@@ -15,7 +18,6 @@ pub struct CreateVoterWeightRecord<'info> {
                 governing_token_owner.as_ref()],
         bump,
         payer = payer
-        //TODO: Do we need size?
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 

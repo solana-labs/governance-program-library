@@ -5,7 +5,8 @@ use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 use std::mem::size_of;
 
-/// Accounts for CreateRegistrar instructions
+/// Creates Registrar storing NFT governance configuration for spl-gov Realm
+/// This instruction should only be executed once per realm/governing_token_mint to create the account
 #[derive(Accounts)]
 #[instruction(max_collections: u8)]
 pub struct CreateRegistrar<'info> {
