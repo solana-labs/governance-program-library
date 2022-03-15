@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::{AccountMeta, Pubkey};
 
-use gpl_nft_voter::governance::{get_max_voter_weight_record_address, VoterWeightAction};
+use gpl_nft_voter::tools::governance::{get_max_voter_weight_record_address, VoterWeightAction};
+
 use gpl_nft_voter::state::{
     get_nft_vote_record_address, get_registrar_address, CollectionConfig, NftVoteRecord, Registrar,
 };
@@ -17,10 +18,10 @@ use spl_governance_addin_api::voter_weight::VoterWeightRecord;
 use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
 
-use super::governance_test::{ProposalCookie, RealmCookie};
-use super::program_test_bench::WalletCookie;
-use super::token_metadata_test::{NftCollectionCookie, NftCookie, TokenMetadataTest};
-use super::tools::NopOverride;
+use crate::program_test::governance_test::{ProposalCookie, RealmCookie};
+use crate::program_test::program_test_bench::WalletCookie;
+use crate::program_test::token_metadata_test::{NftCollectionCookie, NftCookie, TokenMetadataTest};
+use crate::program_test::tools::NopOverride;
 
 #[derive(Debug, PartialEq)]
 pub struct RegistrarCookie {

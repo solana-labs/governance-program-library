@@ -19,7 +19,7 @@ use solana_sdk::{
 
 use borsh::BorshDeserialize;
 
-use super::tools::clone_keypair;
+use crate::program_test::tools::clone_keypair;
 
 pub struct MintCookie {
     pub address: Pubkey,

@@ -5,12 +5,11 @@ pub mod error;
 mod instructions;
 use instructions::*;
 
-pub mod governance;
 pub mod state;
 
 pub mod tools;
 
-use crate::governance::VoterWeightAction;
+use crate::tools::governance::VoterWeightAction;
 
 declare_id!("FDfF7jzJDCEkFWNi3is487k8rFPJxFkU821t2pQ1vDr1");
 

@@ -5,7 +5,7 @@ use mpl_token_metadata::state::Collection;
 use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::signer::Signer;
 
-use super::program_test_bench::{MintCookie, ProgramTestBench, WalletCookie};
+use crate::program_test::program_test_bench::{MintCookie, ProgramTestBench, WalletCookie};
 
 pub struct NftCookie {
     pub address: Pubkey,
