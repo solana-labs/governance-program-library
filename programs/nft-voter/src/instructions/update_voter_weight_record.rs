@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 use itertools::Itertools;
 
 
-use crate::governance::VoterWeightAction;
+use crate::tools::governance::VoterWeightAction;
 
 
 #[derive(Accounts)]

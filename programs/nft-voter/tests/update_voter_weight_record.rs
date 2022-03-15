@@ -1,6 +1,6 @@
 use crate::program_test::nft_voter_test::ConfigureCollectionArgs;
 use gpl_nft_voter::error::NftVoterError;
-use gpl_nft_voter::governance::VoterWeightAction;
+use gpl_nft_voter::tools::governance::VoterWeightAction;
 use program_test::nft_voter_test::NftVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;

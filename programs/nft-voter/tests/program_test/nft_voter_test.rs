@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::{AccountMeta, Pubkey};
 
-use gpl_nft_voter::governance::{get_max_voter_weight_record_address, VoterWeightAction};
+use gpl_nft_voter::tools::governance::{get_max_voter_weight_record_address, VoterWeightAction};
+
 use gpl_nft_voter::state::{
     get_nft_vote_record_address, get_registrar_address, CollectionConfig, NftVoteRecord, Registrar,
 };
