@@ -20,7 +20,7 @@ use spl_governance::{
     },
 };
 
-use super::{
+use crate::program_test::{
     program_test_bench::{MintCookie, ProgramTestBench},
     tools::clone_keypair,
 };
