@@ -53,8 +53,10 @@ pub fn cast_nft_vote<'a,'b,'c,'info>(ctx: Context<'a,'b,'c,'info,CastNftVote<'in
     for (nft_info, nft_metadata_info, nft_vote_record_info) in ctx.remaining_accounts.iter().tuples() {
 
         let (nft_vote_weight, nft_mint) = resolve_nft_vote_weight_and_mint(
-            registrar,governing_token_owner,
-            nft_info,nft_metadata_info,
+            registrar,
+            governing_token_owner,
+            nft_info,
+            nft_metadata_info,
             &mut unique_nft_mints)?;
             
         voter_weight = voter_weight.checked_add(nft_vote_weight as u64).unwrap();
