@@ -5,7 +5,10 @@ pub use collection_config::*;
 pub mod collection_config;
 
 pub use nft_vote_record::*;
+
 pub mod nft_vote_record;
+
+pub mod idl_types;
 
 use crate::max_voter_weight_record;
 use crate::voter_weight_record;

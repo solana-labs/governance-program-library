@@ -4,10 +4,7 @@ use crate::{
 };
 use anchor_lang::prelude::*;
 use itertools::Itertools;
-
-
-use crate::tools::governance::VoterWeightAction;
-
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 #[derive(Accounts)]
 #[instruction(voter_weight_action:VoterWeightAction)]
@@ -64,7 +61,7 @@ pub fn update_voter_weight_record(
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
 
     // Set the action to make it specific and prevent being used for voting
-    voter_weight_record.weight_action = Some(voter_weight_action.into());
+    voter_weight_record.weight_action = Some(voter_weight_action);
     voter_weight_record.weight_action_target = None;
 
     Ok(())
