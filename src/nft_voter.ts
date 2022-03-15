@@ -251,6 +251,94 @@ export type NftVoter = {
   ],
   "accounts": [
     {
+      "name": "maxVoterWeightRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "realm",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "maxVoterWeight",
+            "type": "u64"
+          },
+          {
+            "name": "maxVoterWeightExpiry",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "voterWeightRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "realm",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenOwner",
+            "type": "publicKey"
+          },
+          {
+            "name": "voterWeight",
+            "type": "u64"
+          },
+          {
+            "name": "voterWeightExpiry",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "weightAction",
+            "type": {
+              "option": {
+                "defined": "VoterWeightAction"
+              }
+            }
+          },
+          {
+            "name": "weightActionTarget",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "registrar",
       "type": {
         "kind": "struct",
@@ -283,26 +371,6 @@ export type NftVoter = {
                 128
               ]
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "nftVoteRecord",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "proposal",
-            "type": "publicKey"
-          },
-          {
-            "name": "nft_mint",
-            "type": "publicKey"
-          },
-          {
-            "name": "governing_token_owner",
-            "type": "publicKey"
           }
         ]
       }
@@ -719,6 +787,94 @@ export const IDL: NftVoter = {
   ],
   "accounts": [
     {
+      "name": "maxVoterWeightRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "realm",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "maxVoterWeight",
+            "type": "u64"
+          },
+          {
+            "name": "maxVoterWeightExpiry",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "voterWeightRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "realm",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenOwner",
+            "type": "publicKey"
+          },
+          {
+            "name": "voterWeight",
+            "type": "u64"
+          },
+          {
+            "name": "voterWeightExpiry",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "weightAction",
+            "type": {
+              "option": {
+                "defined": "VoterWeightAction"
+              }
+            }
+          },
+          {
+            "name": "weightActionTarget",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "registrar",
       "type": {
         "kind": "struct",
@@ -751,26 +907,6 @@ export const IDL: NftVoter = {
                 128
               ]
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "nftVoteRecord",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "proposal",
-            "type": "publicKey"
-          },
-          {
-            "name": "nft_mint",
-            "type": "publicKey"
-          },
-          {
-            "name": "governing_token_owner",
-            "type": "publicKey"
           }
         ]
       }
