@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use solana_program::program_pack::IsInitialized;
+
 use spl_governance_tools::account::AccountMaxSize;
 
 use crate::id;

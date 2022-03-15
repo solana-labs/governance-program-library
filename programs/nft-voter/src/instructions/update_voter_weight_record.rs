@@ -1,11 +1,11 @@
 use crate::{
     error::NftVoterError,
-    state::{Registrar, VoterWeightRecord}, tools::token_metadata::get_token_metadata_for_mint,
+    state::{Registrar, VoterWeightRecord, resolve_nft_vote_weight_and_mint},
 };
 use anchor_lang::prelude::*;
 use itertools::Itertools;
 
-use spl_governance::tools::spl_token::{get_spl_token_owner, get_spl_token_mint};
+
 use crate::governance::VoterWeightAction;
 
 
@@ -32,6 +32,7 @@ pub fn update_voter_weight_record(
 ) -> Result<()> {
 
     let registrar = &ctx.accounts.registrar;
+    let governing_token_owner = &ctx.accounts.voter_weight_record.governing_token_owner;
 
     // CastVote can't be evaluated using this instruction 
     require!(
@@ -45,38 +46,12 @@ pub fn update_voter_weight_record(
     let mut unique_nft_mints = vec![];
 
     for (nft_info, nft_metadata_info) in ctx.remaining_accounts.iter().tuples() {
-        let nft_owner = get_spl_token_owner(nft_info)?;
-
-        // voter_weight_record.governing_token_owner must be the owner of the NFT
-        require!(
-            nft_owner == ctx.accounts.voter_weight_record.governing_token_owner,
-            NftVoterError::VoterDoesNotOwnNft
-        );
-
-        // Ensure the same NFT was not provided more than once
-        let nft_mint = get_spl_token_mint(nft_info)?;
-        if unique_nft_mints.contains(&nft_mint) 
-        {
-            return Err(NftVoterError::DuplicatedNftDetected.into());
-        }
-
-        unique_nft_mints.push(nft_mint);
-
-        let nft_metadata = get_token_metadata_for_mint(nft_metadata_info, &nft_mint)?;
-
-        // The NFT must have a collection and the collection must be verified 
-        let collection = nft_metadata.collection.unwrap();
-
-        require!(
-            collection.verified,
-            NftVoterError::CollectionMustBeVerified
-        );
-
-    
-
-        let collection_config = registrar.get_collection_config(collection.key)?;                                                
-
-        voter_weight = voter_weight.checked_add(collection_config.weight as u64).unwrap();
+        let (nft_vote_weight, _) = resolve_nft_vote_weight_and_mint(
+            registrar,governing_token_owner,
+            nft_info,nft_metadata_info,
+            &mut unique_nft_mints)?;
+            
+        voter_weight = voter_weight.checked_add(nft_vote_weight as u64).unwrap();
     };
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;

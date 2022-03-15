@@ -44,6 +44,9 @@ pub enum NftVoterError {
     #[msg("Collection not found")]
     CollectionNotFound,
 
+    #[msg("Missing Metadata collection")]
+    MissingMetadataCollection,
+
     #[msg("Token Metadata doesn't match")]
     TokenMetadataDoesNotMatch,
 
