@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::{Accounts};
-use mpl_token_metadata::state::{Collection};
+use itertools::Itertools;
 use spl_governance::tools::spl_token::{get_spl_token_mint, get_spl_token_owner};
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use spl_governance_tools::account::create_and_serialize_account_signed;
@@ -37,80 +37,88 @@ pub struct CastNftVote<'info> {
 
     pub system_program: Program<'info, System>,
 
-
-        /// Record that nft from nft_account was used to vote on the proposal
-        #[account(mut)]
-        pub nft_vote_record: UncheckedAccount<'info>,
-    
-        /// Account holding the NFT
-        pub nft_token: UncheckedAccount<'info>,
-    
-        /// Metadata account of the NFT
-        /// CHECK: token-metadata
-        pub nft_metadata: UncheckedAccount<'info>,
-
 }
 
 /// Casts vote with the NFT
 pub fn cast_nft_vote(ctx: Context<CastNftVote>, proposal:Pubkey) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
-    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
-    
-    let nft_token = &ctx.accounts.nft_token;
-    let nft_owner = get_spl_token_owner(&nft_token.to_account_info())?;
-    
-     require!(
-        nft_owner == voter_weight_record.governing_token_owner,
-        NftVoterError::VoterDoesNotOwnNft
-    );
 
-    let nft_mint = get_spl_token_mint(&nft_token.to_account_info())?;
-    let nft_metadata = get_token_metadata_for_mint(&ctx.accounts.nft_metadata,&nft_mint)?;
+    let mut voter_weight = 0u64;
 
-    let collection: Collection = nft_metadata.collection.ok_or(NftVoterError::NotPartOfCollection)?;
-    let collection_idx = registrar.collection_config_index(collection.key)?;
-    let collection_config = &registrar.collection_configs[collection_idx];
+    // Ensure all nfts are unique
+    let mut unique_nft_mints = vec![];
 
-    require!(
-        registrar.is_in_collection_configs(collection.key)?,
-        NftVoterError::InvalidCollection
-    );
-
-    require!(
-        collection.verified,
-        NftVoterError::UnverifiedCollection
-    );
-
-    voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
-    // TODO: add multiplication with number of NFTs used for voting
-    voter_weight_record.voter_weight = collection_config.weight as u64;
-    voter_weight_record.weight_action = Some(VoterWeightAction::CastVote);
-    voter_weight_record.weight_action_target = Some(proposal);
-
-    require!(
-        ctx.accounts.nft_vote_record.data_is_empty(),
-        NftVoterError::NftAlreadyVoted
-    );
-
-    let nft_vote_record = NftVoteRecord {
-        account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
-        proposal,
-        nft_mint,
-        governing_token_owner: nft_owner,
-    };
-
-    // Anchor doesn't natively support dynamic account creation using remaining_accounts
-    // and we have to take it on manual drive
     let rent = Rent::get()?;
 
-    create_and_serialize_account_signed(
-        &ctx.accounts.payer.to_account_info(),
-        &ctx.accounts.nft_vote_record.to_account_info(),
-        &nft_vote_record,
-        &get_nft_vote_record_seeds(&proposal,&nft_mint),
-        &id(),
-        &ctx.accounts.system_program.to_account_info(),
-        &rent)?;
+    for (nft_info, nft_metadata_info,nft_vote_record_info) in ctx.remaining_accounts.iter().tuples() {
+        let nft_owner = get_spl_token_owner(nft_info)?;
+
+        // voter_weight_record.governing_token_owner must be the owner of the NFT
+        require!(
+            nft_owner == ctx.accounts.voter_weight_record.governing_token_owner,
+            NftVoterError::VoterDoesNotOwnNft
+        );
+
+        // Ensure the same NFT was not provided more than once
+        let nft_mint = get_spl_token_mint(nft_info)?;
+        if unique_nft_mints.contains(&nft_mint) 
+        {
+            return Err(NftVoterError::DuplicatedNftDetected.into());
+        }
+
+        unique_nft_mints.push(nft_mint);
+
+        let nft_metadata = get_token_metadata_for_mint(nft_metadata_info, &nft_mint)?;
+
+        // The NFT must have a collection and the collection must be verified 
+        let collection = nft_metadata.collection.unwrap();
+
+        require!(
+            collection.verified,
+            NftVoterError::CollectionMustBeVerified
+        );
+
+        let collection_config = registrar.get_collection_config(collection.key)?;                                                
+
+        voter_weight = voter_weight.checked_add(collection_config.weight as u64).unwrap();
+
+        // Vote update
+
+        require!(
+            nft_vote_record_info.data_is_empty(),
+            NftVoterError::NftAlreadyVoted
+        );
+
+        let nft_vote_record = NftVoteRecord {
+            account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
+            proposal,
+            nft_mint,
+            governing_token_owner: nft_owner,
+        };
+
+        // Anchor doesn't natively support dynamic account creation using remaining_accounts
+        // and we have to take it on manual drive
+
+        create_and_serialize_account_signed(
+            &payer_info,
+            &nft_vote_record_info,
+            &nft_vote_record,
+            &get_nft_vote_record_seeds(&proposal,&nft_mint),
+            &id(),
+            &nft_vote_record_info,
+            &rent)?;
+
+    };
+
+    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
+
+    voter_weight_record.voter_weight = voter_weight;
+
+    // Record is only valid as of the current slot
+    voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
+
+    voter_weight_record.weight_action = Some(VoterWeightAction::CastVote);
+    voter_weight_record.weight_action_target = Some(proposal);
 
     Ok(())
 }
