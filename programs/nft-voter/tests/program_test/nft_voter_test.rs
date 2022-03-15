@@ -7,7 +7,6 @@ use gpl_nft_voter::state::{
     get_nft_vote_record_address, get_registrar_address, CollectionConfig, NftVoteRecord, Registrar,
 };
 
-use solana_program::system_program;
 use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
@@ -458,21 +457,13 @@ impl NftVoterTest {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
             governing_token_owner: nft_voter_cookie.address,
-            // payer: self.bench.payer.pubkey(),
-            // system_program: solana_sdk::system_program::id(),
+            payer: self.bench.payer.pubkey(),
+            system_program: solana_sdk::system_program::id(),
         };
-
-        let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
-
-        account_metas.push(AccountMeta::new(self.bench.payer.pubkey(), true));
-        account_metas.push(AccountMeta::new_readonly(system_program::id(), false));
-        account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
-        account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
-        account_metas.push(AccountMeta::new(nft_vote_address, false));
 
         let instructions = vec![Instruction {
             program_id: gpl_nft_voter::id(),
-            accounts: account_metas,
+            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         }];
         self.bench
