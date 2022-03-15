@@ -1,5 +1,9 @@
-use crate::{error::NftVoterError, id, state::CollectionConfig};
+use crate::{
+    error::NftVoterError, id, state::CollectionConfig,
+    tools::token_metadata::get_token_metadata_for_mint,
+};
 use anchor_lang::prelude::*;
+use spl_governance::tools::spl_token::{get_spl_token_mint, get_spl_token_owner};
 
 /// Registrar which stores NFT voting configuration for the given Realm
 #[account]
@@ -39,24 +43,6 @@ pub fn get_registrar_address(realm: &Pubkey, governing_token_mint: &Pubkey) -> P
 }
 
 impl Registrar {
-    pub fn is_in_collection_configs(&self, collection: Pubkey) -> Result<bool> {
-        match self
-            .collection_configs
-            .iter()
-            .any(|r| r.collection == collection)
-        {
-            true => Ok(true),
-            false => Err(NftVoterError::InvalidCollection.into()),
-        }
-    }
-
-    pub fn collection_config_index(&self, collection: Pubkey) -> Result<usize> {
-        self.collection_configs
-            .iter()
-            .position(|r| r.collection == collection)
-            .ok_or_else(|| NftVoterError::InvalidCollection.into())
-    }
-
     pub fn get_collection_config(&self, collection: Pubkey) -> Result<&CollectionConfig> {
         return self
             .collection_configs
@@ -64,4 +50,42 @@ impl Registrar {
             .find(|cc| cc.collection == collection)
             .ok_or_else(|| NftVoterError::CollectionNotFound.into());
     }
+}
+
+/// Resolves vote weight and voting mint for the given NFT
+pub fn resolve_nft_vote_weight_and_mint(
+    registrar: &Registrar,
+    governing_token_owner: &Pubkey,
+    nft_info: &AccountInfo,
+    nft_metadata_info: &AccountInfo,
+    unique_nft_mints: &mut Vec<Pubkey>,
+) -> Result<(u16, Pubkey)> {
+    let nft_owner = get_spl_token_owner(nft_info)?;
+
+    // voter_weight_record.governing_token_owner must be the owner of the NFT
+    require!(
+        nft_owner == *governing_token_owner,
+        NftVoterError::VoterDoesNotOwnNft
+    );
+
+    // Ensure the same NFT was not provided more than once
+    let nft_mint = get_spl_token_mint(nft_info)?;
+    if unique_nft_mints.contains(&nft_mint) {
+        return Err(NftVoterError::DuplicatedNftDetected.into());
+    }
+
+    unique_nft_mints.push(nft_mint);
+
+    let nft_metadata = get_token_metadata_for_mint(nft_metadata_info, &nft_mint)?;
+
+    // The NFT must have a collection and the collection must be verified
+    let collection = nft_metadata
+        .collection
+        .ok_or(NftVoterError::MissingMetadataCollection)?;
+
+    require!(collection.verified, NftVoterError::CollectionMustBeVerified);
+
+    let collection_config = registrar.get_collection_config(collection.key)?;
+
+    Ok((collection_config.weight, nft_mint))
 }

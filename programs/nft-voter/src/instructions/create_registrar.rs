@@ -9,8 +9,8 @@ use std::mem::size_of;
 #[derive(Accounts)]
 #[instruction(max_collections: u8)]
 pub struct CreateRegistrar<'info> {
-    /// The voting Registrar. There can only be a single registrar
-    /// per governance Realm and governing mint of the Realm
+    /// The NFT voting Registrar
+    /// There can only be a single registrar per governance Realm and governing mint of the Realm
     #[account(
         init,
         seeds = [b"registrar".as_ref(),realm.key().as_ref(), governing_token_mint.key().as_ref()],

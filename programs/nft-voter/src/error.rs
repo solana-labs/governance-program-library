@@ -8,14 +8,8 @@ pub enum NftVoterError {
     #[msg("Invalid Registrar Realm")]
     InvalidRegistrarRealm,
 
-    #[msg("Given collection is not valid")]
-    InvalidCollection,
-
     #[msg("Given NFT is not part of a collection or metadata format is not V2")]
     NotPartOfCollection,
-
-    #[msg("Collection is not verified")]
-    UnverifiedCollection,
 
     #[msg("There is no NFT in the account")]
     InsufficientAmountOnNFTAccount,
@@ -38,6 +32,9 @@ pub enum NftVoterError {
     #[msg("Invalid VoterWeightRecord Mint")]
     InvalidVoterWeightRecordMint,
 
+    #[msg("Invalid VoterWeightRecord Owner")]
+    InvalidVoterWeightRecordOwner,
+
     #[msg("Collection must be verified")]
     CollectionMustBeVerified,
 
@@ -46,6 +43,9 @@ pub enum NftVoterError {
 
     #[msg("Collection not found")]
     CollectionNotFound,
+
+    #[msg("Missing Metadata collection")]
+    MissingMetadataCollection,
 
     #[msg("Token Metadata doesn't match")]
     TokenMetadataDoesNotMatch,
@@ -58,4 +58,7 @@ pub enum NftVoterError {
 
     #[msg("Duplicated NFT detected")]
     DuplicatedNftDetected,
+
+    #[msg("NFT already voted")]
+    NftAlreadyVoted,
 }
