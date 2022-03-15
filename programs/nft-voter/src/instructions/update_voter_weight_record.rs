@@ -31,6 +31,8 @@ pub fn update_voter_weight_record(
     voter_weight_action: VoterWeightAction,
 ) -> Result<()> {
 
+    let registrar = &ctx.accounts.registrar;
+
     // CastVote can't be evaluated using this instruction 
     require!(
         voter_weight_action != VoterWeightAction::CastVote,
@@ -70,7 +72,7 @@ pub fn update_voter_weight_record(
             NftVoterError::CollectionMustBeVerified
         );
 
-        let registrar = &mut ctx.accounts.registrar;
+    
 
         let collection_config = registrar.get_collection_config(collection.key)?;                                                
 
