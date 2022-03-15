@@ -286,6 +286,26 @@ export type NftVoter = {
           }
         ]
       }
+    },
+    {
+      "name": "nftVoteRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proposal",
+            "type": "publicKey"
+          },
+          {
+            "name": "nft_mint",
+            "type": "publicKey"
+          },
+          {
+            "name": "governing_token_owner",
+            "type": "publicKey"
+          }
+        ]
+      }
     }
   ],
   "types": [
