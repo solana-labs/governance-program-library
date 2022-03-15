@@ -56,6 +56,7 @@ impl Default for ConfigureCollectionArgs {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct NftVoteRecordCookie {
     pub address: Pubkey,
     pub account: NftVoteRecord,
@@ -473,7 +474,7 @@ impl NftVoterTest {
 
             let account = NftVoteRecord {
                 proposal: proposal_cookie.address,
-                nft_mint: nft_cookies[0].mint_cookie.address,
+                nft_mint: nft_cookie.mint_cookie.address,
                 governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
                 account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
             };
