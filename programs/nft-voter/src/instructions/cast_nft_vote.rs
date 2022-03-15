@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use anchor_lang::prelude::*;
 use anchor_lang::{Accounts};
 use itertools::Itertools;
@@ -33,11 +31,11 @@ pub struct CastNftVote<'info> {
     #[account(mut)]
     pub governing_token_owner: Signer<'info>,
     
-    /// The account which pays for the transaction 
-    #[account(mut)]
-    pub payer: Signer<'info>,
+    // /// The account which pays for the transaction 
+    // #[account(mut)]
+    // pub payer: Signer<'info>,
 
-    pub system_program: Program<'info, System>,
+    // pub system_program: Program<'info, System>,
 
 }
 
@@ -52,10 +50,12 @@ pub fn cast_nft_vote(ctx: Context<CastNftVote>, proposal:Pubkey) -> Result<()> {
 
     let rent = Rent::get()?;
 
-    for (nft_info, nft_metadata_info,nft_vote_record_info) in ctx.remaining_accounts.iter().tuples() {
-        let nft_owner = get_spl_token_owner(nft_info)?;
+    // TODO: verify payer and system
+    let payer = ctx.remaining_accounts[0].clone();
+    let system = ctx.remaining_accounts[1].clone();
 
-    
+    for (nft_info, nft_metadata_info,nft_vote_record_info) in ctx.remaining_accounts[2..].iter().tuples() {
+        let nft_owner = get_spl_token_owner(nft_info)?;
 
         // voter_weight_record.governing_token_owner must be the owner of the NFT
         require!(
@@ -104,12 +104,12 @@ pub fn cast_nft_vote(ctx: Context<CastNftVote>, proposal:Pubkey) -> Result<()> {
         // and we have to take it on manual drive
 
         create_and_serialize_account_signed(
-            &ctx.accounts.payer,
-            &nft_vote_record_info,
+            &payer,
+            nft_vote_record_info,
             &nft_vote_record,
             &get_nft_vote_record_seeds(&proposal,&nft_mint),
             &id(),
-            &ctx.accounts.system_program,
+            &system,
             &rent)?;
 
     };
