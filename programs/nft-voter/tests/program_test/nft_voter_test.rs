@@ -461,9 +461,15 @@ impl NftVoterTest {
             system_program: solana_sdk::system_program::id(),
         };
 
+        let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
+
+        account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
+        account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
+        account_metas.push(AccountMeta::new(nft_vote_address, false));
+
         let instructions = vec![Instruction {
             program_id: gpl_nft_voter::id(),
-            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            accounts: account_metas,
             data,
         }];
         self.bench
