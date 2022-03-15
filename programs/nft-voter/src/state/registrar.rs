@@ -22,7 +22,6 @@ pub struct Registrar {
     pub governing_token_mint: Pubkey,
 
     /// MPL Collection used for voting
-    /// TODO: should be expanded to list of collections
     pub collection_configs: Vec<CollectionConfig>,
 
     /// Reserved for future upgrades

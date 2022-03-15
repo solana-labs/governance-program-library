@@ -6,6 +6,11 @@ use anchor_lang::prelude::*;
 use itertools::Itertools;
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
+
+
+/// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...
+/// This instruction updates VoterWeightRecord which is valid for the current Slot and the given target action only
+/// and hance the instruction has to be executed inside the same transaction as the corresponding spl-gov instruction
 #[derive(Accounts)]
 #[instruction(voter_weight_action:VoterWeightAction)]
 pub struct UpdateVoterWeightRecord<'info> {

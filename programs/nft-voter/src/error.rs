@@ -8,12 +8,6 @@ pub enum NftVoterError {
     #[msg("Invalid Registrar Realm")]
     InvalidRegistrarRealm,
 
-    #[msg("Given NFT is not part of a collection or metadata format is not V2")]
-    NotPartOfCollection,
-
-    #[msg("There is no NFT in the account")]
-    InsufficientAmountOnNFTAccount,
-
     #[msg("Invalid Collection Size")]
     InvalidCollectionSize,
 
