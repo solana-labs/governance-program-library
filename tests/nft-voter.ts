@@ -8,6 +8,8 @@ describe("nft-voter", () => {
 
   const program = anchor.workspace.NftVoter as Program<NftVoter>;
 
+ 
+
   it("Is initialized!", async () => {
     // Add your test here.
     const tx = await program.rpc.createRegistrar({});

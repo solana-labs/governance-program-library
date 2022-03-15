@@ -4,9 +4,9 @@ use crate::{
 };
 use anchor_lang::prelude::*;
 use itertools::Itertools;
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 
-use crate::tools::governance::VoterWeightAction;
 
 /// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the given target action only
@@ -66,7 +66,7 @@ pub fn update_voter_weight_record(
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
 
     // Set the action to make it specific and prevent being used for voting
-    voter_weight_record.weight_action = Some(voter_weight_action.into());
+    voter_weight_record.weight_action = Some(voter_weight_action);
     voter_weight_record.weight_action_target = None;
 
     Ok(())
