@@ -150,7 +150,7 @@ async fn test_update_voter_weight_with_multiple_nfts() -> Result<(), TransportEr
 }
 
 #[tokio::test]
-async fn test_update_voter_weight_with_cast_vote_error() -> Result<(), TransportError> {
+async fn test_update_voter_weight_with_cast_vote_not_allowed_error() -> Result<(), TransportError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -238,6 +238,7 @@ async fn test_update_voter_weight_with_unverified_collection_error() -> Result<(
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
+    // Create NFT without verified collection
     let nft1_cookie = nft_voter_test
         .token_metadata
         .with_nft_v2(&nft_collection_cookie, &voter_cookie, false)
