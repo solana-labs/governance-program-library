@@ -2,7 +2,7 @@
 seeds = false
 
 [programs.localnet]
-gpl_nft_voter = "FDfF7jzJDCEkFWNi3is487k8rFPJxFkU821t2pQ1vDr1"
+nft_voter = "FDfF7jzJDCEkFWNi3is487k8rFPJxFkU821t2pQ1vDr1"
 
 [registry]
 url = "https://anchor.projectserum.com"
