@@ -30,6 +30,11 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
 
     let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
+    let voter_token_owner_record_cookie = nft_voter_test
+        .governance
+        .with_token_owner_record(&realm_cookie, &voter_cookie)
+        .await?;
+
     let voter_weight_record_cookie = nft_voter_test
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
@@ -48,8 +53,10 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
         .cast_nft_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
+            &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
+            &voter_token_owner_record_cookie,
             &[&nft_cookie1],
         )
         .await?;
@@ -62,12 +69,10 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
 
     // Assert
 
-    let proposal = nft_voter_test
+    let _proposal = nft_voter_test
         .governance
         .get_proposal(&proposal_cookie.address)
         .await;
-
-    println!("PROPOSAL {:?}", proposal);
 
     Ok(())
 }

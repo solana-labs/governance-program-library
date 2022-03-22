@@ -6,7 +6,7 @@ use solana_sdk::{signature::Keypair, signer::Signer};
 use spl_governance::{
     instruction::{
         create_governance, create_proposal, create_realm, create_token_owner_record,
-        deposit_governing_tokens,
+        deposit_governing_tokens, sign_off_proposal,
     },
     state::{
         enums::{
@@ -16,12 +16,12 @@ use spl_governance::{
         governance::get_governance_address,
         proposal::{get_proposal_address, ProposalV2},
         realm::{get_realm_address, RealmConfig, RealmV2},
-        token_owner_record::get_token_owner_record_address,
+        token_owner_record::{get_token_owner_record_address, TokenOwnerRecordV2},
     },
 };
 
 use crate::program_test::{
-    program_test_bench::{MintCookie, ProgramTestBench},
+    program_test_bench::{MintCookie, ProgramTestBench, WalletCookie},
     tools::clone_keypair,
 };
 
@@ -42,6 +42,11 @@ impl RealmCookie {
 pub struct ProposalCookie {
     pub address: Pubkey,
     pub account: ProposalV2,
+}
+
+pub struct TokenOwnerRecordCookie {
+    pub address: Pubkey,
+    pub account: TokenOwnerRecordV2,
 }
 
 pub struct GovernanceTest {
@@ -156,7 +161,7 @@ impl GovernanceTest {
             .with_tokens(council_mint_cookie, &token_owner, 1)
             .await?;
 
-        let token_owner_record = get_token_owner_record_address(
+        let proposal_owner_record_address = get_token_owner_record_address(
             &self.program_id,
             &realm_cookie.address,
             &governing_token_mint,
@@ -198,7 +203,7 @@ impl GovernanceTest {
             &self.program_id,
             &realm_cookie.address,
             Some(&token_account_cookie.address),
-            &token_owner_record,
+            &proposal_owner_record_address,
             &self.bench.payer.pubkey(),
             &realm_cookie.realm_authority.pubkey(),
             None,
@@ -221,41 +226,51 @@ impl GovernanceTest {
             .await?;
 
         let proposal_index: u32 = 0;
+        let proposal_governing_token_mint = realm_cookie.account.community_mint;
 
         let proposal_address = get_proposal_address(
             &self.program_id,
             &governance_address,
-            &governing_token_mint,
+            &proposal_governing_token_mint,
             &proposal_index.to_le_bytes(),
         );
 
         let create_proposal_ix = create_proposal(
             &self.program_id,
             &governance_address,
-            &token_owner_record,
+            &proposal_owner_record_address,
             &token_owner,
             &self.bench.payer.pubkey(),
             None,
             &realm_cookie.address,
             String::from("Proposal #1"),
             String::from("Proposal #1 link"),
-            &governing_token_mint,
+            &proposal_governing_token_mint,
             spl_governance::state::proposal::VoteType::SingleChoice,
-            vec!["Yes".to_string(), "No".to_string()],
+            vec!["Yes".to_string()],
             true,
             0_u32,
         );
 
+        let sign_off_proposal_ix = sign_off_proposal(
+            &self.program_id,
+            &realm_cookie.address,
+            &governance_address,
+            &proposal_address,
+            &token_owner,
+            Some(&proposal_owner_record_address),
+        );
+
         self.bench
-            .process_transaction(&[create_proposal_ix], None)
+            .process_transaction(&[create_proposal_ix, sign_off_proposal_ix], None)
             .await?;
 
         let account = ProposalV2 {
             account_type: GovernanceAccountType::GovernanceV2,
-            governing_token_mint: governing_token_mint,
+            governing_token_mint: proposal_governing_token_mint,
             state: ProposalState::Voting,
             governance: governance_address,
-            token_owner_record: token_owner_record,
+            token_owner_record: proposal_owner_record_address,
             signatories_count: 1,
             signatories_signed_off_count: 1,
             vote_type: spl_governance::state::proposal::VoteType::SingleChoice,
@@ -287,9 +302,64 @@ impl GovernanceTest {
     }
 
     #[allow(dead_code)]
+    pub async fn with_token_owner_record(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        token_owner_cookie: &WalletCookie,
+    ) -> Result<TokenOwnerRecordCookie, BanksClientError> {
+        let token_owner_record_address = get_token_owner_record_address(
+            &self.program_id,
+            &realm_cookie.address,
+            &realm_cookie.account.community_mint,
+            &token_owner_cookie.address,
+        );
+
+        let create_tor_ix = create_token_owner_record(
+            &self.program_id,
+            &realm_cookie.address,
+            &token_owner_cookie.address,
+            &realm_cookie.account.community_mint,
+            &self.bench.payer.pubkey(),
+        );
+
+        self.bench
+            .process_transaction(&[create_tor_ix], None)
+            .await?;
+
+        let account = TokenOwnerRecordV2 {
+            account_type: GovernanceAccountType::TokenOwnerRecordV2,
+            realm: realm_cookie.address,
+            governing_token_mint: realm_cookie.account.community_mint,
+            governing_token_owner: token_owner_cookie.address,
+            governing_token_deposit_amount: 0,
+            unrelinquished_votes_count: 0,
+            total_votes_count: 0,
+            outstanding_proposal_count: 0,
+            reserved: [0; 7],
+            governance_delegate: None,
+            reserved_v2: [0; 128],
+        };
+
+        Ok(TokenOwnerRecordCookie {
+            address: token_owner_record_address,
+            account,
+        })
+    }
+
+    #[allow(dead_code)]
     pub async fn get_proposal(&mut self, proposal_address: &Pubkey) -> ProposalV2 {
         self.bench
             .get_borsh_account::<ProposalV2>(proposal_address)
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_token_owner_record(
+        &mut self,
+        token_owner_record_address: &Pubkey,
+    ) -> TokenOwnerRecordV2 {
+        self.bench
+            .get_borsh_account::<TokenOwnerRecordV2>(token_owner_record_address)
             .await
     }
 }
