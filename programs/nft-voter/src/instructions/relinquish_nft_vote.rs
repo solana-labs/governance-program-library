@@ -1,6 +1,8 @@
 use anchor_lang::prelude::*;
 use spl_governance::state::{enums::ProposalState, governance, proposal};
 use spl_governance_tools::account::dispose_account;
+use crate::error::NftVoterError;
+use crate::{state::*};
 
 use crate::state::{get_nft_vote_record_data_for_proposal_and_token_owner, Registrar};
 
@@ -10,6 +12,19 @@ use crate::state::{get_nft_vote_record_data_for_proposal_and_token_owner, Regist
 pub struct RelinquishNftVote<'info> {
     /// The NFT voting Registrar
     pub registrar: Account<'info, Registrar>,
+
+    #[account(
+        mut,
+        constraint = voter_weight_record.realm == registrar.realm 
+        @ NftVoterError::InvalidVoterWeightRecordRealm,
+
+        constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
+        @ NftVoterError::InvalidVoterWeightRecordMint,
+
+        constraint = voter_weight_record.governing_token_owner == governing_token_owner.key()
+        @ NftVoterError::InvalidVoterWeightRecordOwner,
+    )]
+    pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     pub governance: UncheckedAccount<'info>,
@@ -44,7 +59,7 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
         &registrar.governing_token_mint,
     )?;
 
-    // If the Proposal is not in Voting state then we can dispose  NftVoteRecords
+    // If the Proposal is not in Voting state then we can dispose  NftVoteRecords without any other checks
     if proposal.state != ProposalState::Voting {
         for nft_vote_record_info in ctx.remaining_accounts.iter() {
             // Ensure NftVoteRecord is for the given Proposal and TokenOwner
@@ -57,6 +72,14 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
             dispose_account(nft_vote_record_info, &ctx.accounts.beneficiary);
         }
     }
+
+
+    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
+
+    // Reset VoterWeightRecord and set expiry to expired
+    voter_weight_record.voter_weight = 0;
+    voter_weight_record.voter_weight_expiry = Some(0);
+
 
     // TODO: Validate registrar vs VoterWeightRecord
     // TODO: Validate governing_token_owner

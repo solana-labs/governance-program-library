@@ -67,6 +67,7 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
     nft_voter_test
         .relinquish_vote(
             &registrar_cookie,
+            &voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &nft_vote_record_cookies,
@@ -74,6 +75,21 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
         .await?;
 
     // Assert
+
+    let voter_weight_record = nft_voter_test
+        .get_voter_weight_record(&voter_weight_record_cookie.address)
+        .await;
+
+    assert_eq!(voter_weight_record.voter_weight_expiry, Some(0));
+    assert_eq!(voter_weight_record.voter_weight, 0);
+
+    // Check NftVoteRecord was disposed
+    let nft_vote_record = nft_voter_test
+        .bench
+        .get_account(&nft_vote_record_cookies[0].address)
+        .await;
+
+    assert_eq!(None, nft_vote_record);
 
     Ok(())
 }

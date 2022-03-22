@@ -345,6 +345,7 @@ impl NftVoterTest {
     pub async fn relinquish_vote(
         &mut self,
         registrar_cookie: &RegistrarCookie,
+        voter_weight_record_cookie: &VoterWeightRecordCookie,
         proposal_cookie: &ProposalCookie,
         voter_cookie: &WalletCookie,
         nft_vote_record_cookies: &Vec<NftVoteRecordCookie>,
@@ -354,6 +355,7 @@ impl NftVoterTest {
 
         let accounts = gpl_nft_voter::accounts::RelinquishNftVote {
             registrar: registrar_cookie.address,
+            voter_weight_record: voter_weight_record_cookie.address,
             governance: proposal_cookie.account.governance,
             proposal: proposal_cookie.address,
             governing_token_owner: voter_cookie.address,
