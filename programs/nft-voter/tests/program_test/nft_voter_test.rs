@@ -84,10 +84,13 @@ impl NftVoterTest {
         GovernanceTest::add_program(&mut program_test);
         TokenMetadataTest::add_program(&mut program_test);
 
+        let program_id = gpl_nft_voter::id();
+
         let bench = ProgramTestBench::start_new(program_test).await;
         let bench_rc = Arc::new(bench);
 
-        let governance_bench = GovernanceTest::new(bench_rc.clone());
+        let governance_bench =
+            GovernanceTest::new(bench_rc.clone(), Some(program_id), Some(program_id));
         let token_metadata_bench = TokenMetadataTest::new(bench_rc.clone());
 
         Self {

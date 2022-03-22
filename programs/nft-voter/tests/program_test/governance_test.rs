@@ -48,6 +48,8 @@ pub struct GovernanceTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
     pub next_id: u8,
+    pub community_voter_weight_addin: Option<Pubkey>,
+    pub max_community_voter_weight_addin: Option<Pubkey>,
 }
 
 impl GovernanceTest {
@@ -61,11 +63,17 @@ impl GovernanceTest {
     }
 
     #[allow(dead_code)]
-    pub fn new(bench: Arc<ProgramTestBench>) -> Self {
+    pub fn new(
+        bench: Arc<ProgramTestBench>,
+        community_voter_weight_addin: Option<Pubkey>,
+        max_community_voter_weight_addin: Option<Pubkey>,
+    ) -> Self {
         GovernanceTest {
             bench,
             program_id: Self::program_id(),
             next_id: 0,
+            community_voter_weight_addin,
+            max_community_voter_weight_addin,
         }
     }
 
@@ -90,8 +98,8 @@ impl GovernanceTest {
             &community_mint_cookie.address,
             &self.bench.payer.pubkey(),
             Some(council_mint_cookie.address),
-            None,
-            None,
+            self.community_voter_weight_addin,
+            self.max_community_voter_weight_addin,
             realm_name.clone(),
             min_community_weight_to_create_governance,
             community_mint_max_vote_weight_source.clone(),
