@@ -344,33 +344,37 @@ impl NftVoterTest {
     #[allow(dead_code)]
     pub async fn relinquish_vote(
         &mut self,
-        _registrar_cookie: &RegistrarCookie,
-        _voter_weight_record_cookie: &VoterWeightRecordCookie,
+        registrar_cookie: &RegistrarCookie,
+        proposal_cookie: &ProposalCookie,
+        voter_cookie: &WalletCookie,
+        nft_vote_record_cookies: &Vec<NftVoteRecordCookie>,
     ) -> Result<(), BanksClientError> {
-        let voter_weight_action = VoterWeightAction::CreateProposal;
+        let data =
+            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::RelinquishNftVote {});
 
-        let _data = anchor_lang::InstructionData::data(
-            &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
-                voter_weight_action,
-            },
-        );
+        let accounts = gpl_nft_voter::accounts::RelinquishNftVote {
+            registrar: registrar_cookie.address,
+            governance: proposal_cookie.account.governance,
+            proposal: proposal_cookie.address,
+            governing_token_owner: voter_cookie.address,
+            beneficiary: self.bench.payer.pubkey(),
+        };
 
-        // let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
-        //     registrar: registrar_cookie.address,
-        //     voter_weight_record: voter_weight_record_cookie.address,
-        // };
+        let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
-        // let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
+        for nft_vote_record_cookie in nft_vote_record_cookies {
+            account_metas.push(AccountMeta::new(nft_vote_record_cookie.address, false));
+        }
 
-        // account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
-        // account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
-        // let instructions = vec![Instruction {
-        //     program_id: gpl_nft_voter::id(),
-        //     accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
-        //     data,
-        // }];
+        let relinquish_nft_vote_ix = Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts: account_metas,
+            data,
+        };
 
-        // self.bench.process_transaction(&instructions, None).await
+        self.bench
+            .process_transaction(&[relinquish_nft_vote_ix], Some(&[&voter_cookie.signer]))
+            .await?;
 
         Ok(())
     }

@@ -50,7 +50,7 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
         .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
         .await?;
 
-    let _nft_vote_record_cookies = nft_voter_test
+    let nft_vote_record_cookies = nft_voter_test
         .cast_nft_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
@@ -65,7 +65,12 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
     // Act
 
     nft_voter_test
-        .relinquish_vote(&registrar_cookie, &voter_weight_record_cookie)
+        .relinquish_vote(
+            &registrar_cookie,
+            &proposal_cookie,
+            &voter_cookie,
+            &nft_vote_record_cookies,
+        )
         .await?;
 
     // Assert

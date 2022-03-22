@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use solana_program::program_pack::IsInitialized;
 
-use spl_governance_tools::account::AccountMaxSize;
+use spl_governance_tools::account::{get_account_data, AccountMaxSize};
 
 use crate::id;
 
@@ -50,4 +50,15 @@ pub fn get_nft_vote_record_seeds<'a>(proposal: &'a Pubkey, nft_mint: &'a Pubkey)
 /// Returns NftVoteRecord PDA address
 pub fn get_nft_vote_record_address(proposal: &Pubkey, nft_mint: &Pubkey) -> Pubkey {
     Pubkey::find_program_address(&get_nft_vote_record_seeds(proposal, nft_mint), &id()).0
+}
+
+/// Deserializes account and checks owner program
+pub fn get_nft_vote_record_data(
+    program_id: &Pubkey,
+    nft_vote_record_info: &AccountInfo,
+) -> Result<NftVoteRecord> {
+    Ok(get_account_data::<NftVoteRecord>(
+        program_id,
+        nft_vote_record_info,
+    )?)
 }
