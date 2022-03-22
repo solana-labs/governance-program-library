@@ -48,7 +48,7 @@ pub struct CollectionConfigCookie {
 }
 
 pub struct ConfigureCollectionArgs {
-    pub weight: u16,
+    pub weight: u64,
     pub size: u32,
 }
 

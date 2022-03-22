@@ -58,7 +58,7 @@ pub fn resolve_nft_vote_weight_and_mint(
     nft_info: &AccountInfo,
     nft_metadata_info: &AccountInfo,
     unique_nft_mints: &mut Vec<Pubkey>,
-) -> Result<(u16, Pubkey)> {
+) -> Result<(u64, Pubkey)> {
     let nft_owner = get_spl_token_owner(nft_info)?;
 
     // voter_weight_record.governing_token_owner must be the owner of the NFT
