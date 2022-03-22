@@ -212,11 +212,13 @@ impl GovernanceTest {
             )
             .await?;
 
+        let proposal_index: u32 = 0;
+
         let proposal_address = get_proposal_address(
             &self.program_id,
             &governance_address,
             &governing_token_mint,
-            &[0],
+            &proposal_index.to_le_bytes(),
         );
 
         let create_proposal_ix = create_proposal(
@@ -274,5 +276,12 @@ impl GovernanceTest {
             address: proposal_address,
             account,
         })
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_proposal(&mut self, proposal_address: &Pubkey) -> ProposalV2 {
+        self.bench
+            .get_borsh_account::<ProposalV2>(proposal_address)
+            .await
     }
 }
