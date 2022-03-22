@@ -1,3 +1,4 @@
+use crate::program_test::nft_voter_test::ConfigureCollectionArgs;
 use program_test::nft_voter_test::NftVoterTest;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
@@ -24,7 +25,7 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
             &registrar_cookie,
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,
-            None,
+            Some(ConfigureCollectionArgs { weight: 1, size: 1 }), // Set Size == 1 to complete voting with just one vote
         )
         .await?;
 
@@ -68,11 +69,6 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
         .await?;
 
     // Assert
-
-    let _proposal = nft_voter_test
-        .governance
-        .get_proposal(&proposal_cookie.address)
-        .await;
 
     Ok(())
 }
