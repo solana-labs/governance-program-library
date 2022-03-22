@@ -45,7 +45,7 @@ pub mod nft_voter {
     }
     pub fn configure_collection(
         ctx: Context<ConfigureCollection>,
-        weight: u16,
+        weight: u64,
         size: u32,
     ) -> Result<()> {
         instructions::configure_collection(ctx, weight, size)

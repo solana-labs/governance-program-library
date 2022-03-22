@@ -46,7 +46,7 @@ pub struct ConfigureCollection<'info> {
 
 pub fn configure_collection(
     ctx: Context<ConfigureCollection>,
-    weight: u16,
+    weight: u64,
     size: u32,
 ) -> Result<()> {
     require!(size > 0, NftVoterError::InvalidCollectionSize);
