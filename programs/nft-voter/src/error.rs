@@ -55,4 +55,10 @@ pub enum NftVoterError {
 
     #[msg("NFT already voted")]
     NftAlreadyVoted,
+
+    #[msg("Invalid Proposal for NftVoteRecord")]
+    InvalidProposalForNftVoteRecord,
+
+    #[msg("Invalid TokenOwner for NftVoteRecord")]
+    InvalidTokenOwnerForNftVoteRecord,
 }

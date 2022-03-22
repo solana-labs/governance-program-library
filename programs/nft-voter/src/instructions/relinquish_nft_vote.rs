@@ -2,8 +2,7 @@ use anchor_lang::prelude::*;
 use spl_governance::state::{enums::ProposalState, governance, proposal};
 use spl_governance_tools::account::dispose_account;
 
-use crate::id;
-use crate::state::{get_nft_vote_record_data, Registrar};
+use crate::state::{get_nft_vote_record_data_for_proposal_and_token_owner, Registrar};
 
 /// Disposes NftVoteRecord and recovers the rent from the accounts   
 /// It can only be executed when voting on the target Proposal ended or voter withdrew vote from the Proposal
@@ -22,6 +21,7 @@ pub struct RelinquishNftVote<'info> {
     #[account(mut)]
     pub governing_token_owner: Signer<'info>,
 
+    /// CHECK: The beneficiary who receives lamports from the disposed NftVoterRecord accounts can be any account
     #[account(mut)]
     pub beneficiary: UncheckedAccount<'info>,
 }
@@ -46,10 +46,13 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
 
     // If the Proposal is not in Voting state then we can dispose  NftVoteRecords
     if proposal.state != ProposalState::Voting {
-        solana_program::msg!("DISPOSING NFT VOTE");
-
         for nft_vote_record_info in ctx.remaining_accounts.iter() {
-            let _nft_vote_record = get_nft_vote_record_data(&id(), nft_vote_record_info)?;
+            // Ensure NftVoteRecord is for the given Proposal and TokenOwner
+            let _nft_vote_record = get_nft_vote_record_data_for_proposal_and_token_owner(
+                nft_vote_record_info,
+                &ctx.accounts.proposal.key(),
+                &ctx.accounts.governing_token_owner.key(),
+            )?;
 
             dispose_account(nft_vote_record_info, &ctx.accounts.beneficiary);
         }
