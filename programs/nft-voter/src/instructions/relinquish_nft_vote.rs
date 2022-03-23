@@ -66,28 +66,28 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
     // If the Proposal is still in Voting state then we can only Relinquish the NFT votes if the Vote was withdrawn in spl-gov first
     // When vote is withdrawn in spl-gov then VoteRecord is disposed and we have to assert it doesn't exist 
     if proposal.state == ProposalState::Voting {
-        let vote_record = &ctx.accounts.vote_record.to_account_info();
+        let vote_record_info = &ctx.accounts.vote_record.to_account_info();
 
         // Ensure the given VoteRecord address matches the expected PDA
-        let token_owner_record_address = token_owner_record::get_token_owner_record_address(
+        let token_owner_record_key = token_owner_record::get_token_owner_record_address(
             &registrar.governance_program_id,
             &registrar.realm,
             &registrar.governing_token_mint,
             &ctx.accounts.governing_token_owner.key());
 
-        let vote_record_address = vote_record::get_vote_record_address(
+        let vote_record_key = vote_record::get_vote_record_address(
             &registrar.governance_program_id,
             &ctx.accounts.proposal.key(),
-            &token_owner_record_address);
+            &token_owner_record_key);
         
         require!(
-            vote_record_address == vote_record.key(),
+            vote_record_key == vote_record_info.key(),
             NftVoterError::InvalidVoteRecordForNftVoteRecord
         );
 
         require!(
             // VoteRecord doesn't exist if data is empty or account_type is 0 when the account was disposed in the same Tx
-            vote_record.data_is_empty() || vote_record.try_borrow_data().unwrap()[0] == 0,
+            vote_record_info.data_is_empty() || vote_record_info.try_borrow_data().unwrap()[0] == 0,
             NftVoterError::VoteRecordMustBeRelinquished
         );
     }

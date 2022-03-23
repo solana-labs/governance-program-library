@@ -95,7 +95,7 @@ impl GovernanceTest {
         let min_community_weight_to_create_governance = 1;
         let community_mint_max_vote_weight_source = MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION;
 
-        let realm = get_realm_address(&self.program_id, &realm_name);
+        let realm_key = get_realm_address(&self.program_id, &realm_name);
 
         let create_realm_ix = create_realm(
             &self.program_id,
@@ -134,7 +134,7 @@ impl GovernanceTest {
         };
 
         Ok(RealmCookie {
-            address: realm,
+            address: realm_key,
             account,
             realm_authority,
             community_mint_cookie,
@@ -161,7 +161,7 @@ impl GovernanceTest {
             .with_tokens(council_mint_cookie, &token_owner, 1)
             .await?;
 
-        let proposal_owner_record_address = get_token_owner_record_address(
+        let proposal_owner_record_key = get_token_owner_record_address(
             &self.program_id,
             &realm_cookie.address,
             &governing_token_mint,
@@ -193,7 +193,7 @@ impl GovernanceTest {
 
         self.bench.process_transaction(&[deposit_ix], None).await?;
 
-        let governance_address = get_governance_address(
+        let governance_key = get_governance_address(
             &self.program_id,
             &realm_cookie.address,
             &token_account_cookie.address,
@@ -203,7 +203,7 @@ impl GovernanceTest {
             &self.program_id,
             &realm_cookie.address,
             Some(&token_account_cookie.address),
-            &proposal_owner_record_address,
+            &proposal_owner_record_key,
             &self.bench.payer.pubkey(),
             &realm_cookie.realm_authority.pubkey(),
             None,
@@ -228,17 +228,17 @@ impl GovernanceTest {
         let proposal_index: u32 = 0;
         let proposal_governing_token_mint = realm_cookie.account.community_mint;
 
-        let proposal_address = get_proposal_address(
+        let proposal_key = get_proposal_address(
             &self.program_id,
-            &governance_address,
+            &governance_key,
             &proposal_governing_token_mint,
             &proposal_index.to_le_bytes(),
         );
 
         let create_proposal_ix = create_proposal(
             &self.program_id,
-            &governance_address,
-            &proposal_owner_record_address,
+            &governance_key,
+            &proposal_owner_record_key,
             &token_owner,
             &self.bench.payer.pubkey(),
             None,
@@ -255,10 +255,10 @@ impl GovernanceTest {
         let sign_off_proposal_ix = sign_off_proposal(
             &self.program_id,
             &realm_cookie.address,
-            &governance_address,
-            &proposal_address,
+            &governance_key,
+            &proposal_key,
             &token_owner,
-            Some(&proposal_owner_record_address),
+            Some(&proposal_owner_record_key),
         );
 
         self.bench
@@ -269,8 +269,8 @@ impl GovernanceTest {
             account_type: GovernanceAccountType::GovernanceV2,
             governing_token_mint: proposal_governing_token_mint,
             state: ProposalState::Voting,
-            governance: governance_address,
-            token_owner_record: proposal_owner_record_address,
+            governance: governance_key,
+            token_owner_record: proposal_owner_record_key,
             signatories_count: 1,
             signatories_signed_off_count: 1,
             vote_type: spl_governance::state::proposal::VoteType::SingleChoice,
@@ -296,7 +296,7 @@ impl GovernanceTest {
         };
 
         Ok(ProposalCookie {
-            address: proposal_address,
+            address: proposal_key,
             account,
         })
     }
@@ -307,7 +307,7 @@ impl GovernanceTest {
         realm_cookie: &RealmCookie,
         token_owner_cookie: &WalletCookie,
     ) -> Result<TokenOwnerRecordCookie, BanksClientError> {
-        let token_owner_record_address = get_token_owner_record_address(
+        let token_owner_record_key = get_token_owner_record_address(
             &self.program_id,
             &realm_cookie.address,
             &realm_cookie.account.community_mint,
@@ -341,7 +341,7 @@ impl GovernanceTest {
         };
 
         Ok(TokenOwnerRecordCookie {
-            address: token_owner_record_address,
+            address: token_owner_record_key,
             account,
         })
     }
@@ -371,19 +371,19 @@ impl GovernanceTest {
     }
 
     #[allow(dead_code)]
-    pub async fn get_proposal(&mut self, proposal_address: &Pubkey) -> ProposalV2 {
+    pub async fn get_proposal(&mut self, proposal_key: &Pubkey) -> ProposalV2 {
         self.bench
-            .get_borsh_account::<ProposalV2>(proposal_address)
+            .get_borsh_account::<ProposalV2>(proposal_key)
             .await
     }
 
     #[allow(dead_code)]
     pub async fn get_token_owner_record(
         &mut self,
-        token_owner_record_address: &Pubkey,
+        token_owner_record_key: &Pubkey,
     ) -> TokenOwnerRecordV2 {
         self.bench
-            .get_borsh_account::<TokenOwnerRecordV2>(token_owner_record_address)
+            .get_borsh_account::<TokenOwnerRecordV2>(token_owner_record_key)
             .await
     }
 }
