@@ -98,6 +98,7 @@ pub struct VoterWeightRecord {
     pub reserved: [u8; 8],
 }
 
+#[account]
 pub struct NftVoteRecord {
     /// Proposal which was voted on
     pub proposal: Pubkey,

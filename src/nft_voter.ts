@@ -356,6 +356,26 @@ export type NftVoter = {
       }
     },
     {
+      "name": "nftVoteRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proposal",
+            "type": "publicKey"
+          },
+          {
+            "name": "nftMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenOwner",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
       "name": "registrar",
       "type": {
         "kind": "struct",
@@ -914,6 +934,26 @@ export const IDL: NftVoter = {
                 8
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "nftVoteRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proposal",
+            "type": "publicKey"
+          },
+          {
+            "name": "nftMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenOwner",
+            "type": "publicKey"
           }
         ]
       }
