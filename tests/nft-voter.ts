@@ -21,26 +21,30 @@ describe("nft-voter", () => {
     const client =  await NftVoterClient.connect(anchor.Provider.env());
 
     const name = (client.program.account.nftVoteRecord as any)._idlAccount.name;
-  //  const name = (client.program.account.nftVoteRecord as any)._idlAccount.name;
     const digestName = `account:${camelcase(name, { pascalCase: true })}`
-    const sha = sha256.digest(digestName).slice(8);
-    const buff  =  Buffer.from(
+    const sha = sha256.digest(digestName);
+    const buffFromSha  =  Buffer.from(
       sha
     ).slice(0, 8);
 
-    let array = new Uint8Array([157, 95, 242, 151, 16, 98, 26, 118]);
-    const buff2 = Buffer.from(array);
+    const dd2 = Buffer.from(
+      sha256.digest(`account:${camelcase(name, { pascalCase: true })}`)
+    ).slice(0, 8);
+
+    let arrayFromSha = new Uint8Array([137,   6,  55, 139, 251, 126, 254,  99]);
+    const buffFromArray = Buffer.from(arrayFromSha);
 
     const discriminator = anchor.AccountsCoder.accountDiscriminator(name);
 
 
-    console.log("INFO", {digestName,discriminator, sha, buff, array,buff2});
+    console.log("INFO", {discriminator,dd2, sha, buffFromSha,arrayFromSha,buffFromArray});
+    //console.log("INFO", {digestName,discriminator, sha,  buffFromSha, array,buff2});
 
 
 
     // // Add your test here.
-    const all = await client.program.account.nftVoteRecord.fetch("BxDYL291MPcx1Xo3Uz74Gya1b141TwDAch13L3B6Wb7L");
-    // // const tx = await program.rpc.createRegistrar({});
-      console.log("ALL", all);
+    // const all = await client.program.account.nftVoteRecord.fetch("GeNDFpfZUaS3iNwPBQBi4bWhbHefMNhye1wU4BpZBCV2");
+    // // // const tx = await program.rpc.createRegistrar({});
+    //   console.log("ALL", all);
   });
 });
