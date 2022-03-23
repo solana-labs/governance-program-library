@@ -1,5 +1,5 @@
 export type NftVoter = {
-  "version": "0.0.0",
+  "version": "0.1.0",
   "name": "nft_voter",
   "instructions": [
     {
@@ -155,22 +155,39 @@ export type NftVoter = {
           "name": "registrar",
           "isMut": false,
           "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "realm",
-          "type": "publicKey"
         },
         {
-          "name": "governingTokenMint",
-          "type": "publicKey"
+          "name": "voterWeightRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "governingTokenOwner",
-          "type": "publicKey"
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "voteRecord",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "beneficiary",
+          "isMut": true,
+          "isSigner": false
         }
-      ]
+      ],
+      "args": []
     },
     {
       "name": "configureCollection",
@@ -407,68 +424,6 @@ export type NftVoter = {
       }
     },
     {
-      "name": "NftVoterError",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "InvalidRealmAuthority"
-          },
-          {
-            "name": "InvalidRegistrarRealm"
-          },
-          {
-            "name": "InvalidCollectionSize"
-          },
-          {
-            "name": "InvalidMaxVoterWeightRecordRealm"
-          },
-          {
-            "name": "InvalidMaxVoterWeightRecordMint"
-          },
-          {
-            "name": "CastVoteIsNotAllowed"
-          },
-          {
-            "name": "InvalidVoterWeightRecordRealm"
-          },
-          {
-            "name": "InvalidVoterWeightRecordMint"
-          },
-          {
-            "name": "InvalidVoterWeightRecordOwner"
-          },
-          {
-            "name": "CollectionMustBeVerified"
-          },
-          {
-            "name": "VoterDoesNotOwnNft"
-          },
-          {
-            "name": "CollectionNotFound"
-          },
-          {
-            "name": "MissingMetadataCollection"
-          },
-          {
-            "name": "TokenMetadataDoesNotMatch"
-          },
-          {
-            "name": "InvalidAccountOwner"
-          },
-          {
-            "name": "InvalidTokenMetadataAccount"
-          },
-          {
-            "name": "DuplicatedNftDetected"
-          },
-          {
-            "name": "NftAlreadyVoted"
-          }
-        ]
-      }
-    },
-    {
       "name": "VoterWeightAction",
       "type": {
         "kind": "enum",
@@ -490,12 +445,124 @@ export type NftVoter = {
           }
         ]
       }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidRealmAuthority",
+      "msg": "Invalid Realm Authority"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidRegistrarRealm",
+      "msg": "Invalid Registrar Realm"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidCollectionSize",
+      "msg": "Invalid Collection Size"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidMaxVoterWeightRecordRealm",
+      "msg": "Invalid MaxVoterWeightRecord Realm"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidMaxVoterWeightRecordMint",
+      "msg": "Invalid MaxVoterWeightRecord Mint"
+    },
+    {
+      "code": 6005,
+      "name": "CastVoteIsNotAllowed",
+      "msg": "CastVote Is Not Allowed"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidVoterWeightRecordRealm",
+      "msg": "Invalid VoterWeightRecord Realm"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidVoterWeightRecordMint",
+      "msg": "Invalid VoterWeightRecord Mint"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidVoterWeightRecordOwner",
+      "msg": "Invalid VoterWeightRecord Owner"
+    },
+    {
+      "code": 6009,
+      "name": "CollectionMustBeVerified",
+      "msg": "Collection must be verified"
+    },
+    {
+      "code": 6010,
+      "name": "VoterDoesNotOwnNft",
+      "msg": "Voter does not own NFT"
+    },
+    {
+      "code": 6011,
+      "name": "CollectionNotFound",
+      "msg": "Collection not found"
+    },
+    {
+      "code": 6012,
+      "name": "MissingMetadataCollection",
+      "msg": "Missing Metadata collection"
+    },
+    {
+      "code": 6013,
+      "name": "TokenMetadataDoesNotMatch",
+      "msg": "Token Metadata doesn't match"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidAccountOwner",
+      "msg": "Invalid account owner"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidTokenMetadataAccount",
+      "msg": "Invalid token metadata account"
+    },
+    {
+      "code": 6016,
+      "name": "DuplicatedNftDetected",
+      "msg": "Duplicated NFT detected"
+    },
+    {
+      "code": 6017,
+      "name": "NftAlreadyVoted",
+      "msg": "NFT already voted"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidProposalForNftVoteRecord",
+      "msg": "Invalid Proposal for NftVoteRecord"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidTokenOwnerForNftVoteRecord",
+      "msg": "Invalid TokenOwner for NftVoteRecord"
+    },
+    {
+      "code": 6020,
+      "name": "VoteRecordMustBeWithdrawn",
+      "msg": "VoteRecord must be withdrawn"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidVoteRecordForNftVoteRecord",
+      "msg": "Invalid VoteRecord for NftVoteRecord"
     }
   ]
 };
 
 export const IDL: NftVoter = {
-  "version": "0.0.0",
+  "version": "0.1.0",
   "name": "nft_voter",
   "instructions": [
     {
@@ -651,22 +718,39 @@ export const IDL: NftVoter = {
           "name": "registrar",
           "isMut": false,
           "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "realm",
-          "type": "publicKey"
         },
         {
-          "name": "governingTokenMint",
-          "type": "publicKey"
+          "name": "voterWeightRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "governingTokenOwner",
-          "type": "publicKey"
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "voteRecord",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "beneficiary",
+          "isMut": true,
+          "isSigner": false
         }
-      ]
+      ],
+      "args": []
     },
     {
       "name": "configureCollection",
@@ -903,68 +987,6 @@ export const IDL: NftVoter = {
       }
     },
     {
-      "name": "NftVoterError",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "InvalidRealmAuthority"
-          },
-          {
-            "name": "InvalidRegistrarRealm"
-          },
-          {
-            "name": "InvalidCollectionSize"
-          },
-          {
-            "name": "InvalidMaxVoterWeightRecordRealm"
-          },
-          {
-            "name": "InvalidMaxVoterWeightRecordMint"
-          },
-          {
-            "name": "CastVoteIsNotAllowed"
-          },
-          {
-            "name": "InvalidVoterWeightRecordRealm"
-          },
-          {
-            "name": "InvalidVoterWeightRecordMint"
-          },
-          {
-            "name": "InvalidVoterWeightRecordOwner"
-          },
-          {
-            "name": "CollectionMustBeVerified"
-          },
-          {
-            "name": "VoterDoesNotOwnNft"
-          },
-          {
-            "name": "CollectionNotFound"
-          },
-          {
-            "name": "MissingMetadataCollection"
-          },
-          {
-            "name": "TokenMetadataDoesNotMatch"
-          },
-          {
-            "name": "InvalidAccountOwner"
-          },
-          {
-            "name": "InvalidTokenMetadataAccount"
-          },
-          {
-            "name": "DuplicatedNftDetected"
-          },
-          {
-            "name": "NftAlreadyVoted"
-          }
-        ]
-      }
-    },
-    {
       "name": "VoterWeightAction",
       "type": {
         "kind": "enum",
@@ -986,6 +1008,118 @@ export const IDL: NftVoter = {
           }
         ]
       }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidRealmAuthority",
+      "msg": "Invalid Realm Authority"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidRegistrarRealm",
+      "msg": "Invalid Registrar Realm"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidCollectionSize",
+      "msg": "Invalid Collection Size"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidMaxVoterWeightRecordRealm",
+      "msg": "Invalid MaxVoterWeightRecord Realm"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidMaxVoterWeightRecordMint",
+      "msg": "Invalid MaxVoterWeightRecord Mint"
+    },
+    {
+      "code": 6005,
+      "name": "CastVoteIsNotAllowed",
+      "msg": "CastVote Is Not Allowed"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidVoterWeightRecordRealm",
+      "msg": "Invalid VoterWeightRecord Realm"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidVoterWeightRecordMint",
+      "msg": "Invalid VoterWeightRecord Mint"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidVoterWeightRecordOwner",
+      "msg": "Invalid VoterWeightRecord Owner"
+    },
+    {
+      "code": 6009,
+      "name": "CollectionMustBeVerified",
+      "msg": "Collection must be verified"
+    },
+    {
+      "code": 6010,
+      "name": "VoterDoesNotOwnNft",
+      "msg": "Voter does not own NFT"
+    },
+    {
+      "code": 6011,
+      "name": "CollectionNotFound",
+      "msg": "Collection not found"
+    },
+    {
+      "code": 6012,
+      "name": "MissingMetadataCollection",
+      "msg": "Missing Metadata collection"
+    },
+    {
+      "code": 6013,
+      "name": "TokenMetadataDoesNotMatch",
+      "msg": "Token Metadata doesn't match"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidAccountOwner",
+      "msg": "Invalid account owner"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidTokenMetadataAccount",
+      "msg": "Invalid token metadata account"
+    },
+    {
+      "code": 6016,
+      "name": "DuplicatedNftDetected",
+      "msg": "Duplicated NFT detected"
+    },
+    {
+      "code": 6017,
+      "name": "NftAlreadyVoted",
+      "msg": "NFT already voted"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidProposalForNftVoteRecord",
+      "msg": "Invalid Proposal for NftVoteRecord"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidTokenOwnerForNftVoteRecord",
+      "msg": "Invalid TokenOwner for NftVoteRecord"
+    },
+    {
+      "code": 6020,
+      "name": "VoteRecordMustBeWithdrawn",
+      "msg": "VoteRecord must be withdrawn"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidVoteRecordForNftVoteRecord",
+      "msg": "Invalid VoteRecord for NftVoteRecord"
     }
   ]
 };
