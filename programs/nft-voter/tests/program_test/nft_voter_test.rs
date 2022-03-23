@@ -4,7 +4,7 @@ use anchor_lang::prelude::{AccountMeta, Pubkey};
 
 use gpl_nft_voter::tools::governance::get_max_voter_weight_record_address;
 use spl_governance::instruction::cast_vote;
-use spl_governance::state::vote_record::{Vote, VoteChoice};
+use spl_governance::state::vote_record::{self, Vote, VoteChoice};
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 use gpl_nft_voter::state::{
@@ -348,10 +348,17 @@ impl NftVoterTest {
         voter_weight_record_cookie: &VoterWeightRecordCookie,
         proposal_cookie: &ProposalCookie,
         voter_cookie: &WalletCookie,
+        voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
         nft_vote_record_cookies: &Vec<NftVoteRecordCookie>,
     ) -> Result<(), BanksClientError> {
         let data =
             anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::RelinquishNftVote {});
+
+        let vote_record_address = vote_record::get_vote_record_address(
+            &self.governance.program_id,
+            &proposal_cookie.address,
+            &voter_token_owner_record_cookie.address,
+        );
 
         let accounts = gpl_nft_voter::accounts::RelinquishNftVote {
             registrar: registrar_cookie.address,
@@ -359,6 +366,7 @@ impl NftVoterTest {
             governance: proposal_cookie.account.governance,
             proposal: proposal_cookie.address,
             governing_token_owner: voter_cookie.address,
+            vote_record: vote_record_address,
             beneficiary: self.bench.payer.pubkey(),
         };
 
