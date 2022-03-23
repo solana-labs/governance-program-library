@@ -62,8 +62,8 @@ pub enum NftVoterError {
     #[msg("Invalid TokenOwner for NftVoteRecord")]
     InvalidTokenOwnerForNftVoteRecord,
 
-    #[msg("VoteRecord must be relinquished")]
-    VoteRecordMustBeRelinquished,
+    #[msg("VoteRecord must be withdrawn")]
+    VoteRecordMustBeWithdrawn,
 
     #[msg("Invalid VoteRecord for NftVoteRecord")]
     InvalidVoteRecordForNftVoteRecord,
