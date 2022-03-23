@@ -43,8 +43,8 @@ describe("nft-voter", () => {
 
 
     // // Add your test here.
-    // const all = await client.program.account.nftVoteRecord.fetch("GeNDFpfZUaS3iNwPBQBi4bWhbHefMNhye1wU4BpZBCV2");
+     const all = await client.program.account.nftVoteRecord.fetch("5SuT66KYjfWmURKpamgWcn5BHmiisHFHBTXfD7zZGWBt");
     // // // const tx = await program.rpc.createRegistrar({});
-    //   console.log("ALL", all);
+      console.log("ALL", all);
   });
 });
