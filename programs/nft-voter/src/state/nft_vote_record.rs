@@ -31,7 +31,7 @@ pub struct NftVoteRecord {
 
 impl NftVoteRecord {
     /// sha256("account:NftVoteRecord")[..8]
-    pub const ACCOUNT_DISCRIMINATOR: [u8; 8] = [200, 66, 21, 245, 238, 168, 68, 219];
+    pub const ACCOUNT_DISCRIMINATOR: [u8; 8] = [137, 6, 55, 139, 251, 126, 254, 99];
 }
 
 impl AccountMaxSize for NftVoteRecord {}
