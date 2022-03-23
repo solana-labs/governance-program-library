@@ -20,10 +20,10 @@ describe("nft-voter", () => {
   it("Is initialized!", async () => {
     const client =  await NftVoterClient.connect(anchor.Provider.env());
 
-    const name = (client.program.account.maxVoterWeightRecord as any)._idlAccount.name;
+    const name = (client.program.account.nftVoteRecord as any)._idlAccount.name;
   //  const name = (client.program.account.nftVoteRecord as any)._idlAccount.name;
     const digestName = `account:${camelcase(name, { pascalCase: true })}`
-    const sha = sha256.digest(digestName);
+    const sha = sha256.digest(digestName).slice(8);
     const buff  =  Buffer.from(
       sha
     ).slice(0, 8);
@@ -39,8 +39,8 @@ describe("nft-voter", () => {
 
 
     // // Add your test here.
-    // const all = await client.program.account.nftVoteRecord.fetch("2iVquXaAfUyB8o3umejtVM18SoV7r8VU7KXehcAPYKg3");
+    const all = await client.program.account.nftVoteRecord.fetch("BxDYL291MPcx1Xo3Uz74Gya1b141TwDAch13L3B6Wb7L");
     // // const tx = await program.rpc.createRegistrar({});
-    //  console.log("ALL", all);
+      console.log("ALL", all);
   });
 });
