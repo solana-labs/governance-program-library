@@ -2,9 +2,9 @@ use anchor_lang::prelude::*;
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use solana_program::program_pack::IsInitialized;
 
-use spl_governance_tools::account::AccountMaxSize;
+use spl_governance_tools::account::{get_account_data, AccountMaxSize};
 
-use crate::id;
+use crate::{error::NftVoterError, id};
 
 /// Vote record indicating the given NFT voted on the Proposal
 /// The PDA of the record is ["nft-vote-record",proposal,nft_mint]
@@ -50,4 +50,32 @@ pub fn get_nft_vote_record_seeds<'a>(proposal: &'a Pubkey, nft_mint: &'a Pubkey)
 /// Returns NftVoteRecord PDA address
 pub fn get_nft_vote_record_address(proposal: &Pubkey, nft_mint: &Pubkey) -> Pubkey {
     Pubkey::find_program_address(&get_nft_vote_record_seeds(proposal, nft_mint), &id()).0
+}
+
+/// Deserializes account and checks owner program
+pub fn get_nft_vote_record_data(nft_vote_record_info: &AccountInfo) -> Result<NftVoteRecord> {
+    Ok(get_account_data::<NftVoteRecord>(
+        &id(),
+        nft_vote_record_info,
+    )?)
+}
+
+pub fn get_nft_vote_record_data_for_proposal_and_token_owner(
+    nft_vote_record_info: &AccountInfo,
+    proposal: &Pubkey,
+    governing_token_owner: &Pubkey,
+) -> Result<NftVoteRecord> {
+    let nft_vote_record = get_nft_vote_record_data(nft_vote_record_info)?;
+
+    require!(
+        nft_vote_record.proposal == *proposal,
+        NftVoterError::InvalidProposalForNftVoteRecord
+    );
+
+    require!(
+        nft_vote_record.governing_token_owner == *governing_token_owner,
+        NftVoterError::InvalidTokenOwnerForNftVoteRecord
+    );
+
+    Ok(nft_vote_record)
 }

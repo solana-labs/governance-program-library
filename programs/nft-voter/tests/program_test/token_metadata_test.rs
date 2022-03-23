@@ -58,7 +58,7 @@ impl TokenMetadataTest {
             self.program_id.as_ref(),
             &coll_mint_cookie.address.as_ref(),
         ];
-        let (coll_metadata_address, _) =
+        let (coll_metadata_key, _) =
             Pubkey::find_program_address(coll_metadata_seeds, &self.program_id);
 
         let coll_name = "NFT_C".to_string();
@@ -67,7 +67,7 @@ impl TokenMetadataTest {
 
         let create_coll_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v2(
             self.program_id,
-            coll_metadata_address,
+            coll_metadata_key,
             coll_mint_cookie.address,
             coll_mint_cookie.mint_authority.pubkey(),
             payer.clone(),
@@ -96,16 +96,16 @@ impl TokenMetadataTest {
             coll_mint_cookie.address.as_ref(),
             b"edition".as_ref(),
         ];
-        let (master_edition_address, _) =
+        let (master_edition_key, _) =
             Pubkey::find_program_address(master_edition_seeds, &self.program_id);
 
         let create_master_edition_ix = mpl_token_metadata::instruction::create_master_edition_v3(
             self.program_id,
-            master_edition_address,
+            master_edition_key,
             coll_mint_cookie.address,
             update_authority,
             coll_mint_cookie.mint_authority.pubkey(),
-            coll_metadata_address,
+            coll_metadata_key,
             payer,
             Some(0),
         );
@@ -119,8 +119,8 @@ impl TokenMetadataTest {
 
         Ok(NftCollectionCookie {
             mint: coll_mint_cookie.address,
-            metadata: coll_metadata_address,
-            master_edition: master_edition_address,
+            metadata: coll_metadata_key,
+            master_edition: master_edition_key,
         })
     }
 
@@ -143,7 +143,7 @@ impl TokenMetadataTest {
             self.program_id.as_ref(),
             &mint_cookie.address.as_ref(),
         ];
-        let (metadata_address, _) = Pubkey::find_program_address(metadata_seeds, &self.program_id);
+        let (metadata_key, _) = Pubkey::find_program_address(metadata_seeds, &self.program_id);
 
         let name = "TestNFT".to_string();
         let symbol = "NFT".to_string();
@@ -156,7 +156,7 @@ impl TokenMetadataTest {
 
         let create_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v2(
             self.program_id,
-            metadata_address,
+            metadata_key,
             mint_cookie.address,
             mint_cookie.mint_authority.pubkey(),
             self.bench.payer.pubkey(),
@@ -179,7 +179,7 @@ impl TokenMetadataTest {
         if verify_collection {
             let verify_collection = mpl_token_metadata::instruction::verify_collection(
                 self.program_id,
-                metadata_address,
+                metadata_key,
                 self.bench.payer.pubkey(),
                 self.bench.payer.pubkey(),
                 nft_collection_cookie.mint,
@@ -195,7 +195,7 @@ impl TokenMetadataTest {
 
         Ok(NftCookie {
             address: nft_account_cookie.address,
-            metadata: metadata_address,
+            metadata: metadata_key,
             mint_cookie,
         })
     }
