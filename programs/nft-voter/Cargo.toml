@@ -16,6 +16,7 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
+arrayref = "0.3.6"
 anchor-lang = { version = "0.22.1", features = ["init-if-needed"] }
 anchor-spl = "0.22.1"
 itertools = "0.10.2"

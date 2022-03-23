@@ -19,6 +19,20 @@ pub struct NftCollectionCookie {
     pub master_edition: Pubkey,
 }
 
+pub struct CreateNftArgs {
+    pub verify_collection: bool,
+    pub amount: u64,
+}
+
+impl Default for CreateNftArgs {
+    fn default() -> Self {
+        Self {
+            verify_collection: true,
+            amount: 1,
+        }
+    }
+}
+
 pub struct TokenMetadataTest {
     pub bench: Arc<ProgramTestBench>,
     pub program_id: Pubkey,
@@ -129,13 +143,18 @@ impl TokenMetadataTest {
         &self,
         nft_collection_cookie: &NftCollectionCookie,
         nft_owner_cookie: &WalletCookie,
-        verify_collection: bool,
+        args: Option<CreateNftArgs>,
     ) -> Result<NftCookie, BanksClientError> {
+        let CreateNftArgs {
+            verify_collection,
+            amount,
+        } = args.unwrap_or_default();
+
         // Crate NFT
         let mint_cookie = self.bench.with_mint().await?;
         let nft_account_cookie = self
             .bench
-            .with_tokens(&mint_cookie, &nft_owner_cookie.address, 1)
+            .with_tokens(&mint_cookie, &nft_owner_cookie.address, amount)
             .await?;
 
         let metadata_seeds = &[
