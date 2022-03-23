@@ -47,7 +47,7 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
 
     let nft_cookie1 = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, None)
         .await?;
 
     let nft_vote_record_cookies = nft_voter_test
@@ -137,7 +137,7 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
 
     let nft_cookie1 = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, None)
         .await?;
 
     let nft_vote_record_cookies = nft_voter_test

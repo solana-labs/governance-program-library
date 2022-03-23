@@ -1,6 +1,7 @@
 use crate::program_test::nft_voter_test::ConfigureCollectionArgs;
 use gpl_nft_voter::error::NftVoterError;
 use program_test::nft_voter_test::NftVoterTest;
+use program_test::token_metadata_test::CreateNftArgs;
 use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
@@ -43,7 +44,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 
     let nft1_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, None)
         .await?;
 
     nft_voter_test.bench.advance_clock().await;
@@ -111,12 +112,12 @@ async fn test_update_voter_weight_with_multiple_nfts() -> Result<(), TransportEr
 
     let nft_cookie1 = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, None)
         .await?;
 
     let nft_cookie2 = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, None)
         .await?;
 
     nft_voter_test.bench.advance_clock().await;
@@ -184,7 +185,7 @@ async fn test_update_voter_weight_with_cast_vote_not_allowed_error() -> Result<(
 
     let nft1_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, None)
         .await?;
 
     // Act
@@ -241,7 +242,14 @@ async fn test_update_voter_weight_with_unverified_collection_error() -> Result<(
     // Create NFT without verified collection
     let nft1_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, false)
+        .with_nft_v2(
+            &nft_collection_cookie,
+            &voter_cookie,
+            Some(CreateNftArgs {
+                verify_collection: false,
+                ..Default::default()
+            }),
+        )
         .await?;
 
     // Act
@@ -299,7 +307,7 @@ async fn test_update_voter_weight_with_invalid_owner_error() -> Result<(), Trans
 
     let nft1_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie2, true)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie2, None)
         .await?;
 
     // Act
@@ -357,7 +365,7 @@ async fn test_update_voter_weight_with_invalid_collection_error() -> Result<(), 
 
     let nft1_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie2, &voter_cookie, true)
+        .with_nft_v2(&nft_collection_cookie2, &voter_cookie, None)
         .await?;
 
     // Act
@@ -413,12 +421,19 @@ async fn test_update_voter_weight_with_invalid_metadata_error() -> Result<(), Tr
 
     let mut nft1_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, false)
+        .with_nft_v2(
+            &nft_collection_cookie,
+            &voter_cookie,
+            Some(CreateNftArgs {
+                verify_collection: false,
+                ..Default::default()
+            }),
+        )
         .await?;
 
     let nft2_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, None)
         .await?;
 
     // Try to use verified NFT Metadata
@@ -474,7 +489,7 @@ async fn test_update_voter_weight_with_same_nft_error() -> Result<(), TransportE
 
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, true)
+        .with_nft_v2(&nft_collection_cookie, &voter_cookie, None)
         .await?;
 
     // Act

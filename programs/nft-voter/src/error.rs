@@ -53,6 +53,9 @@ pub enum NftVoterError {
     #[msg("Duplicated NFT detected")]
     DuplicatedNftDetected,
 
+    #[msg("Invalid NFT amount")]
+    InvalidNftAmount,
+
     #[msg("NFT already voted")]
     NftAlreadyVoted,
 
