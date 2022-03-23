@@ -6,7 +6,7 @@ use solana_sdk::{signature::Keypair, signer::Signer};
 use spl_governance::{
     instruction::{
         create_governance, create_proposal, create_realm, create_token_owner_record,
-        deposit_governing_tokens, sign_off_proposal,
+        deposit_governing_tokens, relinquish_vote, sign_off_proposal,
     },
     state::{
         enums::{
@@ -344,6 +344,30 @@ impl GovernanceTest {
             address: token_owner_record_address,
             account,
         })
+    }
+
+    #[allow(dead_code)]
+    pub async fn relinquish_vote(
+        &mut self,
+        proposal_cookie: &ProposalCookie,
+        token_owner_cookie: &WalletCookie,
+        token_owner_record_cookie: &TokenOwnerRecordCookie,
+    ) -> Result<(), BanksClientError> {
+        let relinquish_vote_ix = relinquish_vote(
+            &self.program_id,
+            &proposal_cookie.account.governance,
+            &proposal_cookie.address,
+            &token_owner_record_cookie.address,
+            &proposal_cookie.account.governing_token_mint,
+            Some(token_owner_record_cookie.account.governing_token_owner),
+            Some(self.bench.payer.pubkey()),
+        );
+
+        self.bench
+            .process_transaction(&[relinquish_vote_ix], Some(&[&token_owner_cookie.signer]))
+            .await?;
+
+        Ok(())
     }
 
     #[allow(dead_code)]

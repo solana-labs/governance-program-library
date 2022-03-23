@@ -342,7 +342,7 @@ impl NftVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn relinquish_vote(
+    pub async fn relinquish_nft_vote(
         &mut self,
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &VoterWeightRecordCookie,

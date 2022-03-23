@@ -65,7 +65,7 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
     // Act
 
     nft_voter_test
-        .relinquish_vote(
+        .relinquish_nft_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &proposal_cookie,
@@ -152,10 +152,20 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
         )
         .await?;
 
+    // Relinquish Vote from spl-gov
+    nft_voter_test
+        .governance
+        .relinquish_vote(
+            &proposal_cookie,
+            &voter_cookie,
+            &voter_token_owner_record_cookie,
+        )
+        .await?;
+
     // Act
 
     nft_voter_test
-        .relinquish_vote(
+        .relinquish_nft_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &proposal_cookie,
