@@ -1,6 +1,8 @@
 use crate::{
-    error::NftVoterError, id, state::CollectionConfig,
-    tools::token_metadata::get_token_metadata_for_mint,
+    error::NftVoterError,
+    id,
+    state::CollectionConfig,
+    tools::{spl_token::get_spl_token_amount, token_metadata::get_token_metadata_for_mint},
 };
 use anchor_lang::prelude::*;
 use spl_governance::tools::spl_token::{get_spl_token_mint, get_spl_token_owner};
@@ -72,8 +74,12 @@ pub fn resolve_nft_vote_weight_and_mint(
     if unique_nft_mints.contains(&nft_mint) {
         return Err(NftVoterError::DuplicatedNftDetected.into());
     }
-
     unique_nft_mints.push(nft_mint);
+
+    // Ensure the token amount is exactly 1
+    let nft_amount = get_spl_token_amount(nft_info)?;
+
+    require!(nft_amount == 1, NftVoterError::InvalidNftAmount);
 
     let nft_metadata = get_token_metadata_for_mint(nft_metadata_info, &nft_mint)?;
 

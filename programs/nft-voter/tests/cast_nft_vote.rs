@@ -762,14 +762,18 @@ async fn test_cast_nft_vote_with_no_nft_error() -> Result<(), TransportError> {
 
     let nft_cookie1 = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, None)
+        .with_nft_v2(
+            &nft_collection_cookie,
+            &voter_cookie,
+            Some(CreateNftArgs {
+                amount: 0,
+                ..Default::default()
+            }),
+        )
         .await?;
 
-    nft_voter_test.bench.advance_clock().await;
-    let clock = nft_voter_test.bench.get_clock().await;
-
     // Act
-    let nft_vote_record_cookies = nft_voter_test
+    let err = nft_voter_test
         .cast_nft_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
@@ -779,29 +783,12 @@ async fn test_cast_nft_vote_with_no_nft_error() -> Result<(), TransportError> {
             &voter_token_owner_record_cookie,
             &[&nft_cookie1],
         )
-        .await?;
+        .await
+        .err()
+        .unwrap();
 
     // Assert
-    let nft_vote_record = nft_voter_test
-        .get_nf_vote_record_account(&nft_vote_record_cookies[0].address)
-        .await;
-
-    assert_eq!(nft_vote_record_cookies[0].account, nft_vote_record);
-
-    let voter_weight_record = nft_voter_test
-        .get_voter_weight_record(&voter_weight_record_cookie.address)
-        .await;
-
-    assert_eq!(voter_weight_record.voter_weight, 10);
-    assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
-    assert_eq!(
-        voter_weight_record.weight_action,
-        Some(VoterWeightAction::CastVote.into())
-    );
-    assert_eq!(
-        voter_weight_record.weight_action_target,
-        Some(proposal_cookie.address)
-    );
+    assert_nft_voter_err(err, NftVoterError::InvalidNftAmount);
 
     Ok(())
 }
