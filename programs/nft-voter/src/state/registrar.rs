@@ -69,8 +69,9 @@ pub fn resolve_nft_vote_weight_and_mint(
         NftVoterError::VoterDoesNotOwnNft
     );
 
-    // Ensure the same NFT was not provided more than once
     let nft_mint = get_spl_token_mint(nft_info)?;
+
+    // Ensure the same NFT was not provided more than once
     if unique_nft_mints.contains(&nft_mint) {
         return Err(NftVoterError::DuplicatedNftDetected.into());
     }
