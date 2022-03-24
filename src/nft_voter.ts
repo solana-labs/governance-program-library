@@ -173,7 +173,7 @@ export type NftVoter = {
         },
         {
           "name": "governingTokenOwner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -244,7 +244,7 @@ export type NftVoter = {
         },
         {
           "name": "governingTokenOwner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -456,7 +456,7 @@ export type NftVoter = {
     {
       "code": 6001,
       "name": "InvalidRealmForRegistrar",
-      "msg": "Invalid Registrar Realm"
+      "msg": "Invalid Realm for Registrar"
     },
     {
       "code": 6002,
@@ -491,7 +491,7 @@ export type NftVoter = {
     {
       "code": 6008,
       "name": "InvalidTokenOwnerForVoterWeightRecord",
-      "msg": "Invalid VoterWeightRecord Owner"
+      "msg": "Invalid TokenOwner for VoterWeightRecord"
     },
     {
       "code": 6009,
@@ -741,7 +741,7 @@ export const IDL: NftVoter = {
         },
         {
           "name": "governingTokenOwner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -812,7 +812,7 @@ export const IDL: NftVoter = {
         },
         {
           "name": "governingTokenOwner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -1024,7 +1024,7 @@ export const IDL: NftVoter = {
     {
       "code": 6001,
       "name": "InvalidRealmForRegistrar",
-      "msg": "Invalid Registrar Realm"
+      "msg": "Invalid Realm for Registrar"
     },
     {
       "code": 6002,
@@ -1059,7 +1059,7 @@ export const IDL: NftVoter = {
     {
       "code": 6008,
       "name": "InvalidTokenOwnerForVoterWeightRecord",
-      "msg": "Invalid VoterWeightRecord Owner"
+      "msg": "Invalid TokenOwner for VoterWeightRecord"
     },
     {
       "code": 6009,
