@@ -8,6 +8,9 @@ use crate::error::NftVoterError;
 /// Casts NFT vote. The NFTs used for voting are tracked using NftVoteRecord accounts
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the target Proposal only
 /// and hance the instruction has to be executed inside the same transaction as spl-gov CastVote
+/// 
+/// CastNftVote instruction and NftVoteRecord are not directional. They doesn't record vote choice (ex Yes/No)
+/// VoteChoice is recorded by spl-gov in VoteRecord and this CastNftVote only tracks voting NFTs
 #[derive(Accounts)]
 #[instruction(proposal: Pubkey)]
 pub struct CastNftVote<'info> {
