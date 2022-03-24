@@ -24,6 +24,7 @@ pub struct RelinquishNftVote<'info> {
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
+    /// Governance account the Proposal is for
     #[account(owner = registrar.governance_program_id)]
     pub governance: UncheckedAccount<'info>,
 
