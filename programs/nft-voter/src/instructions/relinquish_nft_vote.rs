@@ -20,9 +20,6 @@ pub struct RelinquishNftVote<'info> {
 
         constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
         @ NftVoterError::InvalidVoterWeightRecordMint,
-
-        constraint = voter_weight_record.governing_token_owner == governing_token_owner.key()
-        @ NftVoterError::InvalidTokenOwnerForVoterWeightRecord,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
@@ -33,7 +30,9 @@ pub struct RelinquishNftVote<'info> {
     pub proposal: UncheckedAccount<'info>,
 
     /// The token owner who cast the original vote
-    #[account(mut)]
+    #[account(mut,
+        address = voter_weight_record.governing_token_owner  @ NftVoterError::InvalidTokenOwnerForVoterWeightRecord
+    )]
     pub governing_token_owner: Signer<'info>,
 
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
