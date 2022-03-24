@@ -459,7 +459,7 @@ impl NftVoterTest {
         Ok(CollectionConfigCookie { collection_config })
     }
 
-    /// Casts NFT vote
+    /// Casts NFT Vote and spl-gov Vote
     #[allow(dead_code)]
     pub async fn cast_nft_vote(
         &mut self,
