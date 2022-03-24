@@ -11,7 +11,7 @@ pub mod tools;
 
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
-declare_id!("FDfF7jzJDCEkFWNi3is487k8rFPJxFkU821t2pQ1vDr1");
+declare_id!("GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw");
 
 #[program]
 pub mod nft_voter {
