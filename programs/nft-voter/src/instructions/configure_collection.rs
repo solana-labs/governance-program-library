@@ -8,8 +8,8 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 
-use crate::state::{CollectionConfig, Registrar};
-use crate::{error::NftVoterError, state::MaxVoterWeightRecord};
+use crate::state::{CollectionConfig, Registrar, max_voter_weight_record::MaxVoterWeightRecord};
+use crate::{error::NftVoterError};
 
 /// Configures NFT voting collection which defines what NFTs can be used for governances
 /// and what weight they have

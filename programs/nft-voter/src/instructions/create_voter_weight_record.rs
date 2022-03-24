@@ -1,8 +1,7 @@
+use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
-
-use crate::state::VoterWeightRecord;
 
 /// Creates VoterWeightRecord used by spl-gov
 /// This instruction should only be executed once per realm/governing_token_mint/governing_token_owner
@@ -49,9 +48,6 @@ pub fn create_voter_weight_record(
     )?;
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
-
-    voter_weight_record.account_discriminator =
-        spl_governance_addin_api::voter_weight::VoterWeightRecord::ACCOUNT_DISCRIMINATOR;
 
     voter_weight_record.realm = ctx.accounts.realm.key();
     voter_weight_record.governing_token_mint = ctx.accounts.realm_governing_token_mint.key();

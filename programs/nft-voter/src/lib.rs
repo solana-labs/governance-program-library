@@ -9,12 +9,14 @@ pub mod state;
 
 pub mod tools;
 
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
+use crate::state::*;
 
 declare_id!("GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw");
 
 #[program]
 pub mod nft_voter {
+
+    use crate::state::VoterWeightAction;
 
     use super::*;
     pub fn create_registrar(ctx: Context<CreateRegistrar>, max_collections: u8) -> Result<()> {
