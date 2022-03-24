@@ -75,6 +75,7 @@ pub fn cast_nft_vote<'a,'b,'c,'info>(ctx: Context<'a,'b,'c,'info,CastNftVote<'in
             proposal,
             nft_mint,
             governing_token_owner:*governing_token_owner,
+            reserved: [0; 8],
         };
 
         // Anchor doesn't natively support dynamic account creation using remaining_accounts
