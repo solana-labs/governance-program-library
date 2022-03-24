@@ -67,6 +67,8 @@ pub fn cast_nft_vote<'a,'b,'c,'info>(ctx: Context<'a,'b,'c,'info,CastNftVote<'in
         voter_weight = voter_weight.checked_add(nft_vote_weight as u64).unwrap();
 
         // Create NFT vote record to ensure the same NFT hasn't been already used for voting
+        // Note: The correct PDA of the NftVoteRecord is validated in create_and_serialize_account_signed
+        // It ensures the NftVoteRecord is for ('nft-vote-record',proposal,nft_mint) seeds
         require!(
             nft_vote_record_info.data_is_empty(),
             NftVoterError::NftAlreadyVoted
