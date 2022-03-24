@@ -303,6 +303,43 @@ export type NftVoter = {
       }
     },
     {
+      "name": "registrar",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "governanceProgramId",
+            "type": "publicKey"
+          },
+          {
+            "name": "realm",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "collectionConfigs",
+            "type": {
+              "vec": {
+                "defined": "CollectionConfig"
+              }
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                128
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "voterWeightRecord",
       "type": {
         "kind": "struct",
@@ -349,43 +386,6 @@ export type NftVoter = {
               "array": [
                 "u8",
                 8
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "registrar",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "governanceProgramId",
-            "type": "publicKey"
-          },
-          {
-            "name": "realm",
-            "type": "publicKey"
-          },
-          {
-            "name": "governingTokenMint",
-            "type": "publicKey"
-          },
-          {
-            "name": "collectionConfigs",
-            "type": {
-              "vec": {
-                "defined": "CollectionConfig"
-              }
-            }
-          },
-          {
-            "name": "reserved",
-            "type": {
-              "array": [
-                "u8",
-                128
               ]
             }
           }
@@ -871,6 +871,43 @@ export const IDL: NftVoter = {
       }
     },
     {
+      "name": "registrar",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "governanceProgramId",
+            "type": "publicKey"
+          },
+          {
+            "name": "realm",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "collectionConfigs",
+            "type": {
+              "vec": {
+                "defined": "CollectionConfig"
+              }
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                128
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "voterWeightRecord",
       "type": {
         "kind": "struct",
@@ -917,43 +954,6 @@ export const IDL: NftVoter = {
               "array": [
                 "u8",
                 8
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "registrar",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "governanceProgramId",
-            "type": "publicKey"
-          },
-          {
-            "name": "realm",
-            "type": "publicKey"
-          },
-          {
-            "name": "governingTokenMint",
-            "type": "publicKey"
-          },
-          {
-            "name": "collectionConfigs",
-            "type": {
-              "vec": {
-                "defined": "CollectionConfig"
-              }
-            }
-          },
-          {
-            "name": "reserved",
-            "type": {
-              "array": [
-                "u8",
-                128
               ]
             }
           }
