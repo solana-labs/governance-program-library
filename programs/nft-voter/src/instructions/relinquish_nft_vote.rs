@@ -22,7 +22,7 @@ pub struct RelinquishNftVote<'info> {
         @ NftVoterError::InvalidVoterWeightRecordMint,
 
         constraint = voter_weight_record.governing_token_owner == governing_token_owner.key()
-        @ NftVoterError::InvalidVoterWeightRecordOwner,
+        @ NftVoterError::InvalidTokenOwnerForVoterWeightRecord,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 

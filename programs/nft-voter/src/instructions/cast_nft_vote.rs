@@ -21,14 +21,13 @@ pub struct CastNftVote<'info> {
 
         constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
         @ NftVoterError::InvalidVoterWeightRecordMint,
-
-        constraint = voter_weight_record.governing_token_owner == governing_token_owner.key()
-        @ NftVoterError::InvalidVoterWeightRecordOwner,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
     /// The token owner who casts the vote
-    #[account(mut)]
+    #[account(mut,
+        address = voter_weight_record.governing_token_owner @ NftVoterError::InvalidTokenOwnerForVoterWeightRecord
+    )]
     pub governing_token_owner: Signer<'info>,
     
     /// The account which pays for the transaction 

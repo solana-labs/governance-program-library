@@ -490,7 +490,7 @@ export type NftVoter = {
     },
     {
       "code": 6008,
-      "name": "InvalidVoterWeightRecordOwner",
+      "name": "InvalidTokenOwnerForVoterWeightRecord",
       "msg": "Invalid VoterWeightRecord Owner"
     },
     {
@@ -1058,7 +1058,7 @@ export const IDL: NftVoter = {
     },
     {
       "code": 6008,
-      "name": "InvalidVoterWeightRecordOwner",
+      "name": "InvalidTokenOwnerForVoterWeightRecord",
       "msg": "Invalid VoterWeightRecord Owner"
     },
     {
