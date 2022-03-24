@@ -2,10 +2,12 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::{AccountMeta, Pubkey};
 
-use gpl_nft_voter::tools::governance::get_max_voter_weight_record_address;
+use gpl_nft_voter::state::max_voter_weight_record::{
+    get_max_voter_weight_record_address, MaxVoterWeightRecord,
+};
+use gpl_nft_voter::state::*;
 use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{self, Vote, VoteChoice};
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 use gpl_nft_voter::state::{
     get_nft_vote_record_address, get_registrar_address, CollectionConfig, NftVoteRecord, Registrar,
@@ -15,8 +17,6 @@ use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
-use spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord;
-use spl_governance_addin_api::voter_weight::VoterWeightRecord;
 
 use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
@@ -229,7 +229,6 @@ impl NftVoterTest {
             .await?;
 
         let account = VoterWeightRecord {
-            account_discriminator: VoterWeightRecord::ACCOUNT_DISCRIMINATOR,
             realm: registrar_cookie.account.realm,
             governing_token_mint: registrar_cookie.account.governing_token_mint,
             governing_token_owner,
@@ -292,7 +291,6 @@ impl NftVoterTest {
             .await?;
 
         let account = MaxVoterWeightRecord {
-            account_discriminator: MaxVoterWeightRecord::ACCOUNT_DISCRIMINATOR,
             realm: registrar_cookie.account.realm,
             governing_token_mint: registrar_cookie.account.governing_token_mint,
             max_voter_weight: 0,
@@ -564,11 +562,13 @@ impl NftVoterTest {
         &self,
         max_voter_weight_record: &Pubkey,
     ) -> MaxVoterWeightRecord {
-        self.bench.get_borsh_account(max_voter_weight_record).await
+        self.bench
+            .get_anchor_account(*max_voter_weight_record)
+            .await
     }
 
     #[allow(dead_code)]
     pub async fn get_voter_weight_record(&self, voter_weight_record: &Pubkey) -> VoterWeightRecord {
-        self.bench.get_borsh_account(voter_weight_record).await
+        self.bench.get_anchor_account(*voter_weight_record).await
     }
 }

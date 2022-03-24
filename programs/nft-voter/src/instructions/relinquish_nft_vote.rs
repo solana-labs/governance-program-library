@@ -2,9 +2,8 @@ use anchor_lang::prelude::*;
 use spl_governance::state::{enums::ProposalState, governance, proposal};
 use spl_governance_tools::account::dispose_account;
 use crate::error::NftVoterError;
+use crate::state::*;
 use crate::tools::governance::get_vote_record_address;
-use crate::{state::*};
-
 use crate::state::{get_nft_vote_record_data_for_proposal_and_token_owner, Registrar};
 
 /// Disposes NftVoteRecord and recovers the rent from the accounts   

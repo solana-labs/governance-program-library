@@ -1,11 +1,9 @@
 use crate::{
-    error::NftVoterError,
-    state::{Registrar, VoterWeightRecord, resolve_nft_vote_weight_and_mint},
+    error::NftVoterError
 };
+use crate::state::*;
 use anchor_lang::prelude::*;
 use itertools::Itertools;
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
-
 
 
 /// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...

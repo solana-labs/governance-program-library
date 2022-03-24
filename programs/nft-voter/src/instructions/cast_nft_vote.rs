@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::{Accounts};
 use itertools::Itertools;
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use spl_governance_tools::account::create_and_serialize_account_signed;
 use crate::{state::*, id};
 use crate::error::NftVoterError;
