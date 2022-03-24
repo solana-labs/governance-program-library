@@ -535,26 +535,31 @@ export type NftVoter = {
     },
     {
       "code": 6017,
+      "name": "InvalidNftAmount",
+      "msg": "Invalid NFT amount"
+    },
+    {
+      "code": 6018,
       "name": "NftAlreadyVoted",
       "msg": "NFT already voted"
     },
     {
-      "code": 6018,
+      "code": 6019,
       "name": "InvalidProposalForNftVoteRecord",
       "msg": "Invalid Proposal for NftVoteRecord"
     },
     {
-      "code": 6019,
+      "code": 6020,
       "name": "InvalidTokenOwnerForNftVoteRecord",
       "msg": "Invalid TokenOwner for NftVoteRecord"
     },
     {
-      "code": 6020,
+      "code": 6021,
       "name": "VoteRecordMustBeWithdrawn",
       "msg": "VoteRecord must be withdrawn"
     },
     {
-      "code": 6021,
+      "code": 6022,
       "name": "InvalidVoteRecordForNftVoteRecord",
       "msg": "Invalid VoteRecord for NftVoteRecord"
     }
@@ -1098,26 +1103,31 @@ export const IDL: NftVoter = {
     },
     {
       "code": 6017,
+      "name": "InvalidNftAmount",
+      "msg": "Invalid NFT amount"
+    },
+    {
+      "code": 6018,
       "name": "NftAlreadyVoted",
       "msg": "NFT already voted"
     },
     {
-      "code": 6018,
+      "code": 6019,
       "name": "InvalidProposalForNftVoteRecord",
       "msg": "Invalid Proposal for NftVoteRecord"
     },
     {
-      "code": 6019,
+      "code": 6020,
       "name": "InvalidTokenOwnerForNftVoteRecord",
       "msg": "Invalid TokenOwner for NftVoteRecord"
     },
     {
-      "code": 6020,
+      "code": 6021,
       "name": "VoteRecordMustBeWithdrawn",
       "msg": "VoteRecord must be withdrawn"
     },
     {
-      "code": 6021,
+      "code": 6022,
       "name": "InvalidVoteRecordForNftVoteRecord",
       "msg": "Invalid VoteRecord for NftVoteRecord"
     }
