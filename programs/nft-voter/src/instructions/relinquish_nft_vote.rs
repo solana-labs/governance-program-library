@@ -1,8 +1,8 @@
 use anchor_lang::prelude::*;
-use spl_governance::state::{vote_record,token_owner_record};
 use spl_governance::state::{enums::ProposalState, governance, proposal};
 use spl_governance_tools::account::dispose_account;
 use crate::error::NftVoterError;
+use crate::tools::governance::get_vote_record_address;
 use crate::{state::*};
 
 use crate::state::{get_nft_vote_record_data_for_proposal_and_token_owner, Registrar};
@@ -71,16 +71,12 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
         let vote_record_info = &ctx.accounts.vote_record.to_account_info();
 
         // Ensure the given VoteRecord address matches the expected PDA
-        let token_owner_record_key = token_owner_record::get_token_owner_record_address(
+        let vote_record_key = get_vote_record_address(
             &registrar.governance_program_id,
-            &registrar.realm,
+            &registrar.realm, 
             &registrar.governing_token_mint,
-            &ctx.accounts.governing_token_owner.key());
-
-        let vote_record_key = vote_record::get_vote_record_address(
-            &registrar.governance_program_id,
-            &ctx.accounts.proposal.key(),
-            &token_owner_record_key);
+            &ctx.accounts.governing_token_owner.key(),
+            &ctx.accounts.proposal.key());
         
         require!(
             vote_record_key == vote_record_info.key(),
