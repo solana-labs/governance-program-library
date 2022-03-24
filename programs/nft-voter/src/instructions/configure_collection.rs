@@ -22,7 +22,8 @@ pub struct ConfigureCollection<'info> {
     pub registrar: Account<'info, Registrar>,
 
     #[account(
-       address = registrar.realm @ NftVoterError::InvalidRealmForRegistrar
+       address = registrar.realm @ NftVoterError::InvalidRealmForRegistrar,
+       owner = registrar.governance_program_id
     )]
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     pub realm: UncheckedAccount<'info>,

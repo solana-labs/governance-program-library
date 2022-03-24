@@ -1,4 +1,3 @@
-use anchor_lang::prelude::Pubkey;
 use gpl_nft_voter::error::NftVoterError;
 use program_test::{
     nft_voter_test::NftVoterTest,
@@ -238,6 +237,9 @@ async fn test_configure_collection_with_invalid_realm_error() -> Result<(), Tran
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
+    // Try to use a different Realm
+    let realm_cookie2 = nft_voter_test.governance.with_realm().await?;
+
     // Act
     let err = nft_voter_test
         .with_collection_using_ix(
@@ -245,7 +247,7 @@ async fn test_configure_collection_with_invalid_realm_error() -> Result<(), Tran
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,
             None,
-            |i| i.accounts[1].pubkey = Pubkey::new_unique(), // realm
+            |i| i.accounts[1].pubkey = realm_cookie2.address, // realm
             None,
         )
         .await
