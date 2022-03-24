@@ -173,7 +173,7 @@ export type NftVoter = {
         },
         {
           "name": "governingTokenOwner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -244,7 +244,7 @@ export type NftVoter = {
         },
         {
           "name": "governingTokenOwner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -455,8 +455,8 @@ export type NftVoter = {
     },
     {
       "code": 6001,
-      "name": "InvalidRegistrarRealm",
-      "msg": "Invalid Registrar Realm"
+      "name": "InvalidRealmForRegistrar",
+      "msg": "Invalid Realm for Registrar"
     },
     {
       "code": 6002,
@@ -490,8 +490,8 @@ export type NftVoter = {
     },
     {
       "code": 6008,
-      "name": "InvalidVoterWeightRecordOwner",
-      "msg": "Invalid VoterWeightRecord Owner"
+      "name": "InvalidTokenOwnerForVoterWeightRecord",
+      "msg": "Invalid TokenOwner for VoterWeightRecord"
     },
     {
       "code": 6009,
@@ -741,7 +741,7 @@ export const IDL: NftVoter = {
         },
         {
           "name": "governingTokenOwner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -812,7 +812,7 @@ export const IDL: NftVoter = {
         },
         {
           "name": "governingTokenOwner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -1023,8 +1023,8 @@ export const IDL: NftVoter = {
     },
     {
       "code": 6001,
-      "name": "InvalidRegistrarRealm",
-      "msg": "Invalid Registrar Realm"
+      "name": "InvalidRealmForRegistrar",
+      "msg": "Invalid Realm for Registrar"
     },
     {
       "code": 6002,
@@ -1058,8 +1058,8 @@ export const IDL: NftVoter = {
     },
     {
       "code": 6008,
-      "name": "InvalidVoterWeightRecordOwner",
-      "msg": "Invalid VoterWeightRecord Owner"
+      "name": "InvalidTokenOwnerForVoterWeightRecord",
+      "msg": "Invalid TokenOwner for VoterWeightRecord"
     },
     {
       "code": 6009,

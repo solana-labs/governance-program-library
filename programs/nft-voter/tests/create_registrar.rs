@@ -8,11 +8,7 @@ use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::signature::Keypair;
 
-use program_test::tools::{
-    assert_anchor_err, assert_gov_tools_err, assert_ix_err, assert_nft_voter_err,
-};
-
-use spl_governance_tools::error::GovernanceToolsError;
+use program_test::tools::{assert_anchor_err, assert_ix_err, assert_nft_voter_err};
 
 #[tokio::test]
 async fn test_create_registrar() -> Result<(), BanksClientError> {
@@ -89,18 +85,21 @@ async fn test_create_registrar_with_invalid_spl_gov_program_id_error(
     let mut realm_cookie = nft_voter_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
 
+    // Try to use a different program id
+    let governance_program_id = nft_voter_test.program_id;
+
     // Act
     let err = nft_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
-            |i| i.accounts[1].pubkey = Pubkey::new_unique(), //governance_program_id
+            |i| i.accounts[1].pubkey = governance_program_id, //governance_program_id
             None,
         )
         .await
         .err()
         .unwrap();
 
-    assert_gov_tools_err(err, GovernanceToolsError::InvalidAccountOwner);
+    assert_anchor_err(err, anchor_lang::error::ErrorCode::ConstraintOwner);
 
     Ok(())
 }

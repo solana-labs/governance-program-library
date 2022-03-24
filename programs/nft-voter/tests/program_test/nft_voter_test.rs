@@ -67,6 +67,7 @@ pub struct NftVoteRecordCookie {
 }
 
 pub struct NftVoterTest {
+    pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
     pub governance: GovernanceTest,
     pub token_metadata: TokenMetadataTest,
@@ -96,6 +97,7 @@ impl NftVoterTest {
         let token_metadata_bench = TokenMetadataTest::new(bench_rc.clone());
 
         Self {
+            program_id,
             bench: bench_rc,
             governance: governance_bench,
             token_metadata: token_metadata_bench,

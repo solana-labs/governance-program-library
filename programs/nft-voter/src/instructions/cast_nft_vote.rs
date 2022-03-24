@@ -7,7 +7,11 @@ use crate::error::NftVoterError;
 
 /// Casts NFT vote. The NFTs used for voting are tracked using NftVoteRecord accounts
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the target Proposal only
-/// and hance the instruction has to be executed inside the same transaction as spl-gov CastVote
+/// and hance the instruction has to be executed inside the same transaction as spl-gov.CastVote
+/// 
+/// CastNftVote instruction and NftVoteRecord are not directional. They don't record vote choice (ex Yes/No)
+/// VoteChoice is recorded by spl-gov in VoteRecord and this CastNftVote only tracks voting NFTs
+/// 
 #[derive(Accounts)]
 #[instruction(proposal: Pubkey)]
 pub struct CastNftVote<'info> {
@@ -21,14 +25,13 @@ pub struct CastNftVote<'info> {
 
         constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
         @ NftVoterError::InvalidVoterWeightRecordMint,
-
-        constraint = voter_weight_record.governing_token_owner == governing_token_owner.key()
-        @ NftVoterError::InvalidVoterWeightRecordOwner,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
     /// The token owner who casts the vote
-    #[account(mut)]
+    #[account(
+        address = voter_weight_record.governing_token_owner @ NftVoterError::InvalidTokenOwnerForVoterWeightRecord
+    )]
     pub governing_token_owner: Signer<'info>,
     
     /// The account which pays for the transaction 
@@ -64,6 +67,8 @@ pub fn cast_nft_vote<'a,'b,'c,'info>(ctx: Context<'a,'b,'c,'info,CastNftVote<'in
         voter_weight = voter_weight.checked_add(nft_vote_weight as u64).unwrap();
 
         // Create NFT vote record to ensure the same NFT hasn't been already used for voting
+        // Note: The correct PDA of the NftVoteRecord is validated in create_and_serialize_account_signed
+        // It ensures the NftVoteRecord is for ('nft-vote-record',proposal,nft_mint) seeds
         require!(
             nft_vote_record_info.data_is_empty(),
             NftVoterError::NftAlreadyVoted

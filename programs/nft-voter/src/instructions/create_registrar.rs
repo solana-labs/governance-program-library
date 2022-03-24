@@ -23,6 +23,7 @@ pub struct CreateRegistrar<'info> {
 
     /// The program id of the spl-governance program the realm belongs to
     /// CHECK: Can be any instance of spl-governance and it's not known at the compilation time
+    #[account(executable)]
     pub governance_program_id: UncheckedAccount<'info>,
 
     /// An spl-governance Realm
@@ -32,6 +33,7 @@ pub struct CreateRegistrar<'info> {
     /// - governing_token_mint must be the community or council mint
     /// - realm_authority is realm.authority
     /// CHECK: Owned by spl-governance instance specified in governance_program_id
+    #[account(owner = governance_program_id.key())]
     pub realm: UncheckedAccount<'info>,
 
     /// Either the realm community mint or the council mint.

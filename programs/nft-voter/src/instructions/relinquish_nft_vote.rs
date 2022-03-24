@@ -20,23 +20,28 @@ pub struct RelinquishNftVote<'info> {
 
         constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
         @ NftVoterError::InvalidVoterWeightRecordMint,
-
-        constraint = voter_weight_record.governing_token_owner == governing_token_owner.key()
-        @ NftVoterError::InvalidVoterWeightRecordOwner,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
+    /// Governance account the Proposal is for
+    #[account(owner = registrar.governance_program_id)]
     pub governance: UncheckedAccount<'info>,
 
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
+    #[account(owner = registrar.governance_program_id)]
     pub proposal: UncheckedAccount<'info>,
 
     /// The token owner who cast the original vote
-    #[account(mut)]
+    #[account(
+        address = voter_weight_record.governing_token_owner  @ NftVoterError::InvalidTokenOwnerForVoterWeightRecord
+    )]
     pub governing_token_owner: Signer<'info>,
 
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
+    /// The account is used to validate that it doesn't exist and if it doesn't then Anchor owner check throws error
+    /// The check is disabled here and performed inside the instruction 
+    /// #[account(owner = registrar.governance_program_id)] 
     pub vote_record: UncheckedAccount<'info>,
 
     /// CHECK: The beneficiary who receives lamports from the disposed NftVoterRecord accounts can be any account

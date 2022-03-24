@@ -342,7 +342,7 @@ async fn test_cast_nft_vote_invalid_voter_error() -> Result<(), TransportError> 
         .unwrap();
 
     // Assert
-    assert_nft_voter_err(err, NftVoterError::InvalidVoterWeightRecordOwner);
+    assert_nft_voter_err(err, NftVoterError::InvalidTokenOwnerForVoterWeightRecord);
 
     Ok(())
 }

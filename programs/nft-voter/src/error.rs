@@ -5,8 +5,8 @@ pub enum NftVoterError {
     #[msg("Invalid Realm Authority")]
     InvalidRealmAuthority,
 
-    #[msg("Invalid Registrar Realm")]
-    InvalidRegistrarRealm,
+    #[msg("Invalid Realm for Registrar")]
+    InvalidRealmForRegistrar,
 
     #[msg("Invalid Collection Size")]
     InvalidCollectionSize,
@@ -26,8 +26,8 @@ pub enum NftVoterError {
     #[msg("Invalid VoterWeightRecord Mint")]
     InvalidVoterWeightRecordMint,
 
-    #[msg("Invalid VoterWeightRecord Owner")]
-    InvalidVoterWeightRecordOwner,
+    #[msg("Invalid TokenOwner for VoterWeightRecord")]
+    InvalidTokenOwnerForVoterWeightRecord,
 
     #[msg("Collection must be verified")]
     CollectionMustBeVerified,
