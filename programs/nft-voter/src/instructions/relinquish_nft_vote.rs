@@ -32,7 +32,7 @@ pub struct RelinquishNftVote<'info> {
     pub proposal: UncheckedAccount<'info>,
 
     /// The token owner who cast the original vote
-    #[account(mut,
+    #[account(
         address = voter_weight_record.governing_token_owner  @ NftVoterError::InvalidTokenOwnerForVoterWeightRecord
     )]
     pub governing_token_owner: Signer<'info>,
