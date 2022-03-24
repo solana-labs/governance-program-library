@@ -455,7 +455,7 @@ export type NftVoter = {
     },
     {
       "code": 6001,
-      "name": "InvalidRegistrarRealm",
+      "name": "InvalidRealmForRegistrar",
       "msg": "Invalid Registrar Realm"
     },
     {
@@ -1023,7 +1023,7 @@ export const IDL: NftVoter = {
     },
     {
       "code": 6001,
-      "name": "InvalidRegistrarRealm",
+      "name": "InvalidRealmForRegistrar",
       "msg": "Invalid Registrar Realm"
     },
     {

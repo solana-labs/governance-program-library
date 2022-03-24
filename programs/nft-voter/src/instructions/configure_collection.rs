@@ -18,12 +18,12 @@ use crate::{error::NftVoterError};
 #[derive(Accounts)]
 pub struct ConfigureCollection<'info> {
     /// Registrar for which we configure this Collection
-    #[account(mut,
-        constraint = registrar.realm == realm.key() 
-        @ NftVoterError::InvalidRegistrarRealm
-    )]
+    #[account(mut)]
     pub registrar: Account<'info, Registrar>,
 
+    #[account(
+       address = registrar.realm @ NftVoterError::InvalidRealmForRegistrar
+    )]
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     pub realm: UncheckedAccount<'info>,
 

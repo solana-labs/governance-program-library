@@ -5,8 +5,8 @@ pub enum NftVoterError {
     #[msg("Invalid Realm Authority")]
     InvalidRealmAuthority,
 
-    #[msg("Invalid Registrar Realm")]
-    InvalidRegistrarRealm,
+    #[msg("Invalid Realm for Registrar")]
+    InvalidRealmForRegistrar,
 
     #[msg("Invalid Collection Size")]
     InvalidCollectionSize,

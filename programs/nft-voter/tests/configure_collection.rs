@@ -254,7 +254,7 @@ async fn test_configure_collection_with_invalid_realm_error() -> Result<(), Tran
 
     // Assert
 
-    assert_nft_voter_err(err, NftVoterError::InvalidRegistrarRealm);
+    assert_nft_voter_err(err, NftVoterError::InvalidRealmForRegistrar);
 
     Ok(())
 }
