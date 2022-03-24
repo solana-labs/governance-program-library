@@ -27,6 +27,9 @@ pub struct NftVoteRecord {
     /// The voter who casted this vote
     /// It's a Realm member pubkey corresponding to TokenOwnerRecord.governing_token_owner
     pub governing_token_owner: Pubkey,
+
+    /// Reserved for future upgrades
+    pub reserved: [u8; 8],
 }
 
 impl NftVoteRecord {

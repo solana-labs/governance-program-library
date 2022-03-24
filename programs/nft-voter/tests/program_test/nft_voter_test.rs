@@ -501,6 +501,7 @@ impl NftVoterTest {
                 nft_mint: nft_cookie.mint_cookie.address,
                 governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
                 account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
+                reserved: [0; 8],
             };
 
             nft_vote_record_cookies.push(NftVoteRecordCookie {
