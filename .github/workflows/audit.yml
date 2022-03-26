@@ -1,4 +1,4 @@
-name: Soteria Scan
+name: Soteria Audit
 
 on:
   push:
@@ -54,6 +54,6 @@ jobs:
           echo "$PWD/soteria-linux-develop/bin" >> $GITHUB_PATH
         shell: bash
 
-      - name: Run Soteria 🚀 # Not failing for the time being
-        run: soteria -analyzeAll . || exit 0
+      - name: Run Soteria 🚀 # fails CI job if issues are found
+        run: soteria -analyzeAll .
         shell: bash
