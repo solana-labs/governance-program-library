@@ -8,8 +8,8 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 
-use crate::state::{CollectionConfig, Registrar, max_voter_weight_record::MaxVoterWeightRecord};
-use crate::{error::NftVoterError};
+use crate::error::NftVoterError;
+use crate::state::{max_voter_weight_record::MaxVoterWeightRecord, CollectionConfig, Registrar};
 
 /// Configures NFT voting collection which defines what NFTs can be used for governances
 /// and what weight they have
@@ -93,10 +93,11 @@ pub fn configure_collection(
     // Update MaxVoterWeightRecord based on max voting power of the collections
     let max_voter_weight_record = &mut ctx.accounts.max_voter_weight_record;
 
-    max_voter_weight_record.max_voter_weight =  registrar.collection_configs
+    max_voter_weight_record.max_voter_weight = registrar
+        .collection_configs
         .iter()
-        .try_fold(0u64, |sum,cc| sum.checked_add(cc.get_max_weight()))
-    .unwrap();
+        .try_fold(0u64, |sum, cc| sum.checked_add(cc.get_max_weight()))
+        .unwrap();
 
     // The weight never expires and only changes when collections are configured
     max_voter_weight_record.max_voter_weight_expiry = None;
