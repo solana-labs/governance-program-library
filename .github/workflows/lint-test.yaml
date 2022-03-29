@@ -30,6 +30,7 @@ jobs:
         uses: Swatinem/rust-cache@v1
 
       - name: Run fmt
+        continue-on-error: true
         run: cargo fmt -- --check
 
       - name: Run clippy
