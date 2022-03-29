@@ -37,7 +37,7 @@ jobs:
 
   tests:
     name: Test
-    requires: Lint
+    needs: lint
     runs-on: ubuntu-latest
 
     steps:
