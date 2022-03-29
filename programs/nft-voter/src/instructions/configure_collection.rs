@@ -36,7 +36,7 @@ pub struct ConfigureCollection<'info> {
 
     #[account(
         mut,
-        constraint = max_voter_weight_record.realm == registrar.realm 
+        constraint = max_voter_weight_record.realm == registrar.realm
         @ NftVoterError::InvalidMaxVoterWeightRecordRealm,
 
         constraint = max_voter_weight_record.governing_token_mint == registrar.governing_token_mint

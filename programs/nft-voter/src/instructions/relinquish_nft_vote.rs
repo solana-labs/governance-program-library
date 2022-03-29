@@ -15,7 +15,7 @@ pub struct RelinquishNftVote<'info> {
 
     #[account(
         mut,
-        constraint = voter_weight_record.realm == registrar.realm 
+        constraint = voter_weight_record.realm == registrar.realm
         @ NftVoterError::InvalidVoterWeightRecordRealm,
 
         constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
