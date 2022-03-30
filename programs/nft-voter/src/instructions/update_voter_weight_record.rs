@@ -1,10 +1,7 @@
-use crate::{
-    error::NftVoterError
-};
+use crate::error::NftVoterError;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use itertools::Itertools;
-
 
 /// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the given target action only
@@ -30,11 +27,10 @@ pub fn update_voter_weight_record(
     ctx: Context<UpdateVoterWeightRecord>,
     voter_weight_action: VoterWeightAction,
 ) -> Result<()> {
-
     let registrar = &ctx.accounts.registrar;
     let governing_token_owner = &ctx.accounts.voter_weight_record.governing_token_owner;
 
-    // CastVote can't be evaluated using this instruction 
+    // CastVote can't be evaluated using this instruction
     require!(
         voter_weight_action != VoterWeightAction::CastVote,
         NftVoterError::CastVoteIsNotAllowed
@@ -51,10 +47,11 @@ pub fn update_voter_weight_record(
             governing_token_owner,
             nft_info,
             nft_metadata_info,
-            &mut unique_nft_mints)?;
-            
+            &mut unique_nft_mints,
+        )?;
+
         voter_weight = voter_weight.checked_add(nft_vote_weight as u64).unwrap();
-    };
+    }
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 

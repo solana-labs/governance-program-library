@@ -1,10 +1,10 @@
+use crate::error::NftVoterError;
+use crate::state::*;
+use crate::state::{get_nft_vote_record_data_for_proposal_and_token_owner, Registrar};
+use crate::tools::governance::get_vote_record_address;
 use anchor_lang::prelude::*;
 use spl_governance::state::{enums::ProposalState, governance, proposal};
 use spl_governance_tools::account::dispose_account;
-use crate::error::NftVoterError;
-use crate::state::*;
-use crate::tools::governance::get_vote_record_address;
-use crate::state::{get_nft_vote_record_data_for_proposal_and_token_owner, Registrar};
 
 /// Disposes NftVoteRecord and recovers the rent from the accounts   
 /// It can only be executed when voting on the target Proposal ended or voter withdrew vote from the Proposal
@@ -40,8 +40,8 @@ pub struct RelinquishNftVote<'info> {
 
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     /// The account is used to validate that it doesn't exist and if it doesn't then Anchor owner check throws error
-    /// The check is disabled here and performed inside the instruction 
-    /// #[account(owner = registrar.governance_program_id)] 
+    /// The check is disabled here and performed inside the instruction
+    /// #[account(owner = registrar.governance_program_id)]
     pub vote_record: UncheckedAccount<'info>,
 
     /// CHECK: The beneficiary who receives lamports from the disposed NftVoterRecord accounts can be any account
@@ -68,7 +68,7 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
     )?;
 
     // If the Proposal is still in Voting state then we can only Relinquish the NFT votes if the Vote was withdrawn in spl-gov first
-    // When vote is withdrawn in spl-gov then VoteRecord is disposed and we have to assert it doesn't exist 
+    // When vote is withdrawn in spl-gov then VoteRecord is disposed and we have to assert it doesn't exist
     //
     // If the Proposal is in any other state then we can dispose NftVoteRecords without any additional Proposal checks
     if proposal.state == ProposalState::Voting {
@@ -77,11 +77,12 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
         // Ensure the given VoteRecord address matches the expected PDA
         let vote_record_key = get_vote_record_address(
             &registrar.governance_program_id,
-            &registrar.realm, 
+            &registrar.realm,
             &registrar.governing_token_mint,
             &ctx.accounts.governing_token_owner.key(),
-            &ctx.accounts.proposal.key());
-        
+            &ctx.accounts.proposal.key(),
+        );
+
         require!(
             vote_record_key == vote_record_info.key(),
             NftVoterError::InvalidVoteRecordForNftVoteRecord
