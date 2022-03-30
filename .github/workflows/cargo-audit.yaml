@@ -8,7 +8,7 @@ on:
     
 jobs:
   cargo-audit:
-    name: Cargo Crate Audit
+    name: Cargo Audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
