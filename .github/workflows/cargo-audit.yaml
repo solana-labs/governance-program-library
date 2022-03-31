@@ -1,0 +1,24 @@
+name: Cargo Audit
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+    
+jobs:
+  cargo-audit:
+    name: Cargo Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Cargo Audit
+        uses: actions-rs/install@v0.1
+        with:
+          crate: cargo-audit
+          version: latest
+          
+      # Run cargo audit using args from .cargo/audit.toml
+      - name: Run Cargo Audit
+        run: cargo audit -c always
