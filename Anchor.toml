@@ -1,0 +1,18 @@
+anchor_version = "0.22.1"
+solana_version = "1.9.13"
+
+[features]
+seeds = false
+
+[programs.localnet]
+nft_voter = "GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
