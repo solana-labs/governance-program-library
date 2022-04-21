@@ -2,7 +2,11 @@ use crate::{
     error::NftVoterError,
     id,
     state::CollectionConfig,
-    tools::{spl_token::get_spl_token_amount, token_metadata::get_token_metadata_for_mint},
+    tools::{
+        anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
+        spl_token::get_spl_token_amount,
+        token_metadata::get_token_metadata_for_mint,
+    },
 };
 use anchor_lang::prelude::*;
 use spl_governance::tools::spl_token::{get_spl_token_mint, get_spl_token_owner};
@@ -28,6 +32,16 @@ pub struct Registrar {
 
     /// Reserved for future upgrades
     pub reserved: [u8; 128],
+}
+
+impl Registrar {
+    pub fn get_space(max_collections: u8) -> usize {
+        DISCRIMINATOR_SIZE
+            + PUBKEY_SIZE * 3
+            + 4
+            + max_collections as usize * (PUBKEY_SIZE + 4 + 8 + 8)
+            + 128
+    }
 }
 
 /// Returns Registrar PDA seeds
@@ -94,4 +108,34 @@ pub fn resolve_nft_vote_weight_and_mint(
     let collection_config = registrar.get_collection_config(collection.key)?;
 
     Ok((collection_config.weight, nft_mint))
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+
+    #[test]
+    fn test_get_space() {
+        // Arrange
+        let expected_space = Registrar::get_space(3);
+
+        let registrar = Registrar {
+            governance_program_id: Pubkey::default(),
+            realm: Pubkey::default(),
+            governing_token_mint: Pubkey::default(),
+            collection_configs: vec![
+                CollectionConfig::default(),
+                CollectionConfig::default(),
+                CollectionConfig::default(),
+            ],
+            reserved: [0; 128],
+        };
+
+        // Act
+        let actual_space = DISCRIMINATOR_SIZE + registrar.try_to_vec().unwrap().len();
+
+        // Assert
+        assert_eq!(expected_space, actual_space);
+    }
 }

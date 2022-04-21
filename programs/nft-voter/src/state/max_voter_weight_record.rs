@@ -1,4 +1,5 @@
 use crate::id;
+use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
 use anchor_lang::prelude::Pubkey;
 use anchor_lang::prelude::*;
 
@@ -44,6 +45,12 @@ impl Default for MaxVoterWeightRecord {
     }
 }
 
+impl MaxVoterWeightRecord {
+    pub fn get_space() -> usize {
+        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 2 + 8 + 1 + 8 + 8
+    }
+}
+
 /// Returns MaxVoterWeightRecord PDA seeds
 pub fn get_max_voter_weight_record_seeds<'a>(
     realm: &'a Pubkey,
@@ -66,4 +73,23 @@ pub fn get_max_voter_weight_record_address(
         &id(),
     )
     .0
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+
+    #[test]
+    fn test_get_space() {
+        // Arrange
+        let expected_space = MaxVoterWeightRecord::get_space();
+
+        // Act
+        let actual_space =
+            DISCRIMINATOR_SIZE + MaxVoterWeightRecord::default().try_to_vec().unwrap().len();
+
+        // Assert
+        assert_eq!(expected_space, actual_space);
+    }
 }

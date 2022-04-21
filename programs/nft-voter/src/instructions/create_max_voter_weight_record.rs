@@ -14,7 +14,8 @@ pub struct CreateMaxVoterWeightRecord<'info> {
                 realm.key().as_ref(),
                 realm_governing_token_mint.key().as_ref()],
         bump,
-        payer = payer
+        payer = payer,
+        space = MaxVoterWeightRecord::get_space()
     )]
     pub max_voter_weight_record: Account<'info, MaxVoterWeightRecord>,
 

@@ -2,8 +2,8 @@ use std::{str::FromStr, sync::Arc};
 
 use anchor_lang::prelude::Pubkey;
 use mpl_token_metadata::state::Collection;
-use solana_program_test::{BanksClientError, ProgramTest};
-use solana_sdk::signer::Signer;
+use solana_program_test::ProgramTest;
+use solana_sdk::{signer::Signer, transport::TransportError};
 
 use crate::program_test::program_test_bench::{MintCookie, ProgramTestBench, WalletCookie};
 
@@ -57,7 +57,7 @@ impl TokenMetadataTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_nft_collection(&self) -> Result<NftCollectionCookie, BanksClientError> {
+    pub async fn with_nft_collection(&self) -> Result<NftCollectionCookie, TransportError> {
         let update_authority = self.bench.context.borrow().payer.pubkey();
         let payer = self.bench.context.borrow().payer.pubkey();
 
@@ -144,7 +144,7 @@ impl TokenMetadataTest {
         nft_collection_cookie: &NftCollectionCookie,
         nft_owner_cookie: &WalletCookie,
         args: Option<CreateNftArgs>,
-    ) -> Result<NftCookie, BanksClientError> {
+    ) -> Result<NftCookie, TransportError> {
         let CreateNftArgs {
             verify_collection,
             amount,
