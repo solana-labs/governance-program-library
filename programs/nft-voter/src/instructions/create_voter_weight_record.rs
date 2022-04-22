@@ -16,7 +16,8 @@ pub struct CreateVoterWeightRecord<'info> {
                 realm_governing_token_mint.key().as_ref(),
                 governing_token_owner.as_ref()],
         bump,
-        payer = payer
+        payer = payer,
+        space = VoterWeightRecord::get_space()
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 

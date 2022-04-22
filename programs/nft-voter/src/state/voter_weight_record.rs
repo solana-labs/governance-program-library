@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
+
 /// VoterWeightAction enum as defined in spl-governance-addin-api
 /// It's redefined here for Anchor to export it to IDL
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq)]
@@ -66,6 +68,12 @@ pub struct VoterWeightRecord {
     pub reserved: [u8; 8],
 }
 
+impl VoterWeightRecord {
+    pub fn get_space() -> usize {
+        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 4 + 8 + 1 + 8 + 1 + 1 + 1 + 8
+    }
+}
+
 impl Default for VoterWeightRecord {
     fn default() -> Self {
         Self {
@@ -78,5 +86,24 @@ impl Default for VoterWeightRecord {
             weight_action_target: Some(Default::default()),
             reserved: Default::default(),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+
+    #[test]
+    fn test_get_space() {
+        // Arrange
+        let expected_space = VoterWeightRecord::get_space();
+
+        // Act
+        let actual_space =
+            DISCRIMINATOR_SIZE + VoterWeightRecord::default().try_to_vec().unwrap().len();
+
+        // Assert
+        assert_eq!(expected_space, actual_space);
     }
 }

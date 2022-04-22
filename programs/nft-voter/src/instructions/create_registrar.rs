@@ -3,7 +3,6 @@ use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
-use std::mem::size_of;
 
 /// Creates Registrar storing NFT governance configuration for spl-gov Realm
 /// This instruction should only be executed once per realm/governing_token_mint to create the account
@@ -17,7 +16,7 @@ pub struct CreateRegistrar<'info> {
         seeds = [b"registrar".as_ref(),realm.key().as_ref(), governing_token_mint.key().as_ref()],
         bump,
         payer = payer,
-        space = 8 + size_of::<Registrar>() + max_collections as usize * size_of::<CollectionConfig>()
+        space = Registrar::get_space(max_collections)
     )]
     pub registrar: Account<'info, Registrar>,
 

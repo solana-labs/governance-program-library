@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 /// Configuration of an NFT collection used for governance power
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq, Default)]
 pub struct CollectionConfig {
     /// The NFT collection used for governance
     pub collection: Pubkey,

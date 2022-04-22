@@ -18,11 +18,11 @@ default = []
 
 [dependencies]
 arrayref = "0.3.6"
-anchor-lang = { version = "0.22.1", features = ["init-if-needed"] }
-anchor-spl = "0.22.1"
+anchor-lang = { version = "0.24.2", features = ["init-if-needed"] }
+anchor-spl = "0.24.2"
 itertools = "0.10.2"
 mpl-token-metadata = { version = "1.1.0", features = ["no-entrypoint"] }
-solana-program = "1.9.5"
+solana-program = "1.9.13"
 spl-governance = { version = "2.2.2", features = ["no-entrypoint"] }
 spl-governance-tools=  "0.1.2"
 spl-token = { version = "3.3", features = [ "no-entrypoint" ] }
@@ -30,4 +30,4 @@ spl-token = { version = "3.3", features = [ "no-entrypoint" ] }
 [dev-dependencies]
 borsh = "0.9.1"
 solana-sdk = "1.9.5"
-solana-program-test = "1.9.5"
+solana-program-test = "1.9.13"
