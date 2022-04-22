@@ -77,6 +77,10 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
             NftVoterError::NftAlreadyVoted
         );
 
+        // Note: proposal.governing_token_mint must match voter_weight_record.governing_token_mint
+        // We don't verify it here because spl-gov does the check in cast_vote
+        // and it would reject voter_weight_record if governing_token_mint doesn't match
+
         let nft_vote_record = NftVoteRecord {
             account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
             proposal,

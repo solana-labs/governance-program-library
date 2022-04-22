@@ -67,6 +67,14 @@ pub struct NftVoteRecordCookie {
     pub account: NftVoteRecord,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct VoterWeightCounterCookie {
+    pub address: Pubkey,
+    pub account: VoterWeightCounter,
+
+    pub nft_vote_record_cookies: Vec<NftVoteRecordCookie>,
+}
+
 pub struct NftVoterTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
@@ -557,14 +565,20 @@ impl NftVoterTest {
         proposal_cookie: &ProposalCookie,
         nft_voter_cookie: &WalletCookie,
         nft_cookies: &[&NftCookie],
-    ) -> Result<Vec<NftVoteRecordCookie>, TransportError> {
+    ) -> Result<VoterWeightCounterCookie, TransportError> {
         let data =
             anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CountVoterWeight {
                 proposal: proposal_cookie.address,
             });
 
+        let governing_token_owner = voter_weight_record_cookie.account.governing_token_owner;
+
+        let voter_weight_counter_key =
+            get_voter_weight_counter_address(&proposal_cookie.address, &governing_token_owner);
+
         let accounts = gpl_nft_voter::accounts::CountVoterWeight {
             registrar: registrar_cookie.address,
+            voter_weight_counter: voter_weight_counter_key,
             governing_token_owner: nft_voter_cookie.address,
             payer: self.bench.payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
@@ -586,7 +600,7 @@ impl NftVoterTest {
             let account = NftVoteRecord {
                 proposal: proposal_cookie.address,
                 nft_mint: nft_cookie.mint_cookie.address,
-                governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
+                governing_token_owner,
                 account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
                 reserved: [0; 8],
             };
@@ -607,12 +621,31 @@ impl NftVoterTest {
             .process_transaction(&[count_voter_weight_ix], Some(&[&nft_voter_cookie.signer]))
             .await?;
 
-        Ok(nft_vote_record_cookies)
+        Ok(VoterWeightCounterCookie {
+            address: voter_weight_counter_key,
+            account: VoterWeightCounter {
+                proposal: proposal_cookie.address,
+                governing_token_owner,
+                voter_weight: 0,
+                reserved: [0; 8],
+            },
+            nft_vote_record_cookies,
+        })
     }
 
     #[allow(dead_code)]
     pub async fn get_registrar_account(&mut self, registrar: &Pubkey) -> Registrar {
         self.bench.get_anchor_account::<Registrar>(*registrar).await
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_voter_weight_counter_account(
+        &mut self,
+        voter_weight_counter_key: &Pubkey,
+    ) -> VoterWeightCounter {
+        self.bench
+            .get_anchor_account::<VoterWeightCounter>(*voter_weight_counter_key)
+            .await
     }
 
     #[allow(dead_code)]

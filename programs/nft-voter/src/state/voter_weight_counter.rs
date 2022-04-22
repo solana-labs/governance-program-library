@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 
+use crate::id;
 use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
 
 /// VoterWeightCounter account used to calculate cumulative voter weight using multiple instructions
@@ -24,6 +25,30 @@ impl VoterWeightCounter {
     pub fn get_space() -> usize {
         DISCRIMINATOR_SIZE + PUBKEY_SIZE * 2 + 8 + 8
     }
+}
+
+/// Returns VoterWeightCounter PDA seeds
+pub fn get_voter_weight_counter_seeds<'a>(
+    proposal: &'a Pubkey,
+    governing_token_owner: &'a Pubkey,
+) -> [&'a [u8]; 3] {
+    [
+        b"voter-weight-counter",
+        proposal.as_ref(),
+        governing_token_owner.as_ref(),
+    ]
+}
+
+/// Returns VoterWeightCounter PDA address
+pub fn get_voter_weight_counter_address(
+    proposal: &Pubkey,
+    governing_token_owner: &Pubkey,
+) -> Pubkey {
+    Pubkey::find_program_address(
+        &get_voter_weight_counter_seeds(proposal, governing_token_owner),
+        &id(),
+    )
+    .0
 }
 
 #[cfg(test)]
