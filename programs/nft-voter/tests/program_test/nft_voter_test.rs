@@ -548,6 +548,68 @@ impl NftVoterTest {
         Ok(nft_vote_record_cookies)
     }
 
+    /// Count voter weight
+    #[allow(dead_code)]
+    pub async fn count_voter_weight(
+        &mut self,
+        registrar_cookie: &RegistrarCookie,
+        voter_weight_record_cookie: &VoterWeightRecordCookie,
+        proposal_cookie: &ProposalCookie,
+        nft_voter_cookie: &WalletCookie,
+        nft_cookies: &[&NftCookie],
+    ) -> Result<Vec<NftVoteRecordCookie>, TransportError> {
+        let data =
+            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CountVoterWeight {
+                proposal: proposal_cookie.address,
+            });
+
+        let accounts = gpl_nft_voter::accounts::CountVoterWeight {
+            registrar: registrar_cookie.address,
+            governing_token_owner: nft_voter_cookie.address,
+            payer: self.bench.payer.pubkey(),
+            system_program: solana_sdk::system_program::id(),
+        };
+
+        let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
+        let mut nft_vote_record_cookies = vec![];
+
+        for nft_cookie in nft_cookies {
+            account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
+            account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
+
+            let nft_vote_record_key = get_nft_vote_record_address(
+                &proposal_cookie.address,
+                &nft_cookie.mint_cookie.address,
+            );
+            account_metas.push(AccountMeta::new(nft_vote_record_key, false));
+
+            let account = NftVoteRecord {
+                proposal: proposal_cookie.address,
+                nft_mint: nft_cookie.mint_cookie.address,
+                governing_token_owner: voter_weight_record_cookie.account.governing_token_owner,
+                account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
+                reserved: [0; 8],
+            };
+
+            nft_vote_record_cookies.push(NftVoteRecordCookie {
+                address: nft_vote_record_key,
+                account,
+            })
+        }
+
+        let count_voter_weight_ix = Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts: account_metas,
+            data,
+        };
+
+        self.bench
+            .process_transaction(&[count_voter_weight_ix], Some(&[&nft_voter_cookie.signer]))
+            .await?;
+
+        Ok(nft_vote_record_cookies)
+    }
+
     #[allow(dead_code)]
     pub async fn get_registrar_account(&mut self, registrar: &Pubkey) -> Registrar {
         self.bench.get_anchor_account::<Registrar>(*registrar).await

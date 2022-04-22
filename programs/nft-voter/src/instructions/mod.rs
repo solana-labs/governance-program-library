@@ -18,3 +18,6 @@ mod relinquish_nft_vote;
 
 pub use cast_nft_vote::*;
 mod cast_nft_vote;
+
+pub use count_voter_weight::*;
+mod count_voter_weight;

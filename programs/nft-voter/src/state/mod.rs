@@ -1,6 +1,9 @@
 pub use registrar::*;
 pub mod registrar;
 
+pub use voter_weight_counter::*;
+pub mod voter_weight_counter;
+
 pub use collection_config::*;
 pub mod collection_config;
 
