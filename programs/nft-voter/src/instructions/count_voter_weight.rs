@@ -1,6 +1,8 @@
 use anchor_lang::prelude::*;
 
-use crate::state::{voter_weight_counter::VoterWeightCounter, Registrar};
+use crate::state::{
+    nft_vote_record::register_nft_vote_records, voter_weight_counter::VoterWeightCounter, Registrar,
+};
 
 #[derive(Accounts)]
 #[instruction(proposal: Pubkey)]
@@ -32,6 +34,21 @@ pub fn count_voter_weight<'a, 'b, 'c, 'info>(
     proposal: Pubkey,
 ) -> Result<()> {
     let voter_weight_counter = &mut ctx.accounts.voter_weight_counter;
+
+    // Record voting NFTs and get total weight
+    let voter_weight = register_nft_vote_records(
+        &ctx.accounts.registrar,
+        &ctx.accounts.governing_token_owner.key(),
+        &proposal,
+        ctx.remaining_accounts,
+        &ctx.accounts.payer.to_account_info(),
+        &ctx.accounts.system_program.to_account_info(),
+    )?;
+
+    voter_weight_counter.voter_weight = voter_weight_counter
+        .voter_weight
+        .checked_add(voter_weight)
+        .unwrap();
 
     voter_weight_counter.proposal = proposal;
     voter_weight_counter.governing_token_owner = ctx.accounts.governing_token_owner.key();

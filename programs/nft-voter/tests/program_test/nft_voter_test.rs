@@ -565,6 +565,7 @@ impl NftVoterTest {
         proposal_cookie: &ProposalCookie,
         nft_voter_cookie: &WalletCookie,
         nft_cookies: &[&NftCookie],
+        collection_config_cookie: &CollectionConfigCookie,
     ) -> Result<VoterWeightCounterCookie, TransportError> {
         let data =
             anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CountVoterWeight {
@@ -626,7 +627,8 @@ impl NftVoterTest {
             account: VoterWeightCounter {
                 proposal: proposal_cookie.address,
                 governing_token_owner,
-                voter_weight: 0,
+                voter_weight: nft_vote_record_cookies.len() as u64
+                    * collection_config_cookie.collection_config.weight,
                 reserved: [0; 8],
             },
             nft_vote_record_cookies,

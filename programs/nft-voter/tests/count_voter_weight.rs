@@ -20,7 +20,7 @@ async fn test_count_voter_weight() -> Result<(), TransportError> {
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
-    nft_voter_test
+    let collection_config_cookie = nft_voter_test
         .with_collection(
             &registrar_cookie,
             &nft_collection_cookie,
@@ -33,11 +33,6 @@ async fn test_count_voter_weight() -> Result<(), TransportError> {
         .await?;
 
     let voter_cookie = nft_voter_test.bench.with_wallet().await;
-
-    // let voter_token_owner_record_cookie = nft_voter_test
-    //     .governance
-    //     .with_token_owner_record(&realm_cookie, &voter_cookie)
-    //     .await?;
 
     let voter_weight_record_cookie = nft_voter_test
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
@@ -54,16 +49,6 @@ async fn test_count_voter_weight() -> Result<(), TransportError> {
         .await?;
 
     // Act
-    let _voter_weight_counter_cookie = nft_voter_test
-        .count_voter_weight(
-            &registrar_cookie,
-            &voter_weight_record_cookie,
-            &proposal_cookie,
-            &voter_cookie,
-            &[&nft_cookie1],
-        )
-        .await?;
-
     let voter_weight_counter_cookie = nft_voter_test
         .count_voter_weight(
             &registrar_cookie,
@@ -71,6 +56,7 @@ async fn test_count_voter_weight() -> Result<(), TransportError> {
             &proposal_cookie,
             &voter_cookie,
             &[&nft_cookie1],
+            &collection_config_cookie,
         )
         .await?;
 
