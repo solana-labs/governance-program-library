@@ -7,9 +7,9 @@ use itertools::Itertools;
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the given target action only
 /// and hance the instruction has to be executed inside the same transaction as the corresponding spl-gov instruction
 ///
-/// Note: UpdateVoterWeight is not accumulative the same way as CastNftVote and hence voter_weight for non voting scenarios
+/// Note: UpdateVoterWeight is not cumulative the same way as CastNftVote and hence voter_weight for non voting scenarios
 /// can only be used with max 5 NFTs due to Solana transaction size limit
-/// It could be supported in future version by introducing bookkeeping account which would track the NFTs
+/// It could be supported in future version by introducing bookkeeping accounts to track the NFTs
 /// which were already used to calculate the total weight
 #[derive(Accounts)]
 #[instruction(voter_weight_action:VoterWeightAction)]
