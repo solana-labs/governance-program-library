@@ -61,6 +61,7 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
             &voter_cookie,
             &voter_token_owner_record_cookie,
             &[&nft_cookie1],
+            None,
         )
         .await?;
 
@@ -151,6 +152,7 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
             &voter_cookie,
             &voter_token_owner_record_cookie,
             &[&nft_cookie1],
+            None,
         )
         .await?;
 
@@ -252,6 +254,7 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_e
             &voter_cookie,
             &voter_token_owner_record_cookie,
             &[&nft_cookie1],
+            None,
         )
         .await?;
 
@@ -330,6 +333,7 @@ async fn test_relinquish_nft_vote_with_invalid_voter_error() -> Result<(), Trans
             &voter_cookie,
             &voter_token_owner_record_cookie,
             &[&nft_cookie1],
+            None,
         )
         .await?;
 
