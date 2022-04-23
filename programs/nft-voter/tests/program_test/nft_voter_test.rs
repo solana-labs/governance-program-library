@@ -75,6 +75,16 @@ pub struct VoterWeightCounterCookie {
     pub nft_vote_record_cookies: Vec<NftVoteRecordCookie>,
 }
 
+pub struct CountVoterWeightArgs {
+    pub proposal: Option<Pubkey>,
+}
+
+impl Default for CountVoterWeightArgs {
+    fn default() -> Self {
+        Self { proposal: None }
+    }
+}
+
 pub struct NftVoterTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
@@ -566,10 +576,13 @@ impl NftVoterTest {
         nft_voter_cookie: &WalletCookie,
         nft_cookies: &[&NftCookie],
         collection_config_cookie: &CollectionConfigCookie,
+        args: Option<CountVoterWeightArgs>,
     ) -> Result<VoterWeightCounterCookie, TransportError> {
+        let args = args.unwrap_or_default();
+
         let data =
             anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CountVoterWeight {
-                proposal: proposal_cookie.address,
+                proposal: args.proposal.unwrap_or(proposal_cookie.address),
             });
 
         let governing_token_owner = voter_weight_record_cookie.account.governing_token_owner;

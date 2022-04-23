@@ -73,10 +73,4 @@ pub enum NftVoterError {
 
     #[msg("Invalid Registrar for VoterWeightCounter")]
     InvalidRegistrarForVoterWeightCounter,
-
-    #[msg("Invalid Proposal for VoterWeightCounter")]
-    InvalidProposalForVoterWeightCounter,
-
-    #[msg("Invalid TokenOwner for VoterWeightCounter")]
-    InvalidTokenOwnerForVoterWeightCounter,
 }

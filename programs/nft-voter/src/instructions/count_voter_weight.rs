@@ -45,17 +45,11 @@ pub fn count_voter_weight<'a, 'b, 'c, 'info>(
         voter_weight_counter.proposal = proposal;
         voter_weight_counter.governing_token_owner = ctx.accounts.governing_token_owner.key();
     } else {
+        // Assert valid registrar for the existing account
+        // proposal and governing_token_owner are validated by PDA seeds
         require!(
             voter_weight_counter.registrar == ctx.accounts.registrar.key(),
             NftVoterError::InvalidRegistrarForVoterWeightCounter
-        );
-        require!(
-            voter_weight_counter.proposal == proposal,
-            NftVoterError::InvalidProposalForVoterWeightCounter
-        );
-        require!(
-            voter_weight_counter.governing_token_owner == ctx.accounts.governing_token_owner.key(),
-            NftVoterError::InvalidTokenOwnerForVoterWeightCounter
         );
     }
 
