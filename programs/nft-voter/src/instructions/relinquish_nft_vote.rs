@@ -113,5 +113,7 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
     voter_weight_record.voter_weight = 0;
     voter_weight_record.voter_weight_expiry = Some(0);
 
+    voter_weight_record.weight_action_target = None;
+
     Ok(())
 }

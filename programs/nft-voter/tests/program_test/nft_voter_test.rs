@@ -67,6 +67,18 @@ pub struct NftVoteRecordCookie {
     pub account: NftVoteRecord,
 }
 
+pub struct CastNftVoteArgs {
+    pub cast_spl_gov_vote: bool,
+}
+
+impl Default for CastNftVoteArgs {
+    fn default() -> Self {
+        Self {
+            cast_spl_gov_vote: true,
+        }
+    }
+}
+
 pub struct NftVoterTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
@@ -471,7 +483,10 @@ impl NftVoterTest {
         nft_voter_cookie: &WalletCookie,
         voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
         nft_cookies: &[&NftCookie],
+        args: Option<CastNftVoteArgs>,
     ) -> Result<Vec<NftVoteRecordCookie>, TransportError> {
+        let args = args.unwrap_or_default();
+
         let data = anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CastNftVote {
             proposal: proposal_cookie.address,
         });
@@ -517,32 +532,35 @@ impl NftVoterTest {
             data,
         };
 
-        // spl-gov cast vote
-        let vote = Vote::Approve(vec![VoteChoice {
-            rank: 0,
-            weight_percentage: 100,
-        }]);
+        let mut instruction = vec![cast_nft_vote_ix];
 
-        let cast_vote_ix = cast_vote(
-            &self.governance.program_id,
-            &registrar_cookie.account.realm,
-            &proposal_cookie.account.governance,
-            &proposal_cookie.address,
-            &proposal_cookie.account.token_owner_record,
-            &voter_token_owner_record_cookie.address,
-            &nft_voter_cookie.address,
-            &proposal_cookie.account.governing_token_mint,
-            &self.bench.payer.pubkey(),
-            Some(voter_weight_record_cookie.address),
-            Some(max_voter_weight_record_cookie.address),
-            vote,
-        );
+        if args.cast_spl_gov_vote {
+            // spl-gov cast vote
+            let vote = Vote::Approve(vec![VoteChoice {
+                rank: 0,
+                weight_percentage: 100,
+            }]);
+
+            let cast_vote_ix = cast_vote(
+                &self.governance.program_id,
+                &registrar_cookie.account.realm,
+                &proposal_cookie.account.governance,
+                &proposal_cookie.address,
+                &proposal_cookie.account.token_owner_record,
+                &voter_token_owner_record_cookie.address,
+                &nft_voter_cookie.address,
+                &proposal_cookie.account.governing_token_mint,
+                &self.bench.payer.pubkey(),
+                Some(voter_weight_record_cookie.address),
+                Some(max_voter_weight_record_cookie.address),
+                vote,
+            );
+
+            instruction.push(cast_vote_ix);
+        }
 
         self.bench
-            .process_transaction(
-                &[cast_nft_vote_ix, cast_vote_ix],
-                Some(&[&nft_voter_cookie.signer]),
-            )
+            .process_transaction(&instruction, Some(&[&nft_voter_cookie.signer]))
             .await?;
 
         Ok(nft_vote_record_cookies)
