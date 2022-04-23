@@ -100,7 +100,18 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
-    voter_weight_record.voter_weight = voter_weight;
+    if voter_weight_record.weight_action_target == Some(proposal)
+        && voter_weight_record.weight_action == Some(VoterWeightAction::CastVote)
+    {
+        // If cast_nft_vote is called for the same proposal then we keep accumulating the weight
+        // this way cast_nft_vote can be called multiple times in different transactions to allow voting with any number of NFTs
+        voter_weight_record.voter_weight = voter_weight_record
+            .voter_weight
+            .checked_add(voter_weight)
+            .unwrap();
+    } else {
+        voter_weight_record.voter_weight = voter_weight;
+    }
 
     // The record is only valid as of the current slot
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
