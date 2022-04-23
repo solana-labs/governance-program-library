@@ -49,6 +49,7 @@ async fn test_count_voter_weight() -> Result<(), TransportError> {
         .await?;
 
     // Act
+
     let voter_weight_counter_cookie = nft_voter_test
         .count_voter_weight(
             &registrar_cookie,

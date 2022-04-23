@@ -625,6 +625,7 @@ impl NftVoterTest {
         Ok(VoterWeightCounterCookie {
             address: voter_weight_counter_key,
             account: VoterWeightCounter {
+                registrar: registrar_cookie.address,
                 proposal: proposal_cookie.address,
                 governing_token_owner,
                 voter_weight: nft_vote_record_cookies.len() as u64

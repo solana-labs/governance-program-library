@@ -7,6 +7,9 @@ use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
 #[account]
 #[derive(Debug, PartialEq, Default)]
 pub struct VoterWeightCounter {
+    /// The registrar the voter weight was calculated for and belongs to
+    pub registrar: Pubkey,
+
     /// Proposal which the voter weight is counted for
     pub proposal: Pubkey,
 
@@ -23,7 +26,7 @@ pub struct VoterWeightCounter {
 
 impl VoterWeightCounter {
     pub fn get_space() -> usize {
-        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 2 + 8 + 8
+        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 3 + 8 + 8
     }
 }
 

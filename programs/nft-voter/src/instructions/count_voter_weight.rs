@@ -1,7 +1,12 @@
 use anchor_lang::prelude::*;
 
-use crate::state::{
-    nft_vote_record::register_nft_vote_records, voter_weight_counter::VoterWeightCounter, Registrar,
+use crate::{
+    error::NftVoterError,
+    state::{
+        nft_vote_record::register_nft_vote_records, voter_weight_counter::VoterWeightCounter,
+        Registrar,
+    },
+    tools::anchor::is_new_account,
 };
 
 #[derive(Accounts)]
@@ -35,6 +40,25 @@ pub fn count_voter_weight<'a, 'b, 'c, 'info>(
 ) -> Result<()> {
     let voter_weight_counter = &mut ctx.accounts.voter_weight_counter;
 
+    if is_new_account(&voter_weight_counter.to_account_info()) {
+        voter_weight_counter.registrar = ctx.accounts.registrar.key();
+        voter_weight_counter.proposal = proposal;
+        voter_weight_counter.governing_token_owner = ctx.accounts.governing_token_owner.key();
+    } else {
+        require!(
+            voter_weight_counter.registrar == ctx.accounts.registrar.key(),
+            NftVoterError::InvalidRegistrarForVoterWeightCounter
+        );
+        require!(
+            voter_weight_counter.proposal == proposal,
+            NftVoterError::InvalidProposalForVoterWeightCounter
+        );
+        require!(
+            voter_weight_counter.governing_token_owner == ctx.accounts.governing_token_owner.key(),
+            NftVoterError::InvalidTokenOwnerForVoterWeightCounter
+        );
+    }
+
     // Record voting NFTs and get total weight
     let voter_weight = register_nft_vote_records(
         &ctx.accounts.registrar,
@@ -49,9 +73,6 @@ pub fn count_voter_weight<'a, 'b, 'c, 'info>(
         .voter_weight
         .checked_add(voter_weight)
         .unwrap();
-
-    voter_weight_counter.proposal = proposal;
-    voter_weight_counter.governing_token_owner = ctx.accounts.governing_token_owner.key();
 
     Ok(())
 }
