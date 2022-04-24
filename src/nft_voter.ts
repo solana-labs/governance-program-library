@@ -1,5 +1,5 @@
 export type NftVoter = {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "name": "nft_voter",
   "instructions": [
     {
@@ -267,6 +267,26 @@ export type NftVoter = {
     }
   ],
   "accounts": [
+    {
+      "name": "nftVoteRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proposal",
+            "type": "publicKey"
+          },
+          {
+            "name": "nftMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenOwner",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
     {
       "name": "maxVoterWeightRecord",
       "type": {
@@ -567,7 +587,7 @@ export type NftVoter = {
 };
 
 export const IDL: NftVoter = {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "name": "nft_voter",
   "instructions": [
     {
@@ -835,6 +855,26 @@ export const IDL: NftVoter = {
     }
   ],
   "accounts": [
+    {
+      "name": "nftVoteRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proposal",
+            "type": "publicKey"
+          },
+          {
+            "name": "nftMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenOwner",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
     {
       "name": "maxVoterWeightRecord",
       "type": {

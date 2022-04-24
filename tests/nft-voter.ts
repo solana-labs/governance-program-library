@@ -8,11 +8,14 @@ describe("nft-voter", () => {
 
   const program = anchor.workspace.NftVoter as Program<NftVoter>;
 
+  
  
 
   it("Is initialized!", async () => {
+
+    const records = program.account.nftVoteRecord.all();
     // Add your test here.
-    const tx = await program.rpc.createRegistrar({});
-    console.log("Your transaction signature", tx);
+    //const tx = await program.rpc.createRegistrar({});
+    console.log("Your transaction signature", records);
   });
 });
