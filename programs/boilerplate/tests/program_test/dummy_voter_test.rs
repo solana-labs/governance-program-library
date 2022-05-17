@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use anchor_lang::prelude::{AccountMeta, Pubkey};
+use anchor_lang::prelude::{Pubkey};
 
 use gpl_boilerplate::state::max_voter_weight_record::{
     get_max_voter_weight_record_address, MaxVoterWeightRecord,
@@ -8,7 +8,7 @@ use gpl_boilerplate::state::max_voter_weight_record::{
 use gpl_boilerplate::state::*;
 use solana_sdk::transport::TransportError;
 use spl_governance::instruction::cast_vote;
-use spl_governance::state::vote_record::{self, Vote, VoteChoice};
+use spl_governance::state::vote_record::{Vote, VoteChoice};
 
 use gpl_boilerplate::state::{
     get_registrar_address, Registrar,
@@ -282,7 +282,7 @@ impl DummyVoterTest {
             realm: registrar_cookie.account.realm,
             governing_token_mint: registrar_cookie.account.governing_token_mint,
             max_voter_weight: 0,
-            max_voter_weight_expiry: Some(0),
+            max_voter_weight_expiry: None,
             reserved: [0; 8],
         };
 
@@ -310,7 +310,7 @@ impl DummyVoterTest {
             voter_weight_record: voter_weight_record_cookie.address,
         };
 
-        let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
+        let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
         let instructions = vec![Instruction {
             program_id: gpl_boilerplate::id(),
