@@ -2,15 +2,15 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::{AccountMeta, Pubkey};
 
-use gpl_boilerplate::state::max_voter_weight_record::{
+use gpl_gateway::state::max_voter_weight_record::{
     get_max_voter_weight_record_address, MaxVoterWeightRecord,
 };
-use gpl_boilerplate::state::*;
+use gpl_gateway::state::*;
 use solana_sdk::transport::TransportError;
 use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{self, Vote, VoteChoice};
 
-use gpl_boilerplate::state::{
+use gpl_gateway::state::{
     get_registrar_address, Registrar,
 };
 
@@ -66,7 +66,7 @@ pub struct DummyVoterTest {
 impl DummyVoterTest {
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
-        program_test.add_program("gpl_boilerplate", gpl_boilerplate::id(), None);
+        program_test.add_program("gpl_gateway", gpl_gateway::id(), None);
     }
 
     #[allow(dead_code)]
@@ -76,7 +76,7 @@ impl DummyVoterTest {
         DummyVoterTest::add_program(&mut program_test);
         GovernanceTest::add_program(&mut program_test);
 
-        let program_id = gpl_boilerplate::id();
+        let program_id = gpl_gateway::id();
 
         let bench = ProgramTestBench::start_new(program_test).await;
         let bench_rc = Arc::new(bench);
@@ -113,12 +113,12 @@ impl DummyVoterTest {
         let max_collections = 10;
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_boilerplate::instruction::CreateRegistrar {
+            anchor_lang::InstructionData::data(&gpl_gateway::instruction::CreateRegistrar {
                 max_collections,
             });
 
         let accounts = anchor_lang::ToAccountMetas::to_account_metas(
-            &gpl_boilerplate::accounts::CreateRegistrar {
+            &gpl_gateway::accounts::CreateRegistrar {
                 registrar: registrar_key,
                 realm: realm_cookie.address,
                 governance_program_id: self.governance.program_id,
@@ -131,7 +131,7 @@ impl DummyVoterTest {
         );
 
         let mut create_registrar_ix = Instruction {
-            program_id: gpl_boilerplate::id(),
+            program_id: gpl_gateway::id(),
             accounts,
             data,
         };
@@ -186,16 +186,16 @@ impl DummyVoterTest {
                 registrar_cookie.account.governing_token_mint.as_ref(),
                 governing_token_owner.as_ref(),
             ],
-            &gpl_boilerplate::id(),
+            &gpl_gateway::id(),
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_boilerplate::instruction::CreateVoterWeightRecord {
+            &gpl_gateway::instruction::CreateVoterWeightRecord {
                 governing_token_owner,
             },
         );
 
-        let accounts = gpl_boilerplate::accounts::CreateVoterWeightRecord {
+        let accounts = gpl_gateway::accounts::CreateVoterWeightRecord {
             governance_program_id: self.governance.program_id,
             realm: registrar_cookie.account.realm,
             realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
@@ -205,7 +205,7 @@ impl DummyVoterTest {
         };
 
         let mut create_voter_weight_record_ix = Instruction {
-            program_id: gpl_boilerplate::id(),
+            program_id: gpl_gateway::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
@@ -254,10 +254,10 @@ impl DummyVoterTest {
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_boilerplate::instruction::CreateMaxVoterWeightRecord {},
+            &gpl_gateway::instruction::CreateMaxVoterWeightRecord {},
         );
 
-        let accounts = gpl_boilerplate::accounts::CreateMaxVoterWeightRecord {
+        let accounts = gpl_gateway::accounts::CreateMaxVoterWeightRecord {
             governance_program_id: self.governance.program_id,
             realm: registrar_cookie.account.realm,
             realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
@@ -267,7 +267,7 @@ impl DummyVoterTest {
         };
 
         let mut create_max_voter_weight_record_ix = Instruction {
-            program_id: gpl_boilerplate::id(),
+            program_id: gpl_gateway::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
@@ -300,12 +300,12 @@ impl DummyVoterTest {
         voter_weight_action: VoterWeightAction,
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_boilerplate::instruction::UpdateVoterWeightRecord {
+            &gpl_gateway::instruction::UpdateVoterWeightRecord {
                 voter_weight_action,
             },
         );
 
-        let accounts = gpl_boilerplate::accounts::UpdateVoterWeightRecord {
+        let accounts = gpl_gateway::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
         };
@@ -313,7 +313,7 @@ impl DummyVoterTest {
         let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
         let instructions = vec![Instruction {
-            program_id: gpl_boilerplate::id(),
+            program_id: gpl_gateway::id(),
             accounts: account_metas,
             data,
         }];
@@ -329,20 +329,20 @@ impl DummyVoterTest {
         voter_weight_record_cookie: &VoterWeightRecordCookie,
         max_voter_weight_record_cookie: &MaxVoterWeightRecordCookie,
         proposal_cookie: &ProposalCookie,
-        boilerplate_cookie: &WalletCookie,
+        gateway_cookie: &WalletCookie,
         voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
         args: Option<CastVoteArgs>,
     ) -> Result<(), TransportError> {
         let args = args.unwrap_or_default();
 
-        let data = anchor_lang::InstructionData::data(&gpl_boilerplate::instruction::CastVote {
+        let data = anchor_lang::InstructionData::data(&gpl_gateway::instruction::CastVote {
             proposal: proposal_cookie.address,
         });
 
-        let accounts = gpl_boilerplate::accounts::CastVote {
+        let accounts = gpl_gateway::accounts::CastVote {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            governing_token_owner: boilerplate_cookie.address,
+            governing_token_owner: gateway_cookie.address,
             payer: self.bench.payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
         };
@@ -350,7 +350,7 @@ impl DummyVoterTest {
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
         
         let cast_vote_ix = Instruction {
-            program_id: gpl_boilerplate::id(),
+            program_id: gpl_gateway::id(),
             accounts: account_metas,
             data,
         };
@@ -371,7 +371,7 @@ impl DummyVoterTest {
                 &proposal_cookie.address,
                 &proposal_cookie.account.token_owner_record,
                 &voter_token_owner_record_cookie.address,
-                &boilerplate_cookie.address,
+                &gateway_cookie.address,
                 &proposal_cookie.account.governing_token_mint,
                 &self.bench.payer.pubkey(),
                 Some(voter_weight_record_cookie.address),
@@ -383,7 +383,7 @@ impl DummyVoterTest {
         }
 
         self.bench
-            .process_transaction(&instruction, Some(&[&boilerplate_cookie.signer]))
+            .process_transaction(&instruction, Some(&[&gateway_cookie.signer]))
             .await?;
 
         Ok(())

@@ -14,7 +14,7 @@ use crate::state::*;
 declare_id!("GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw");
 
 #[program]
-pub mod boilerplate {
+pub mod gateway {
 
     use crate::state::VoterWeightAction;
 

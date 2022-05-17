@@ -1,13 +1,13 @@
 [package]
-name = "gpl-boilerplate"
+name = "gpl-gateway"
 version = "0.1.1"
-description = "SPL Governance addin boilerplate"
+description = "SPL Governance addin gateway"
 license = "Apache-2.0"
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "gpl_boilerplate"
+name = "gpl_gateway"
 
 [features]
 no-entrypoint = []

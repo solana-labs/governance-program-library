@@ -1,4 +1,4 @@
-use crate::error::BoilerplateError;
+use crate::error::GatewayError;
 use crate::{state::*};
 use anchor_lang::prelude::*;
 use anchor_lang::Accounts;
@@ -10,8 +10,8 @@ use anchor_lang::Accounts;
 /// CastVote is accumulative and can be invoked using several transactions
 /// In this scenario only the last CastVote should be bundled with spl-gov.CastVote in the same transaction
 /// 
-/// NOTE - Boilerplate: All implementations of this boilerplate should prevent multiple voting
-/// with the same tokens - this is not added by the boilerplate because it is use-case-specific
+/// NOTE - Gateway: All implementations of this gateway should prevent multiple voting
+/// with the same tokens - this is not added by the gateway because it is use-case-specific
 /// 
 /// CastVote instruction is not directional. It does not record vote choice (ex Yes/No)
 /// VoteChoice is recorded by spl-gov in VoteRecord
@@ -25,16 +25,16 @@ pub struct CastVote<'info> {
     #[account(
     mut,
     constraint = voter_weight_record.realm == registrar.realm
-    @ BoilerplateError::InvalidVoterWeightRecordRealm,
+    @ GatewayError::InvalidVoterWeightRecordRealm,
 
     constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
-    @ BoilerplateError::InvalidVoterWeightRecordMint,
+    @ GatewayError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
     /// The token owner who casts the vote
     #[account(
-    address = voter_weight_record.governing_token_owner @ BoilerplateError::InvalidTokenOwnerForVoterWeightRecord
+    address = voter_weight_record.governing_token_owner @ GatewayError::InvalidTokenOwnerForVoterWeightRecord
     )]
     pub governing_token_owner: Signer<'info>,
 
@@ -50,7 +50,7 @@ pub fn cast_vote<'a, 'b, 'c, 'info>(
     ctx: Context<'a, 'b, 'c, 'info, CastVote<'info>>,
     proposal: Pubkey,
 ) -> Result<()> {
-    // Boilerplate: your logic here
+    // Gateway: your logic here
     let voter_weight = 1;
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
@@ -59,8 +59,8 @@ pub fn cast_vote<'a, 'b, 'c, 'info>(
     {
         // If cast_vote is called for the same proposal then we keep accumulating the weight
         // this way cast_vote can be called multiple times in different transactions
-        // NOTE - Boilerplate: All implementations of this boilerplate should prevent multiple voting
-        // with the same tokens - this is not added by the boilerplate because it is use-case-specific 
+        // NOTE - Gateway: All implementations of this gateway should prevent multiple voting
+        // with the same tokens - this is not added by the gateway because it is use-case-specific 
         voter_weight_record.voter_weight = voter_weight_record
             .voter_weight
             .checked_add(voter_weight)

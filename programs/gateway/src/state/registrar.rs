@@ -22,7 +22,7 @@ pub struct Registrar {
     /// and the actual token of the mint is not used
     pub governing_token_mint: Pubkey,
 
-    // Boilerplate: Add your fields here
+    // Gateway: Add your fields here
 
     /// Reserved for future upgrades
     pub reserved: [u8; 128],

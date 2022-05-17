@@ -50,8 +50,8 @@ pub fn create_max_voter_weight_record(ctx: Context<CreateMaxVoterWeightRecord>) 
     max_voter_weight_record.realm = ctx.accounts.realm.key();
     max_voter_weight_record.governing_token_mint = ctx.accounts.realm_governing_token_mint.key();
 
-    // In the boilerplate, the max_voter_weight never expires
-    // Boilerplate: your logic here
+    // In the gateway, the max_voter_weight never expires
+    // Gateway: your logic here
     max_voter_weight_record.max_voter_weight_expiry = None;
 
     Ok(())

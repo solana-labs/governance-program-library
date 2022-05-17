@@ -2,7 +2,7 @@ use anchor_lang::prelude::ERROR_CODE_OFFSET;
 use solana_program::instruction::InstructionError;
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
 use spl_governance_tools::error::GovernanceToolsError;
-use gpl_boilerplate::error::BoilerplateError;
+use gpl_gateway::error::GatewayError;
 
 pub fn clone_keypair(source: &Keypair) -> Keypair {
     Keypair::from_bytes(&source.to_bytes()).unwrap()
@@ -13,13 +13,13 @@ pub fn clone_keypair(source: &Keypair) -> Keypair {
 pub fn NopOverride<T>(_: &mut T) {}
 
 #[allow(dead_code)]
-pub fn assert_boilerplate_err(banks_client_error: TransportError, boilerplate_error: BoilerplateError) {
+pub fn assert_gateway_err(banks_client_error: TransportError, gateway_error: GatewayError) {
     let tx_error = banks_client_error.unwrap();
 
     match tx_error {
         TransactionError::InstructionError(_, instruction_error) => match instruction_error {
             InstructionError::Custom(e) => {
-                assert_eq!(e, boilerplate_error as u32 + ERROR_CODE_OFFSET)
+                assert_eq!(e, gateway_error as u32 + ERROR_CODE_OFFSET)
             }
             _ => panic!("{:?} Is not InstructionError::Custom()", instruction_error),
         },

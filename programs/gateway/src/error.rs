@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
-pub enum BoilerplateError {
+pub enum GatewayError {
     #[msg("Invalid Realm Authority")]
     InvalidRealmAuthority,
 

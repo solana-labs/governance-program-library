@@ -1,4 +1,4 @@
-use crate::error::BoilerplateError;
+use crate::error::GatewayError;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
@@ -19,10 +19,10 @@ pub struct UpdateVoterWeightRecord<'info> {
     #[account(
         mut,
         constraint = voter_weight_record.realm == registrar.realm
-        @ BoilerplateError::InvalidVoterWeightRecordRealm,
+        @ GatewayError::InvalidVoterWeightRecordRealm,
 
         constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
-        @ BoilerplateError::InvalidVoterWeightRecordMint,
+        @ GatewayError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 }
@@ -37,10 +37,10 @@ pub fn update_voter_weight_record(
     // CastVote can't be evaluated using this instruction
     require!(
         voter_weight_action != VoterWeightAction::CastVote,
-        BoilerplateError::CastVoteIsNotAllowed
+        GatewayError::CastVoteIsNotAllowed
     );
 
-    // Boilerplate: your logic here
+    // Gateway: your logic here
     let voter_weight = 1;
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;

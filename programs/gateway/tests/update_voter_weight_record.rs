@@ -1,5 +1,5 @@
-use gpl_boilerplate::error::BoilerplateError;
-use gpl_boilerplate::state::*;
+use gpl_gateway::error::GatewayError;
+use gpl_gateway::state::*;
 use program_test::dummy_voter_test::DummyVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
@@ -86,7 +86,7 @@ async fn test_update_voter_weight_with_cast_vote_not_allowed_error() -> Result<(
         .unwrap();
 
     // Assert
-    assert_boilerplate_err(err, BoilerplateError::CastVoteIsNotAllowed);
+    assert_gateway_err(err, GatewayError::CastVoteIsNotAllowed);
 
     Ok(())
 }

@@ -1,4 +1,4 @@
-use crate::error::BoilerplateError;
+use crate::error::GatewayError;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
@@ -9,7 +9,7 @@ use spl_governance::state::realm;
 #[derive(Accounts)]
 #[instruction(max_collections: u8)]
 pub struct CreateRegistrar<'info> {
-    /// The Boilerplate Registrar
+    /// The Gateway Registrar
     /// There can only be a single registrar per governance Realm and governing mint of the Realm
     #[account(
         init,
@@ -74,7 +74,7 @@ pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_collections: u8) -> 
 
     require!(
         realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
-        BoilerplateError::InvalidRealmAuthority
+        GatewayError::InvalidRealmAuthority
     );
 
     Ok(())

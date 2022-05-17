@@ -6,9 +6,9 @@ use program_test::dummy_voter_test::DummyVoterTest;
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, transport::TransportError};
-use gpl_boilerplate::error::BoilerplateError;
+use gpl_gateway::error::GatewayError;
 
-use program_test::tools::{assert_anchor_err, assert_ix_err, assert_boilerplate_err};
+use program_test::tools::{assert_anchor_err, assert_ix_err, assert_gateway_err};
 
 #[tokio::test]
 async fn test_create_registrar() -> Result<(), TransportError> {
@@ -45,7 +45,7 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
         .err()
         .unwrap();
 
-    assert_boilerplate_err(err, BoilerplateError::InvalidRealmAuthority);
+    assert_gateway_err(err, GatewayError::InvalidRealmAuthority);
 
     Ok(())
 }

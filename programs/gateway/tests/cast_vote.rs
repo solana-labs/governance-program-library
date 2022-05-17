@@ -1,6 +1,6 @@
-use gpl_boilerplate::error::BoilerplateError;
-use gpl_boilerplate::state::*;
-use program_test::{dummy_voter_test::*, tools::assert_boilerplate_err};
+use gpl_gateway::error::GatewayError;
+use gpl_gateway::state::*;
+use program_test::{dummy_voter_test::*, tools::assert_gateway_err};
 
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
@@ -127,7 +127,7 @@ async fn test_cast_vote_invalid_voter_error() -> Result<(), TransportError> {
         .unwrap();
 
     // Assert
-    assert_boilerplate_err(err, BoilerplateError::InvalidTokenOwnerForVoterWeightRecord);
+    assert_gateway_err(err, GatewayError::InvalidTokenOwnerForVoterWeightRecord);
 
     Ok(())
 }
