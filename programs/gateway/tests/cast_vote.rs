@@ -9,9 +9,6 @@ mod program_test;
 
 #[tokio::test]
 async fn test_cast_vote() -> Result<(), TransportError> {
-    println!(
-        "***test_cast_vote",
-    );
     // Arrange
     let mut dummy_voter_test = DummyVoterTest::start_new().await;
 
@@ -42,10 +39,6 @@ async fn test_cast_vote() -> Result<(), TransportError> {
 
     dummy_voter_test.bench.advance_clock().await;
     let clock = dummy_voter_test.bench.get_clock().await;
-
-    println!(
-        "***ABOUT TO CAST VOTE",
-    );
     
     // Act
     dummy_voter_test

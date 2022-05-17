@@ -44,7 +44,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
         .get_voter_weight_record(&voter_weight_record_cookie.address)
         .await;
 
-    assert_eq!(voter_weight_record.voter_weight, 10);
+    assert_eq!(voter_weight_record.voter_weight, 1);
     assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
     assert_eq!(
         voter_weight_record.weight_action,

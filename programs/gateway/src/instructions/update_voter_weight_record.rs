@@ -31,9 +31,6 @@ pub fn update_voter_weight_record(
     ctx: Context<UpdateVoterWeightRecord>,
     voter_weight_action: VoterWeightAction,
 ) -> Result<()> {
-    let registrar = &ctx.accounts.registrar;
-    let governing_token_owner = &ctx.accounts.voter_weight_record.governing_token_owner;
-
     // CastVote can't be evaluated using this instruction
     require!(
         voter_weight_action != VoterWeightAction::CastVote,
