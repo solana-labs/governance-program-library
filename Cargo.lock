@@ -1059,6 +1059,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "gpl-boilerplate"
+version = "0.1.1"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "arrayref",
+ "borsh",
+ "itertools",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "spl-governance",
+ "spl-governance-tools",
+ "spl-token",
+]
+
+[[package]]
 name = "gpl-nft-voter"
 version = "0.1.1"
 dependencies = [
