@@ -45,24 +45,26 @@ pub struct CreateRegistrar<'info> {
     /// realm_authority must sign and match Realm.authority
     pub realm_authority: Signer<'info>,
 
+    /// The Identity.com Gateway gatekeeper network that this realm uses
+    /// (See the registry struct docs for details).
+    /// CHECK: This can be any public key. The gateway library checks that the provided
+    /// Gateway Token belongs to this gatekeeper network, so passing a particular key here is
+    /// essentially saying "We trust this gatekeeper network".
+    pub gatekeeper_network: UncheckedAccount<'info>,
+
     #[account(mut)]
     pub payer: Signer<'info>,
 
     pub system_program: Program<'info, System>,
 }
 
-/// Creates a new Registrar which stores NFT voting configuration for given Realm
-///
-/// To use the registrar, call ConfigureCollection to register NFT collections that may be
-/// used for governance
-///
-/// max_collections is used allocate account size for the maximum number of governing NFT collections
-/// Note: Once Solana runtime supports account resizing the max value won't be required
+/// Creates a new Registrar which stores the gatekeeper network that the realm uses
 pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_collections: u8) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
     registrar.governance_program_id = ctx.accounts.governance_program_id.key();
     registrar.realm = ctx.accounts.realm.key();
     registrar.governing_token_mint = ctx.accounts.governing_token_mint.key();
+    registrar.gatekeeper_network = ctx.accounts.gatekeeper_network.key();
 
     // Verify that realm_authority is the expected authority of the Realm
     // and that the mint matches one of the realm mints too

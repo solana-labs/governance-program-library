@@ -1,6 +1,7 @@
 use crate::error::GatewayError;
 use crate::state::*;
 use anchor_lang::prelude::*;
+use solana_gateway::Gateway;
 
 /// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the given target action only
@@ -13,8 +14,14 @@ use anchor_lang::prelude::*;
 #[derive(Accounts)]
 #[instruction(voter_weight_action:VoterWeightAction)]
 pub struct UpdateVoterWeightRecord<'info> {
-    /// The NFT voting Registrar
+    /// The Gateway Registrar
     pub registrar: Account<'info, Registrar>,
+
+    /// A gateway token from the gatekeeper network in the registrar.
+    /// Proves that the holder is permitted to take an action.
+    /// CHECK: Checked in the gateway library.
+    #[account()]
+    pub gateway_token: UncheckedAccount<'info>,
 
     #[account(
         mut,
@@ -36,8 +43,14 @@ pub fn update_voter_weight_record(
         voter_weight_action != VoterWeightAction::CastVote,
         GatewayError::CastVoteIsNotAllowed
     );
-
-    // Gateway: your logic here
+    
+    // Gateway: Check if the voter has a valid gateway token and fail if not
+    Gateway::verify_gateway_token_account_info(
+        &ctx.accounts.gateway_token.to_account_info(),
+        &ctx.accounts.voter_weight_record.governing_token_owner,
+        &ctx.accounts.registrar.gatekeeper_network,
+        None
+    ).or(Err(error!(GatewayError::InvalidGatewayToken)))?;
     let voter_weight = 1;
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;

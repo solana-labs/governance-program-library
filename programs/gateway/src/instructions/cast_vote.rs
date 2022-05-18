@@ -2,6 +2,7 @@ use crate::error::GatewayError;
 use crate::{state::*};
 use anchor_lang::prelude::*;
 use anchor_lang::Accounts;
+use solana_gateway::Gateway;
 
 /// Casts a vote using the voter weight record.
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the target Proposal only
@@ -38,6 +39,12 @@ pub struct CastVote<'info> {
     )]
     pub governing_token_owner: Signer<'info>,
 
+    /// A gateway token from the gatekeeper network in the registrar.
+    /// Proves that the holder is permitted to take an action.
+    /// CHECK: Checked in the gateway library.
+    #[account()]
+    pub gateway_token: UncheckedAccount<'info>,
+
     /// The account which pays for the transaction
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -50,7 +57,14 @@ pub fn cast_vote<'a, 'b, 'c, 'info>(
     ctx: Context<'a, 'b, 'c, 'info, CastVote<'info>>,
     proposal: Pubkey,
 ) -> Result<()> {
-    // Gateway: your logic here
+    // Gateway: Check if the voter has a valid gateway token and fail if not
+    Gateway::verify_gateway_token_account_info(
+        &ctx.accounts.gateway_token.to_account_info(),
+        &ctx.accounts.voter_weight_record.governing_token_owner,
+        &ctx.accounts.registrar.gatekeeper_network,
+        None
+    ).or(Err(error!(GatewayError::InvalidGatewayToken)))?;
+    
     let voter_weight = 1;
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 

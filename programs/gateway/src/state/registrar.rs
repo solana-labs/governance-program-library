@@ -22,7 +22,9 @@ pub struct Registrar {
     /// and the actual token of the mint is not used
     pub governing_token_mint: Pubkey,
 
-    // Gateway: Add your fields here
+    /// The Gatekeeper Network represents the "Pass Type" that a 
+    /// user must present.
+    pub gatekeeper_network: Pubkey,
 
     /// Reserved for future upgrades
     pub reserved: [u8; 128],
@@ -31,7 +33,7 @@ pub struct Registrar {
 impl Registrar {
     pub fn get_space() -> usize {
         DISCRIMINATOR_SIZE
-            + PUBKEY_SIZE * 3
+            + PUBKEY_SIZE * 4
             + 128
     }
 }
@@ -63,6 +65,7 @@ mod test {
             governance_program_id: Pubkey::default(),
             realm: Pubkey::default(),
             governing_token_mint: Pubkey::default(),
+            gatekeeper_network: Pubkey::default(),
             reserved: [0; 128],
         };
 

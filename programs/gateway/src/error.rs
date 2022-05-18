@@ -28,4 +28,7 @@ pub enum GatewayError {
 
     #[msg("Invalid account owner")]
     InvalidAccountOwner,
+
+    #[msg("Invalid gateway token")]
+    InvalidGatewayToken,
 }

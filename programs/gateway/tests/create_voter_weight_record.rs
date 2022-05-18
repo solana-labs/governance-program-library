@@ -1,4 +1,4 @@
-use program_test::dummy_voter_test::DummyVoterTest;
+use program_test::gateway_voter_test::GatewayVoterTest;
 use program_test::tools::assert_ix_err;
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
@@ -9,22 +9,23 @@ mod program_test;
 #[tokio::test]
 async fn test_create_voter_weight_record() -> Result<(), TransportError> {
     // Arrange
-    let mut dummy_voter_test = DummyVoterTest::start_new().await;
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let realm_cookie = dummy_voter_test.governance.with_realm().await?;
+    let realm_cookie = gateway_voter_test.governance.with_realm().await?;
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
-    let registrar_cookie = dummy_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie).await?;
 
-    let voter_cookie = dummy_voter_test.bench.with_wallet().await;
+    let voter_cookie = gateway_voter_test.bench.with_wallet().await;
 
     // Act
-    let voter_weight_record_cookie = dummy_voter_test
+    let voter_weight_record_cookie = gateway_voter_test
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
     // Assert
 
-    let voter_weight_record = dummy_voter_test
+    let voter_weight_record = gateway_voter_test
         .get_voter_weight_record(&voter_weight_record_cookie.address)
         .await;
 
@@ -36,18 +37,19 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
 #[tokio::test]
 async fn test_create_voter_weight_record_with_invalid_realm_error() -> Result<(), TransportError> {
     // Arrange
-    let mut dummy_voter_test = DummyVoterTest::start_new().await;
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let realm_cookie = dummy_voter_test.governance.with_realm().await?;
+    let realm_cookie = gateway_voter_test.governance.with_realm().await?;
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
-    let registrar_cookie = dummy_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie).await?;
 
-    let realm_cookie2 = dummy_voter_test.governance.with_realm().await?;
+    let realm_cookie2 = gateway_voter_test.governance.with_realm().await?;
 
-    let voter_cookie = dummy_voter_test.bench.with_wallet().await;
+    let voter_cookie = gateway_voter_test.bench.with_wallet().await;
 
     // Act
-    let err = dummy_voter_test
+    let err = gateway_voter_test
         .with_voter_weight_record_using_ix(&registrar_cookie, &voter_cookie, |i| {
             i.accounts[2].pubkey = realm_cookie2.address // Realm
         })
@@ -66,18 +68,19 @@ async fn test_create_voter_weight_record_with_invalid_realm_error() -> Result<()
 #[tokio::test]
 async fn test_create_voter_weight_record_with_invalid_mint_error() -> Result<(), TransportError> {
     // Arrange
-    let mut dummy_voter_test = DummyVoterTest::start_new().await;
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let realm_cookie = dummy_voter_test.governance.with_realm().await?;
+    let realm_cookie = gateway_voter_test.governance.with_realm().await?;
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
-    let registrar_cookie = dummy_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie).await?;
 
-    let realm_cookie2 = dummy_voter_test.governance.with_realm().await?;
+    let realm_cookie2 = gateway_voter_test.governance.with_realm().await?;
 
-    let voter_cookie = dummy_voter_test.bench.with_wallet().await;
+    let voter_cookie = gateway_voter_test.bench.with_wallet().await;
 
     // Act
-    let err = dummy_voter_test
+    let err = gateway_voter_test
         .with_voter_weight_record_using_ix(&registrar_cookie, &voter_cookie, |i| {
             i.accounts[2].pubkey = realm_cookie2.address // Mint
         })
@@ -96,22 +99,23 @@ async fn test_create_voter_weight_record_with_invalid_mint_error() -> Result<(),
 #[tokio::test]
 async fn test_create_voter_weight_record_with_already_exists_error() -> Result<(), TransportError> {
     // Arrange
-    let mut dummy_voter_test = DummyVoterTest::start_new().await;
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let realm_cookie = dummy_voter_test.governance.with_realm().await?;
+    let realm_cookie = gateway_voter_test.governance.with_realm().await?;
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
-    let registrar_cookie = dummy_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie).await?;
 
-    let voter_cookie = dummy_voter_test.bench.with_wallet().await;
+    let voter_cookie = gateway_voter_test.bench.with_wallet().await;
 
-    dummy_voter_test
+    gateway_voter_test
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
-    dummy_voter_test.bench.advance_clock().await;
+    gateway_voter_test.bench.advance_clock().await;
 
     // Act
-    let err = dummy_voter_test
+    let err = gateway_voter_test
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await
         .err()

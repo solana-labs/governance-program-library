@@ -1,11 +1,14 @@
 {
     "name": "@solana/governance-program-library",
-    "version": "0.15.2",
+    "version": "0.15.2-beta5",
     "description": "Client for Governance Program Library which is a set of extensions for Solana's spl-governance program.",
     "author": "Solana Maintainers <maintainers@solana.foundation>",
     "license": "MIT",
-    "main": "lib/src/index.js",
+    "main": "dist/index.js",
     "types": "lib/src/index.d.ts",
+    "files": [
+      "dist/**/*"
+    ],
     "repository": "https://github.com/solana-labs/governance-program-library",
     "scripts": {
         "build": "tsc",

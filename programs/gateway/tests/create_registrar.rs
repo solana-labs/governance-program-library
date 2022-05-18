@@ -1,7 +1,7 @@
 mod program_test;
 
 use anchor_lang::prelude::Pubkey;
-use program_test::dummy_voter_test::DummyVoterTest;
+use program_test::gateway_voter_test::GatewayVoterTest;
 
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
@@ -13,15 +13,16 @@ use program_test::tools::{assert_anchor_err, assert_ix_err, assert_gateway_err};
 #[tokio::test]
 async fn test_create_registrar() -> Result<(), TransportError> {
     // Arrange
-    let mut dummy_voter_test = DummyVoterTest::start_new().await;
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let realm_cookie = dummy_voter_test.governance.with_realm().await?;
+    let realm_cookie = gateway_voter_test.governance.with_realm().await?;
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
     // Act
-    let registrar_cookie = dummy_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie).await?;
 
     // Assert
-    let registrar = dummy_voter_test
+    let registrar = gateway_voter_test
         .get_registrar_account(&registrar_cookie.address)
         .await;
 
@@ -33,14 +34,15 @@ async fn test_create_registrar() -> Result<(), TransportError> {
 #[tokio::test]
 async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<(), TransportError> {
     // Arrange
-    let mut dummy_voter_test = DummyVoterTest::start_new().await;
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let mut realm_cookie = dummy_voter_test.governance.with_realm().await?;
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
+    let mut realm_cookie = gateway_voter_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
 
     // Act
-    let err = dummy_voter_test
-        .with_registrar(&realm_cookie)
+    let err = gateway_voter_test
+        .with_registrar(&realm_cookie, &gateway_cookie)
         .await
         .err()
         .unwrap();
@@ -54,15 +56,17 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
 async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<(), TransportError>
 {
     // Arrange
-    let mut dummy_voter_test = DummyVoterTest::start_new().await;
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let mut realm_cookie = dummy_voter_test.governance.with_realm().await?;
+    let mut realm_cookie = gateway_voter_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
     // Act
-    let err = dummy_voter_test
+    let err = gateway_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
+            &gateway_cookie,
             |i| i.accounts[4].is_signer = false, // realm_authority
             Some(&[]),
         )
@@ -79,18 +83,21 @@ async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<
 async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result<(), TransportError>
 {
     // Arrange
-    let mut dummy_voter_test = DummyVoterTest::start_new().await;
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let mut realm_cookie = dummy_voter_test.governance.with_realm().await?;
+    let mut realm_cookie = gateway_voter_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
 
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
+
     // Try to use a different program id
-    let governance_program_id = dummy_voter_test.program_id;
+    let governance_program_id = gateway_voter_test.program_id;
 
     // Act
-    let err = dummy_voter_test
+    let err = gateway_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
+            &gateway_cookie,
             |i| i.accounts[1].pubkey = governance_program_id, //governance_program_id
             None,
         )
@@ -106,15 +113,18 @@ async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result
 #[tokio::test]
 async fn test_create_registrar_with_invalid_realm_error() -> Result<(), TransportError> {
     // Arrange
-    let mut dummy_voter_test = DummyVoterTest::start_new().await;
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let mut realm_cookie = dummy_voter_test.governance.with_realm().await?;
+    let mut realm_cookie = gateway_voter_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
 
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
+
     // Act
-    let err = dummy_voter_test
+    let err = gateway_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
+            &gateway_cookie,
             |i| i.accounts[2].pubkey = Pubkey::new_unique(), // realm
             None,
         )
@@ -132,17 +142,20 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), Transpor
 async fn test_create_registrar_with_invalid_governing_token_mint_error(
 ) -> Result<(), TransportError> {
     // Arrange
-    let mut dummy_voter_test = DummyVoterTest::start_new().await;
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let mut realm_cookie = dummy_voter_test.governance.with_realm().await?;
+    let mut realm_cookie = gateway_voter_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
 
-    let mint_cookie = dummy_voter_test.bench.with_mint().await?;
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
+
+    let mint_cookie = gateway_voter_test.bench.with_mint().await?;
 
     // Act
-    let err = dummy_voter_test
+    let err = gateway_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
+            &gateway_cookie,
             |i| i.accounts[3].pubkey = mint_cookie.address, // governing_token_mint
             None,
         )
