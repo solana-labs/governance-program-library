@@ -11,7 +11,7 @@ pub mod tools;
 
 use crate::state::*;
 
-declare_id!("GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw");
+declare_id!("Ggat9fNP9SsZEfxGJqbdZUasBGppksaZUBfL92ntrFEp");
 
 #[program]
 pub mod gateway {
