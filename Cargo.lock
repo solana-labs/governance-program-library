@@ -1084,8 +1084,6 @@ dependencies = [
  "anchor-spl",
  "arrayref",
  "borsh",
- "itertools",
- "mpl-token-metadata",
  "solana-program",
  "solana-program-test",
  "solana-sdk",

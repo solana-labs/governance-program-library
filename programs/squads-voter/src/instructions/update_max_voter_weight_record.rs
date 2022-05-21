@@ -3,8 +3,8 @@ use crate::state::max_voter_weight_record::MaxVoterWeightRecord;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
-/// Updates MaxVoterWeightRecord to evaluate governance power for users and the Squads they belong to
-/// This instruction updates VoterWeightRecord which is valid for the current Slot only
+/// Updates MaxVoterWeightRecord to evaluate max governance power for the configured Squads
+/// This instruction updates MaxVoterWeightRecord which is valid for the current Slot only
 /// The instruction must be executed inside the same transaction as the corresponding spl-gov instruction
 #[derive(Accounts)]
 pub struct UpdateMaxVoterWeightRecord<'info> {
@@ -20,6 +20,8 @@ pub struct UpdateMaxVoterWeightRecord<'info> {
         @ SquadsVoterError::InvalidVoterWeightRecordMint,
     )]
     pub max_voter_weight_record: Account<'info, MaxVoterWeightRecord>,
+    //
+    // Remaining Accounts: Squads
 }
 
 pub fn update_max_voter_weight_record(ctx: Context<UpdateMaxVoterWeightRecord>) -> Result<()> {
@@ -34,6 +36,7 @@ pub fn update_max_voter_weight_record(ctx: Context<UpdateMaxVoterWeightRecord>) 
             .find(|ai| ai.key() == squad_config.squad)
             .unwrap();
 
+        // TODO: Assert squad_info is owned by squads-protocol program
         // TODO: Get the Squad size from squad_info
         let squad_size = 10;
 

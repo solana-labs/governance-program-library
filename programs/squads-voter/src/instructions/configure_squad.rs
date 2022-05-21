@@ -29,6 +29,7 @@ pub struct ConfigureSquad<'info> {
     pub realm_authority: Signer<'info>,
 
     // Squad which is going to be used for governance
+    /// CHECK: Owned by squads-protocol
     pub squad: UncheckedAccount<'info>,
 }
 
@@ -47,6 +48,8 @@ pub fn configure_squad(ctx: Context<ConfigureSquad>, weight: u64) -> Result<()> 
     );
 
     let squad = &ctx.accounts.squad;
+
+    // TODO: Assert Squad owned by squads-protocol
 
     let squad_config = SquadConfig {
         squad: squad.key(),

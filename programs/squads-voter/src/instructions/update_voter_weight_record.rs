@@ -20,7 +20,7 @@ pub struct UpdateVoterWeightRecord<'info> {
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
     //
-    // Remaining Accounts: Squads
+    // Remaining Accounts: Squads Membership
 }
 
 pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
@@ -38,6 +38,7 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
         }
         unique_squads.push(squad_info.key);
 
+        // TODO: Assert squad_info is owned by squads-protocol program
         // TODO: Validate Squad membership for governing_token_owner and squad_info
 
         let squad_config = registrar.get_squad_config(squad_info.key)?;
