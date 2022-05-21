@@ -21,6 +21,10 @@ use crate::program_test::program_test_bench::WalletCookie;
 
 use crate::program_test::tools::NopOverride;
 
+use crate::program_test::squads_test::SquadsTest;
+
+use super::squads_test::SquadCookie;
+
 #[derive(Debug, PartialEq)]
 pub struct RegistrarCookie {
     pub address: Pubkey,
@@ -54,14 +58,11 @@ impl Default for ConfigureSquadArgs {
     }
 }
 
-pub struct SquadCookie {
-    pub address: Pubkey,
-}
-
 pub struct SquadsVoterTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
     pub governance: GovernanceTest,
+    pub squads: SquadsTest,
 }
 
 impl SquadsVoterTest {
@@ -76,6 +77,7 @@ impl SquadsVoterTest {
 
         SquadsVoterTest::add_program(&mut program_test);
         GovernanceTest::add_program(&mut program_test);
+        SquadsTest::add_program(&mut program_test);
 
         let program_id = gpl_squads_voter::id();
 
@@ -84,11 +86,13 @@ impl SquadsVoterTest {
 
         let governance_bench =
             GovernanceTest::new(bench_rc.clone(), Some(program_id), Some(program_id));
+        let squads_bench = SquadsTest::new(bench_rc.clone());
 
         Self {
             program_id,
             bench: bench_rc,
             governance: governance_bench,
+            squads: squads_bench,
         }
     }
 
@@ -326,18 +330,18 @@ impl SquadsVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_squad(
+    pub async fn with_squad_config(
         &mut self,
         registrar_cookie: &RegistrarCookie,
         squad_cookie: &SquadCookie,
         args: Option<ConfigureSquadArgs>,
     ) -> Result<SquadConfigCookie, TransportError> {
-        self.with_squad_using_ix(registrar_cookie, squad_cookie, args, NopOverride, None)
+        self.with_squad_config_using_ix(registrar_cookie, squad_cookie, args, NopOverride, None)
             .await
     }
 
     #[allow(dead_code)]
-    pub async fn with_squad_using_ix<F: Fn(&mut Instruction)>(
+    pub async fn with_squad_config_using_ix<F: Fn(&mut Instruction)>(
         &mut self,
         registrar_cookie: &RegistrarCookie,
         squad_cookie: &SquadCookie,
