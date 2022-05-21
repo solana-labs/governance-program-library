@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
-pub enum SquadVoterError {
+pub enum SquadsVoterError {
     #[msg("Invalid Realm Authority")]
     InvalidRealmAuthority,
 

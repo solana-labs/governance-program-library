@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 
-use crate::error::SquadVoterError;
+use crate::error::SquadsVoterError;
 use crate::state::{Registrar, SquadConfig};
 
 /// Creates or updates Squad configuration which defines what Squads can be used for governances
@@ -20,7 +20,7 @@ pub struct ConfigureSquad<'info> {
     pub registrar: Account<'info, Registrar>,
 
     #[account(
-       address = registrar.realm @ SquadVoterError::InvalidRealmForRegistrar,
+       address = registrar.realm @ SquadsVoterError::InvalidRealmForRegistrar,
        owner = registrar.governance_program_id
     )]
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
@@ -44,7 +44,7 @@ pub fn configure_squad(ctx: Context<ConfigureSquad>, weight: u64) -> Result<()> 
 
     require!(
         realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
-        SquadVoterError::InvalidRealmAuthority
+        SquadsVoterError::InvalidRealmAuthority
     );
 
     let squad = &ctx.accounts.squad;

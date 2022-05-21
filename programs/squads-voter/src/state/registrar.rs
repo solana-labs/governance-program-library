@@ -1,5 +1,5 @@
 use crate::{
-    error::SquadVoterError,
+    error::SquadsVoterError,
     id,
     state::SquadConfig,
     tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
@@ -54,7 +54,7 @@ impl Registrar {
             .squads_configs
             .iter()
             .find(|sc| sc.squad == *squad)
-            .ok_or_else(|| SquadVoterError::SquadNotFound.into());
+            .ok_or_else(|| SquadsVoterError::SquadNotFound.into());
     }
 }
 

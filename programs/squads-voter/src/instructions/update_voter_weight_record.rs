@@ -1,4 +1,4 @@
-use crate::error::SquadVoterError;
+use crate::error::SquadsVoterError;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
@@ -14,10 +14,10 @@ pub struct UpdateVoterWeightRecord<'info> {
     #[account(
         mut,
         constraint = voter_weight_record.realm == registrar.realm
-        @ SquadVoterError::InvalidVoterWeightRecordRealm,
+        @ SquadsVoterError::InvalidVoterWeightRecordRealm,
 
         constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
-        @ SquadVoterError::InvalidVoterWeightRecordMint,
+        @ SquadsVoterError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
     //
@@ -35,7 +35,7 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
     for squad_info in ctx.remaining_accounts.iter() {
         // Ensure the same Squad was not provided more than once
         if unique_squads.contains(&squad_info.key) {
-            return Err(SquadVoterError::DuplicatedSquadDetected.into());
+            return Err(SquadsVoterError::DuplicatedSquadDetected.into());
         }
         unique_squads.push(squad_info.key);
 

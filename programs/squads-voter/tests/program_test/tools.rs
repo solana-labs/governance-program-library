@@ -1,5 +1,5 @@
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
-use gpl_squads_voter::error::SquadVoterError;
+use gpl_squads_voter::error::SquadsVoterError;
 use solana_program::instruction::InstructionError;
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
 use spl_governance_tools::error::GovernanceToolsError;
@@ -13,7 +13,10 @@ pub fn clone_keypair(source: &Keypair) -> Keypair {
 pub fn NopOverride<T>(_: &mut T) {}
 
 #[allow(dead_code)]
-pub fn assert_nft_voter_err(banks_client_error: TransportError, nft_locker_error: SquadVoterError) {
+pub fn assert_squads_voter_err(
+    banks_client_error: TransportError,
+    nft_locker_error: SquadsVoterError,
+) {
     let tx_error = banks_client_error.unwrap();
 
     match tx_error {
