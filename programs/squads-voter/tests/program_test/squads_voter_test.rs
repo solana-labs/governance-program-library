@@ -21,9 +21,7 @@ use crate::program_test::program_test_bench::WalletCookie;
 
 use crate::program_test::tools::NopOverride;
 
-use crate::program_test::squads_test::SquadsTest;
-
-use super::squads_test::SquadCookie;
+use crate::program_test::squads_test::{SquadCookie, SquadMemberCookie, SquadsTest};
 
 #[derive(Debug, PartialEq)]
 pub struct RegistrarCookie {
@@ -303,7 +301,7 @@ impl SquadsVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &mut VoterWeightRecordCookie,
-        squads_cookies: &[&SquadCookie],
+        squads_member_cookies: &[&SquadMemberCookie],
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_squads_voter::instruction::UpdateVoterWeightRecord {},
@@ -316,8 +314,11 @@ impl SquadsVoterTest {
 
         let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
-        for squad_cookie in squads_cookies {
-            account_metas.push(AccountMeta::new_readonly(squad_cookie.address, false));
+        for squad_member_cookie in squads_member_cookies {
+            account_metas.push(AccountMeta::new_readonly(
+                squad_member_cookie.squad_address,
+                false,
+            ));
         }
 
         let instructions = vec![Instruction {
