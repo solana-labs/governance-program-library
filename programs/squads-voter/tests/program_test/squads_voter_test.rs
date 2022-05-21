@@ -27,7 +27,7 @@ pub struct RegistrarCookie {
     pub account: Registrar,
 
     pub realm_authority: Keypair,
-    pub max_collections: u8,
+    pub max_squads: u8,
 }
 
 pub struct VoterWeightRecordCookie {
@@ -40,18 +40,17 @@ pub struct MaxVoterWeightRecordCookie {
     pub account: MaxVoterWeightRecord,
 }
 
-pub struct CollectionConfigCookie {
-    pub collection_config: SquadConfig,
+pub struct SquadConfigCookie {
+    pub squad_config: SquadConfig,
 }
 
-pub struct ConfigureCollectionArgs {
+pub struct ConfigureSquadArgs {
     pub weight: u64,
-    pub size: u32,
 }
 
-impl Default for ConfigureCollectionArgs {
+impl Default for ConfigureSquadArgs {
     fn default() -> Self {
-        Self { weight: 1, size: 3 }
+        Self { weight: 1 }
     }
 }
 
@@ -159,7 +158,7 @@ impl SquadsVoterTest {
             address: registrar_key,
             account,
             realm_authority: realm_cookie.get_realm_authority(),
-            max_collections: max_squads,
+            max_squads,
         })
     }
 
@@ -313,8 +312,8 @@ impl SquadsVoterTest {
 
         let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
-        for nft_cookie in squads_cookies {
-            account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
+        for squad_cookie in squads_cookies {
+            account_metas.push(AccountMeta::new_readonly(squad_cookie.address, false));
         }
 
         let instructions = vec![Instruction {
@@ -327,31 +326,25 @@ impl SquadsVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_collection(
-        &mut self,
-        registrar_cookie: &RegistrarCookie,
-        nft_collection_cookie: &SquadCookie,
-        args: Option<ConfigureCollectionArgs>,
-    ) -> Result<CollectionConfigCookie, TransportError> {
-        self.with_collection_using_ix(
-            registrar_cookie,
-            nft_collection_cookie,
-            args,
-            NopOverride,
-            None,
-        )
-        .await
-    }
-
-    #[allow(dead_code)]
-    pub async fn with_collection_using_ix<F: Fn(&mut Instruction)>(
+    pub async fn with_squad(
         &mut self,
         registrar_cookie: &RegistrarCookie,
         squad_cookie: &SquadCookie,
-        args: Option<ConfigureCollectionArgs>,
+        args: Option<ConfigureSquadArgs>,
+    ) -> Result<SquadConfigCookie, TransportError> {
+        self.with_squad_using_ix(registrar_cookie, squad_cookie, args, NopOverride, None)
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_squad_using_ix<F: Fn(&mut Instruction)>(
+        &mut self,
+        registrar_cookie: &RegistrarCookie,
+        squad_cookie: &SquadCookie,
+        args: Option<ConfigureSquadArgs>,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<CollectionConfigCookie, TransportError> {
+    ) -> Result<SquadConfigCookie, TransportError> {
         let args = args.unwrap_or_default();
 
         let data =
@@ -366,28 +359,28 @@ impl SquadsVoterTest {
             squad: squad_cookie.address,
         };
 
-        let mut configure_collection_ix = Instruction {
+        let mut configure_squad_ix = Instruction {
             program_id: gpl_squads_voter::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
 
-        instruction_override(&mut configure_collection_ix);
+        instruction_override(&mut configure_squad_ix);
 
         let default_signers = &[&registrar_cookie.realm_authority];
         let signers = signers_override.unwrap_or(default_signers);
 
         self.bench
-            .process_transaction(&[configure_collection_ix], Some(signers))
+            .process_transaction(&[configure_squad_ix], Some(signers))
             .await?;
 
-        let collection_config = SquadConfig {
+        let squad_config = SquadConfig {
             squad: squad_cookie.address,
             weight: args.weight,
             reserved: [0; 8],
         };
 
-        Ok(CollectionConfigCookie { collection_config })
+        Ok(SquadConfigCookie { squad_config })
     }
 
     #[allow(dead_code)]
