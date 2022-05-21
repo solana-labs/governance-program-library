@@ -1,17 +1,12 @@
 use crate::{
-    error::NftVoterError,
+    error::SquadVoterError,
     id,
-    state::CollectionConfig,
-    tools::{
-        anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
-        spl_token::get_spl_token_amount,
-        token_metadata::get_token_metadata_for_mint,
-    },
+    state::SquadConfig,
+    tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
 };
 use anchor_lang::prelude::*;
-use spl_governance::tools::spl_token::{get_spl_token_mint, get_spl_token_owner};
 
-/// Registrar which stores NFT voting configuration for the given Realm
+/// Registrar which stores Squads voting configuration for the given Realm
 #[account]
 #[derive(Debug, PartialEq)]
 pub struct Registrar {
@@ -27,19 +22,19 @@ pub struct Registrar {
     /// and the actual token of the mint is not used
     pub governing_token_mint: Pubkey,
 
-    /// MPL Collection used for voting
-    pub collection_configs: Vec<CollectionConfig>,
+    /// Squads used for governance
+    pub squads_configs: Vec<SquadConfig>,
 
     /// Reserved for future upgrades
     pub reserved: [u8; 128],
 }
 
 impl Registrar {
-    pub fn get_space(max_collections: u8) -> usize {
+    pub fn get_space(max_squads: u8) -> usize {
         DISCRIMINATOR_SIZE
             + PUBKEY_SIZE * 3
             + 4
-            + max_collections as usize * (PUBKEY_SIZE + 4 + 8 + 8)
+            + max_squads as usize * (PUBKEY_SIZE + 4 + 8 + 8)
             + 128
     }
 }
@@ -58,56 +53,13 @@ pub fn get_registrar_address(realm: &Pubkey, governing_token_mint: &Pubkey) -> P
 }
 
 impl Registrar {
-    pub fn get_collection_config(&self, collection: Pubkey) -> Result<&CollectionConfig> {
+    pub fn get_squad_config(&self, squad: &Pubkey) -> Result<&SquadConfig> {
         return self
-            .collection_configs
+            .squads_configs
             .iter()
-            .find(|cc| cc.collection == collection)
-            .ok_or_else(|| NftVoterError::CollectionNotFound.into());
+            .find(|cc| cc.squad == *squad)
+            .ok_or_else(|| SquadVoterError::SquadNotFound.into());
     }
-}
-
-/// Resolves vote weight and voting mint for the given NFT
-pub fn resolve_nft_vote_weight_and_mint(
-    registrar: &Registrar,
-    governing_token_owner: &Pubkey,
-    nft_info: &AccountInfo,
-    nft_metadata_info: &AccountInfo,
-    unique_nft_mints: &mut Vec<Pubkey>,
-) -> Result<(u64, Pubkey)> {
-    let nft_owner = get_spl_token_owner(nft_info)?;
-
-    // voter_weight_record.governing_token_owner must be the owner of the NFT
-    require!(
-        nft_owner == *governing_token_owner,
-        NftVoterError::VoterDoesNotOwnNft
-    );
-
-    let nft_mint = get_spl_token_mint(nft_info)?;
-
-    // Ensure the same NFT was not provided more than once
-    if unique_nft_mints.contains(&nft_mint) {
-        return Err(NftVoterError::DuplicatedNftDetected.into());
-    }
-    unique_nft_mints.push(nft_mint);
-
-    // Ensure the token amount is exactly 1
-    let nft_amount = get_spl_token_amount(nft_info)?;
-
-    require!(nft_amount == 1, NftVoterError::InvalidNftAmount);
-
-    let nft_metadata = get_token_metadata_for_mint(nft_metadata_info, &nft_mint)?;
-
-    // The NFT must have a collection and the collection must be verified
-    let collection = nft_metadata
-        .collection
-        .ok_or(NftVoterError::MissingMetadataCollection)?;
-
-    require!(collection.verified, NftVoterError::CollectionMustBeVerified);
-
-    let collection_config = registrar.get_collection_config(collection.key)?;
-
-    Ok((collection_config.weight, nft_mint))
 }
 
 #[cfg(test)]
@@ -124,10 +76,10 @@ mod test {
             governance_program_id: Pubkey::default(),
             realm: Pubkey::default(),
             governing_token_mint: Pubkey::default(),
-            collection_configs: vec![
-                CollectionConfig::default(),
-                CollectionConfig::default(),
-                CollectionConfig::default(),
+            squads_configs: vec![
+                SquadConfig::default(),
+                SquadConfig::default(),
+                SquadConfig::default(),
             ],
             reserved: [0; 128],
         };
