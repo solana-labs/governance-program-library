@@ -5,7 +5,6 @@ use anchor_lang::{
 };
 
 use anchor_lang::prelude::*;
-use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 
 use crate::error::SquadsVoterError;
@@ -30,7 +29,7 @@ pub struct ConfigureSquad<'info> {
     pub realm_authority: Signer<'info>,
 
     // Squad which is going to be used for governance
-    pub squad: Account<'info, Mint>,
+    pub squad: UncheckedAccount<'info>,
 }
 
 pub fn configure_squad(ctx: Context<ConfigureSquad>, weight: u64) -> Result<()> {
