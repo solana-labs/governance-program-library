@@ -34,6 +34,10 @@ pub mod squads_voter {
         log_version();
         instructions::update_voter_weight_record(ctx)
     }
+    pub fn update_max_voter_weight_record(ctx: Context<UpdateMaxVoterWeightRecord>) -> Result<()> {
+        log_version();
+        instructions::update_max_voter_weight_record(ctx)
+    }
 
     pub fn configure_squad(ctx: Context<ConfigureSquad>, weight: u64) -> Result<()> {
         log_version();

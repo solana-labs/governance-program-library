@@ -20,6 +20,8 @@ pub struct UpdateVoterWeightRecord<'info> {
         @ SquadVoterError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
+    //
+    // Remaining Accounts: Squads
 }
 
 pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
@@ -37,7 +39,7 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
         }
         unique_squads.push(squad_info.key);
 
-        // TODO: Validate Squad membership for governing_token_owner
+        // TODO: Validate Squad membership for governing_token_owner and squad_info
 
         let squad_config = registrar.get_squad_config(squad_info.key)?;
 
