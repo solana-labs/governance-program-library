@@ -9,19 +9,15 @@ pub mod state;
 
 pub mod tools;
 
-use crate::state::*;
-
-declare_id!("GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw");
+declare_id!("GSqds6KYQf5tXEHwrDszu6AqkVXinFCKDwUfTLzp1jEH");
 
 #[program]
 pub mod squads_voter {
 
-    use crate::state::VoterWeightAction;
-
     use super::*;
-    pub fn create_registrar(ctx: Context<CreateRegistrar>, max_collections: u8) -> Result<()> {
+    pub fn create_registrar(ctx: Context<CreateRegistrar>, max_squads: u8) -> Result<()> {
         log_version();
-        instructions::create_registrar(ctx, max_collections)
+        instructions::create_registrar(ctx, max_squads)
     }
     pub fn create_voter_weight_record(
         ctx: Context<CreateVoterWeightRecord>,
@@ -34,32 +30,14 @@ pub mod squads_voter {
         log_version();
         instructions::create_max_voter_weight_record(ctx)
     }
-    pub fn update_voter_weight_record(
-        ctx: Context<UpdateVoterWeightRecord>,
-        voter_weight_action: VoterWeightAction,
-    ) -> Result<()> {
+    pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
         log_version();
-        instructions::update_voter_weight_record(ctx, voter_weight_action)
-    }
-    pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
-        log_version();
-        instructions::relinquish_nft_vote(ctx)
-    }
-    pub fn configure_collection(
-        ctx: Context<ConfigureCollection>,
-        weight: u64,
-        size: u32,
-    ) -> Result<()> {
-        log_version();
-        instructions::configure_collection(ctx, weight, size)
+        instructions::update_voter_weight_record(ctx)
     }
 
-    pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
-        ctx: Context<'a, 'b, 'c, 'info, CastNftVote<'info>>,
-        proposal: Pubkey,
-    ) -> Result<()> {
+    pub fn configure_squad(ctx: Context<ConfigureSquad>, weight: u64) -> Result<()> {
         log_version();
-        instructions::cast_nft_vote(ctx, proposal)
+        instructions::configure_squad(ctx, weight)
     }
 }
 

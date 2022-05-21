@@ -1,61 +1,49 @@
-use crate::error::NftVoterError;
+use crate::error::SquadVoterError;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use itertools::Itertools;
 
-/// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...
-/// This instruction updates VoterWeightRecord which is valid for the current Slot and the given target action only
-/// and hance the instruction has to be executed inside the same transaction as the corresponding spl-gov instruction
-///
-/// Note: UpdateVoterWeight is not cumulative the same way as CastNftVote and hence voter_weight for non voting scenarios
-/// can only be used with max 5 NFTs due to Solana transaction size limit
-/// It could be supported in future version by introducing bookkeeping accounts to track the NFTs
-/// which were already used to calculate the total weight
+/// Updates VoterWeightRecord to evaluate governance power for users and the Squads they belong to
+/// This instruction updates VoterWeightRecord which is valid for the current Slot only
+/// The instruction must be executed inside the same transaction as the corresponding spl-gov instruction
 #[derive(Accounts)]
 #[instruction(voter_weight_action:VoterWeightAction)]
 pub struct UpdateVoterWeightRecord<'info> {
-    /// The NFT voting Registrar
+    /// The Squads voting Registrar
     pub registrar: Account<'info, Registrar>,
 
     #[account(
         mut,
         constraint = voter_weight_record.realm == registrar.realm
-        @ NftVoterError::InvalidVoterWeightRecordRealm,
+        @ SquadVoterError::InvalidVoterWeightRecordRealm,
 
         constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
-        @ NftVoterError::InvalidVoterWeightRecordMint,
+        @ SquadVoterError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 }
 
-pub fn update_voter_weight_record(
-    ctx: Context<UpdateVoterWeightRecord>,
-    voter_weight_action: VoterWeightAction,
-) -> Result<()> {
+pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
-    let governing_token_owner = &ctx.accounts.voter_weight_record.governing_token_owner;
-
-    // CastVote can't be evaluated using this instruction
-    require!(
-        voter_weight_action != VoterWeightAction::CastVote,
-        NftVoterError::CastVoteIsNotAllowed
-    );
+    let _governing_token_owner = &ctx.accounts.voter_weight_record.governing_token_owner;
 
     let mut voter_weight = 0u64;
 
-    // Ensure all nfts are unique
-    let mut unique_nft_mints = vec![];
+    let mut unique_squads = vec![];
 
-    for (nft_info, nft_metadata_info) in ctx.remaining_accounts.iter().tuples() {
-        let (nft_vote_weight, _) = resolve_nft_vote_weight_and_mint(
-            registrar,
-            governing_token_owner,
-            nft_info,
-            nft_metadata_info,
-            &mut unique_nft_mints,
-        )?;
+    for squad_info in ctx.remaining_accounts.iter() {
+        // Ensure the same Squad was not provided more than once
+        if unique_squads.contains(&squad_info.key) {
+            return Err(SquadVoterError::DuplicatedSquadDetected.into());
+        }
+        unique_squads.push(squad_info.key);
 
-        voter_weight = voter_weight.checked_add(nft_vote_weight as u64).unwrap();
+        // TODO: Validate Squad membership for governing_token_owner
+
+        let squad_config = registrar.get_squad_config(squad_info.key)?;
+
+        voter_weight = voter_weight
+            .checked_add(squad_config.weight as u64)
+            .unwrap();
     }
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
@@ -65,8 +53,8 @@ pub fn update_voter_weight_record(
     // Record is only valid as of the current slot
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
 
-    // Set the action to make it specific and prevent being used for voting
-    voter_weight_record.weight_action = Some(voter_weight_action);
+    // Set action and target to None to indicate the weight is valid for any action
+    voter_weight_record.weight_action = None;
     voter_weight_record.weight_action_target = None;
 
     Ok(())

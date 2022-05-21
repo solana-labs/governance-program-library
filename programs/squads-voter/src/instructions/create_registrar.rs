@@ -1,22 +1,22 @@
-use crate::error::NftVoterError;
+use crate::error::SquadVoterError;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 
-/// Creates Registrar storing NFT governance configuration for spl-gov Realm
+/// Creates Registrar storing Squads governance configuration for spl-gov Realm
 /// This instruction should only be executed once per realm/governing_token_mint to create the account
 #[derive(Accounts)]
-#[instruction(max_collections: u8)]
+#[instruction(max_squads: u8)]
 pub struct CreateRegistrar<'info> {
-    /// The NFT voting Registrar
+    /// The Squads voting Registrar
     /// There can only be a single registrar per governance Realm and governing mint of the Realm
     #[account(
         init,
         seeds = [b"registrar".as_ref(),realm.key().as_ref(), governing_token_mint.key().as_ref()],
         bump,
         payer = payer,
-        space = Registrar::get_space(max_collections)
+        space = Registrar::get_space(max_squads)
     )]
     pub registrar: Account<'info, Registrar>,
 
@@ -38,7 +38,7 @@ pub struct CreateRegistrar<'info> {
     /// Either the realm community mint or the council mint.
     /// It must match Realm.community_mint or Realm.config.council_mint
     ///
-    /// Note: Once the NFT plugin is enabled the governing_token_mint is used only as identity
+    /// Note: Once the Squads plugin is enabled the governing_token_mint is used only as identity
     /// for the voting population and the tokens of that are no longer used
     pub governing_token_mint: Account<'info, Mint>,
 
@@ -51,14 +51,14 @@ pub struct CreateRegistrar<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Creates a new Registrar which stores NFT voting configuration for given Realm
+/// Creates a new Registrar which stores Squads voting configuration for given Realm
 ///
-/// To use the registrar, call ConfigureCollection to register NFT collections that may be
+/// To use the registrar, call ConfigureSquad to register Squad that may be
 /// used for governance
 ///
-/// max_collections is used allocate account size for the maximum number of governing NFT collections
+/// max_squads is used allocate account size for the maximum number of governing Squads
 /// Note: Once Solana runtime supports account resizing the max value won't be required
-pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_collections: u8) -> Result<()> {
+pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_squads: u8) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
     registrar.governance_program_id = ctx.accounts.governance_program_id.key();
     registrar.realm = ctx.accounts.realm.key();
@@ -74,7 +74,7 @@ pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_collections: u8) -> 
 
     require!(
         realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
-        NftVoterError::InvalidRealmAuthority
+        SquadVoterError::InvalidRealmAuthority
     );
 
     Ok(())
