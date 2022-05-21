@@ -331,6 +331,37 @@ impl SquadsVoterTest {
     }
 
     #[allow(dead_code)]
+    pub async fn update_max_voter_weight_record(
+        &self,
+        registrar_cookie: &RegistrarCookie,
+        max_voter_weight_record_cookie: &mut MaxVoterWeightRecordCookie,
+        squads_cookies: &[&SquadCookie],
+    ) -> Result<(), TransportError> {
+        let data = anchor_lang::InstructionData::data(
+            &gpl_squads_voter::instruction::UpdateMaxVoterWeightRecord {},
+        );
+
+        let accounts = gpl_squads_voter::accounts::UpdateMaxVoterWeightRecord {
+            registrar: registrar_cookie.address,
+            max_voter_weight_record: max_voter_weight_record_cookie.address,
+        };
+
+        let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
+
+        for squad_cookie in squads_cookies {
+            account_metas.push(AccountMeta::new_readonly(squad_cookie.address, false));
+        }
+
+        let instructions = vec![Instruction {
+            program_id: gpl_squads_voter::id(),
+            accounts: account_metas,
+            data,
+        }];
+
+        self.bench.process_transaction(&instructions, None).await
+    }
+
+    #[allow(dead_code)]
     pub async fn with_squad_config(
         &mut self,
         registrar_cookie: &RegistrarCookie,
