@@ -8,6 +8,11 @@ pub struct SquadCookie {
     pub address: Pubkey,
 }
 
+pub struct SquadMemberCookie {
+    pub address: Pubkey,
+    pub squad_address: Pubkey,
+}
+
 pub struct SquadsTest {
     pub bench: Arc<ProgramTestBench>,
     pub program_id: Pubkey,
@@ -42,5 +47,21 @@ impl SquadsTest {
         };
 
         Ok(squad_cookie)
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_squad_member(
+        &mut self,
+        squad_cookie: &SquadCookie,
+    ) -> Result<SquadMemberCookie, TransportError> {
+        // TODO: Create Squad Member
+
+        let squad_member = Pubkey::new_unique();
+        let squad_member_cookie = SquadMemberCookie {
+            address: squad_member,
+            squad_address: squad_cookie.address,
+        };
+
+        Ok(squad_member_cookie)
     }
 }
