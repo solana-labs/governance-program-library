@@ -31,11 +31,7 @@ pub struct Registrar {
 
 impl Registrar {
     pub fn get_space(max_squads: u8) -> usize {
-        DISCRIMINATOR_SIZE
-            + PUBKEY_SIZE * 3
-            + 4
-            + max_squads as usize * (PUBKEY_SIZE + 4 + 8 + 8)
-            + 128
+        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 3 + 4 + max_squads as usize * (PUBKEY_SIZE + 8 + 8) + 128
     }
 }
 
