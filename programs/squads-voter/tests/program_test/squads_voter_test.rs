@@ -59,13 +59,13 @@ pub struct SquadCookie {
     pub address: Pubkey,
 }
 
-pub struct NftVoterTest {
+pub struct SquadsVoterTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
     pub governance: GovernanceTest,
 }
 
-impl NftVoterTest {
+impl SquadsVoterTest {
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
         program_test.add_program("gpl_squads_voter", gpl_squads_voter::id(), None);
@@ -75,7 +75,7 @@ impl NftVoterTest {
     pub async fn start_new() -> Self {
         let mut program_test = ProgramTest::default();
 
-        NftVoterTest::add_program(&mut program_test);
+        SquadsVoterTest::add_program(&mut program_test);
         GovernanceTest::add_program(&mut program_test);
 
         let program_id = gpl_squads_voter::id();
