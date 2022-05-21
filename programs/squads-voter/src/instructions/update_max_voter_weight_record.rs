@@ -7,7 +7,6 @@ use anchor_lang::prelude::*;
 /// This instruction updates VoterWeightRecord which is valid for the current Slot only
 /// The instruction must be executed inside the same transaction as the corresponding spl-gov instruction
 #[derive(Accounts)]
-#[instruction(voter_weight_action:VoterWeightAction)]
 pub struct UpdateMaxVoterWeightRecord<'info> {
     /// The Squads voting Registrar
     pub registrar: Account<'info, Registrar>,

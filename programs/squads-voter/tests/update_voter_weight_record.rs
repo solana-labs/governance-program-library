@@ -15,7 +15,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 
     let squad_cookie = squads_voter_test.squads.with_squad().await?;
 
-    let _squad_config_cookie = squads_voter_test
+    squads_voter_test
         .with_squad_config(
             &registrar_cookie,
             &squad_cookie,
