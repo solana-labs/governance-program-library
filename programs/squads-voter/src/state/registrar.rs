@@ -57,7 +57,7 @@ impl Registrar {
         return self
             .squads_configs
             .iter()
-            .find(|cc| cc.squad == *squad)
+            .find(|sc| sc.squad == *squad)
             .ok_or_else(|| SquadVoterError::SquadNotFound.into());
     }
 }
