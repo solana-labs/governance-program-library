@@ -53,10 +53,10 @@ pub struct CreateRegistrar<'info> {
 
 /// Creates a new Registrar which stores Squads voting configuration for given Realm
 ///
-/// To use the registrar, call ConfigureSquad to register Squad that may be
+/// To use the registrar, call ConfigureSquad to register Squads which will be
 /// used for governance
 ///
-/// max_squads is used allocate account size for the maximum number of governing Squads
+/// max_squads is used to allocate account size for the maximum number of governing Squads
 /// Note: Once Solana runtime supports account resizing the max value won't be required
 pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_squads: u8) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
