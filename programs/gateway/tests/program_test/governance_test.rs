@@ -104,7 +104,7 @@ impl GovernanceTest {
             &self.bench.payer.pubkey(),
             Some(council_mint_cookie.address),
             self.community_voter_weight_addin,
-            self.max_community_voter_weight_addin,
+            None,
             realm_name.clone(),
             min_community_weight_to_create_governance,
             community_mint_max_vote_weight_source.clone(),

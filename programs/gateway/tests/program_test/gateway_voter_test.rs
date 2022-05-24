@@ -5,9 +5,6 @@ use anchor_lang::prelude::{Pubkey};
 use solana_gateway::instruction::{add_gatekeeper, issue_vanilla};
 use solana_gateway::state::{get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed};
 
-use gpl_gateway::state::max_voter_weight_record::{
-    get_max_voter_weight_record_address, MaxVoterWeightRecord,
-};
 use gpl_gateway::state::*;
 use solana_sdk::transport::TransportError;
 use spl_governance::instruction::cast_vote;
@@ -40,11 +37,6 @@ pub struct RegistrarCookie {
 pub struct VoterWeightRecordCookie {
     pub address: Pubkey,
     pub account: VoterWeightRecord,
-}
-
-pub struct MaxVoterWeightRecordCookie {
-    pub address: Pubkey,
-    pub account: MaxVoterWeightRecord,
 }
 
 pub struct GatewayCookie {
@@ -346,65 +338,6 @@ impl GatewayVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_max_voter_weight_record(
-        &mut self,
-        registrar_cookie: &RegistrarCookie,
-    ) -> Result<MaxVoterWeightRecordCookie, TransportError> {
-        self.with_max_voter_weight_record_using_ix(registrar_cookie, NopOverride)
-            .await
-    }
-
-    #[allow(dead_code)]
-    pub async fn with_max_voter_weight_record_using_ix<F: Fn(&mut Instruction)>(
-        &mut self,
-        registrar_cookie: &RegistrarCookie,
-        instruction_override: F,
-    ) -> Result<MaxVoterWeightRecordCookie, TransportError> {
-        let max_voter_weight_record_key = get_max_voter_weight_record_address(
-            &registrar_cookie.account.realm,
-            &registrar_cookie.account.governing_token_mint,
-        );
-
-        let data = anchor_lang::InstructionData::data(
-            &gpl_gateway::instruction::CreateMaxVoterWeightRecord {},
-        );
-
-        let accounts = gpl_gateway::accounts::CreateMaxVoterWeightRecord {
-            governance_program_id: self.governance.program_id,
-            realm: registrar_cookie.account.realm,
-            realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
-            max_voter_weight_record: max_voter_weight_record_key,
-            payer: self.bench.payer.pubkey(),
-            system_program: solana_sdk::system_program::id(),
-        };
-
-        let mut create_max_voter_weight_record_ix = Instruction {
-            program_id: gpl_gateway::id(),
-            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
-            data,
-        };
-
-        instruction_override(&mut create_max_voter_weight_record_ix);
-
-        self.bench
-            .process_transaction(&[create_max_voter_weight_record_ix], None)
-            .await?;
-
-        let account = MaxVoterWeightRecord {
-            realm: registrar_cookie.account.realm,
-            governing_token_mint: registrar_cookie.account.governing_token_mint,
-            max_voter_weight: 0,
-            max_voter_weight_expiry: None,
-            reserved: [0; 8],
-        };
-
-        Ok(MaxVoterWeightRecordCookie {
-            account,
-            address: max_voter_weight_record_key,
-        })
-    }
-
-    #[allow(dead_code)]
     pub async fn update_voter_weight_record(
         &self,
         registrar_cookie: &RegistrarCookie,
@@ -415,6 +348,7 @@ impl GatewayVoterTest {
         let data = anchor_lang::InstructionData::data(
             &gpl_gateway::instruction::UpdateVoterWeightRecord {
                 voter_weight_action,
+                target: None
             },
         );
 
@@ -441,7 +375,6 @@ impl GatewayVoterTest {
         &mut self,
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &VoterWeightRecordCookie,
-        max_voter_weight_record_cookie: &MaxVoterWeightRecordCookie,
         proposal_cookie: &ProposalCookie,
         voter_cookie: &WalletCookie,
         gateway_token_cookie: &GatewayTokenCookie,
@@ -450,28 +383,26 @@ impl GatewayVoterTest {
     ) -> Result<(), TransportError> {
         let args = args.unwrap_or_default();
 
-        let data = anchor_lang::InstructionData::data(&gpl_gateway::instruction::CastVote {
-            proposal: proposal_cookie.address,
+        let data = anchor_lang::InstructionData::data(&gpl_gateway::instruction::UpdateVoterWeightRecord {
+            voter_weight_action: VoterWeightAction::CastVote,
+            target: Some(proposal_cookie.address)
         });
 
-        let accounts = gpl_gateway::accounts::CastVote {
+        let accounts = gpl_gateway::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            governing_token_owner: voter_cookie.address,
             gateway_token: gateway_token_cookie.address,
-            payer: self.bench.payer.pubkey(),
-            system_program: solana_sdk::system_program::id(),
         };
 
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
         
-        let cast_vote_ix = Instruction {
+        let update_voter_weight_ix = Instruction {
             program_id: gpl_gateway::id(),
             accounts: account_metas,
             data,
         };
 
-        let mut instruction = vec![cast_vote_ix];
+        let mut instructions = vec![update_voter_weight_ix];
 
         if args.cast_spl_gov_vote {
             // spl-gov cast vote
@@ -491,15 +422,15 @@ impl GatewayVoterTest {
                 &proposal_cookie.account.governing_token_mint,
                 &self.bench.payer.pubkey(),
                 Some(voter_weight_record_cookie.address),
-                Some(max_voter_weight_record_cookie.address),
+                None,
                 vote,
             );
 
-            instruction.push(cast_vote_ix);
+            instructions.push(cast_vote_ix);
         }
 
         self.bench
-            .process_transaction(&instruction, Some(&[&voter_cookie.signer]))
+            .process_transaction(&instructions, Some(&[&voter_cookie.signer]))
             .await?;
 
         Ok(())
@@ -508,16 +439,6 @@ impl GatewayVoterTest {
     #[allow(dead_code)]
     pub async fn get_registrar_account(&mut self, registrar: &Pubkey) -> Registrar {
         self.bench.get_anchor_account::<Registrar>(*registrar).await
-    }
-
-    #[allow(dead_code)]
-    pub async fn get_max_voter_weight_record(
-        &self,
-        max_voter_weight_record: &Pubkey,
-    ) -> MaxVoterWeightRecord {
-        self.bench
-            .get_anchor_account(*max_voter_weight_record)
-            .await
     }
 
     #[allow(dead_code)]

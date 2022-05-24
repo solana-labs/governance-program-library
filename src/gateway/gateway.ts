@@ -90,42 +90,6 @@ export type Gateway = {
       ]
     },
     {
-      "name": "createMaxVoterWeightRecord",
-      "accounts": [
-        {
-          "name": "maxVoterWeightRecord",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "governanceProgramId",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realm",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realmGoverningTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "updateVoterWeightRecord",
       "accounts": [
         {
@@ -150,87 +114,17 @@ export type Gateway = {
           "type": {
             "defined": "VoterWeightAction"
           }
-        }
-      ]
-    },
-    {
-      "name": "castVote",
-      "accounts": [
-        {
-          "name": "registrar",
-          "isMut": false,
-          "isSigner": false
         },
         {
-          "name": "voterWeightRecord",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "governingTokenOwner",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "gatewayToken",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "proposal",
-          "type": "publicKey"
+          "name": "target",
+          "type": {
+            "option": "publicKey"
+          }
         }
       ]
     }
   ],
   "accounts": [
-    {
-      "name": "MaxVoterWeightRecord",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "realm",
-            "type": "publicKey"
-          },
-          {
-            "name": "governingTokenMint",
-            "type": "publicKey"
-          },
-          {
-            "name": "maxVoterWeight",
-            "type": "u64"
-          },
-          {
-            "name": "maxVoterWeightExpiry",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "reserved",
-            "type": {
-              "array": [
-                "u8",
-                8
-              ]
-            }
-          }
-        ]
-      }
-    },
     {
       "name": "Registrar",
       "type": {
@@ -489,42 +383,6 @@ export const IDL: Gateway = {
       ]
     },
     {
-      "name": "createMaxVoterWeightRecord",
-      "accounts": [
-        {
-          "name": "maxVoterWeightRecord",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "governanceProgramId",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realm",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realmGoverningTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "updateVoterWeightRecord",
       "accounts": [
         {
@@ -549,87 +407,17 @@ export const IDL: Gateway = {
           "type": {
             "defined": "VoterWeightAction"
           }
-        }
-      ]
-    },
-    {
-      "name": "castVote",
-      "accounts": [
-        {
-          "name": "registrar",
-          "isMut": false,
-          "isSigner": false
         },
         {
-          "name": "voterWeightRecord",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "governingTokenOwner",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "gatewayToken",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "proposal",
-          "type": "publicKey"
+          "name": "target",
+          "type": {
+            "option": "publicKey"
+          }
         }
       ]
     }
   ],
   "accounts": [
-    {
-      "name": "MaxVoterWeightRecord",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "realm",
-            "type": "publicKey"
-          },
-          {
-            "name": "governingTokenMint",
-            "type": "publicKey"
-          },
-          {
-            "name": "maxVoterWeight",
-            "type": "u64"
-          },
-          {
-            "name": "maxVoterWeightExpiry",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "reserved",
-            "type": {
-              "array": [
-                "u8",
-                8
-              ]
-            }
-          }
-        ]
-      }
-    },
     {
       "name": "Registrar",
       "type": {

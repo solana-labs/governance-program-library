@@ -7,7 +7,7 @@ use solana_gateway::Gateway;
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the given target action only
 /// and hence the instruction has to be executed inside the same transaction as the corresponding spl-gov instruction
 #[derive(Accounts)]
-#[instruction(voter_weight_action:VoterWeightAction)]
+#[instruction(voter_weight_action: VoterWeightAction, target: Option<Pubkey>)]
 pub struct UpdateVoterWeightRecord<'info> {
     /// The Gateway Registrar
     pub registrar: Account<'info, Registrar>,
@@ -32,13 +32,8 @@ pub struct UpdateVoterWeightRecord<'info> {
 pub fn update_voter_weight_record(
     ctx: Context<UpdateVoterWeightRecord>,
     voter_weight_action: VoterWeightAction,
+    target: Option<Pubkey>
 ) -> Result<()> {
-    // CastVote can't be evaluated using this instruction
-    require!(
-        voter_weight_action != VoterWeightAction::CastVote,
-        GatewayError::CastVoteIsNotAllowed
-    );
-    
     // Gateway: Check if the voter has a valid gateway token and fail if not
     Gateway::verify_gateway_token_account_info(
         &ctx.accounts.gateway_token.to_account_info(),
@@ -56,7 +51,7 @@ pub fn update_voter_weight_record(
 
     // Set the action to make it specific and prevent being used for voting
     voter_weight_record.weight_action = Some(voter_weight_action);
-    voter_weight_record.weight_action_target = None;
+    voter_weight_record.weight_action_target = target;
 
     Ok(())
 }

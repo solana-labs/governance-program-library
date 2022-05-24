@@ -11,7 +11,7 @@ pub mod tools;
 
 use crate::state::*;
 
-declare_id!("Ggat9fNP9SsZEfxGJqbdZUasBGppksaZUBfL92ntrFEp");
+declare_id!("Ggatr3wgDLySEwA2qEjt1oiw4BUzp5yMLJyz21919dq6");
 
 #[program]
 pub mod gateway {
@@ -30,23 +30,13 @@ pub mod gateway {
         log_version();
         instructions::create_voter_weight_record(ctx, governing_token_owner)
     }
-    pub fn create_max_voter_weight_record(ctx: Context<CreateMaxVoterWeightRecord>) -> Result<()> {
-        log_version();
-        instructions::create_max_voter_weight_record(ctx)
-    }
     pub fn update_voter_weight_record(
         ctx: Context<UpdateVoterWeightRecord>,
         voter_weight_action: VoterWeightAction,
+        target: Option<Pubkey>,
     ) -> Result<()> {
         log_version();
-        instructions::update_voter_weight_record(ctx, voter_weight_action)
-    }
-    pub fn cast_vote<'a, 'b, 'c, 'info>(
-        ctx: Context<'a, 'b, 'c, 'info, CastVote<'info>>,
-        proposal: Pubkey,
-    ) -> Result<()> {
-        log_version();
-        instructions::cast_vote(ctx, proposal)
+        instructions::update_voter_weight_record(ctx, voter_weight_action, target)
     }
 }
 
