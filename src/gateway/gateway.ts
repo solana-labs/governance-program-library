@@ -31,6 +31,11 @@ export type Gateway = {
           "isSigner": true
         },
         {
+          "name": "gatekeeperNetwork",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -41,12 +46,7 @@ export type Gateway = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "maxCollections",
-          "type": "u8"
-        }
-      ]
+      "args": []
     },
     {
       "name": "createVoterWeightRecord",
@@ -134,6 +134,11 @@ export type Gateway = {
           "isSigner": false
         },
         {
+          "name": "gatewayToken",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "voterWeightRecord",
           "isMut": true,
           "isSigner": false
@@ -165,6 +170,11 @@ export type Gateway = {
           "name": "governingTokenOwner",
           "isMut": false,
           "isSigner": true
+        },
+        {
+          "name": "gatewayToken",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "payer",
@@ -236,6 +246,10 @@ export type Gateway = {
           },
           {
             "name": "governingTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "gatekeeperNetwork",
             "type": "publicKey"
           },
           {
@@ -374,6 +388,11 @@ export type Gateway = {
       "code": 6008,
       "name": "InvalidAccountOwner",
       "msg": "Invalid account owner"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidGatewayToken",
+      "msg": "Invalid gateway token"
     }
   ]
 }
@@ -411,6 +430,11 @@ export const IDL: Gateway = {
           "isSigner": true
         },
         {
+          "name": "gatekeeperNetwork",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -421,12 +445,7 @@ export const IDL: Gateway = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "maxCollections",
-          "type": "u8"
-        }
-      ]
+      "args": []
     },
     {
       "name": "createVoterWeightRecord",
@@ -514,6 +533,11 @@ export const IDL: Gateway = {
           "isSigner": false
         },
         {
+          "name": "gatewayToken",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "voterWeightRecord",
           "isMut": true,
           "isSigner": false
@@ -545,6 +569,11 @@ export const IDL: Gateway = {
           "name": "governingTokenOwner",
           "isMut": false,
           "isSigner": true
+        },
+        {
+          "name": "gatewayToken",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "payer",
@@ -616,6 +645,10 @@ export const IDL: Gateway = {
           },
           {
             "name": "governingTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "gatekeeperNetwork",
             "type": "publicKey"
           },
           {
@@ -754,6 +787,11 @@ export const IDL: Gateway = {
       "code": 6008,
       "name": "InvalidAccountOwner",
       "msg": "Invalid account owner"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidGatewayToken",
+      "msg": "Invalid gateway token"
     }
   ]
 }

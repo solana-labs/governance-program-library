@@ -3,7 +3,7 @@ import { PublicKey } from '@solana/web3.js';
 import { Gateway, IDL } from './gateway';
 
 export const GATEWAY_PLUGIN_ID = new PublicKey(
-  'GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw', // TODO
+  'Ggat9fNP9SsZEfxGJqbdZUasBGppksaZUBfL92ntrFEp'
 );
 
 export class GatewayClient {

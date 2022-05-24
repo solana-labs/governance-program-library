@@ -2,6 +2,11 @@ use anchor_lang::prelude::*;
 
 use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
 
+
+/// The default vote weight matches the default decimal places of a governance token
+/// so that a single vote using this plugin matches a single vote with a governance token 
+pub const DEFAULT_VOTE_WEIGHT: u64 = 1000000;
+
 /// VoterWeightAction enum as defined in spl-governance-addin-api
 /// It's redefined here for Anchor to export it to IDL
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq)]

@@ -60,7 +60,7 @@ async fn test_cast_vote() -> Result<(), TransportError> {
         .get_voter_weight_record(&voter_weight_record_cookie.address)
         .await;
 
-    assert_eq!(voter_weight_record.voter_weight, 1);
+    assert_eq!(voter_weight_record.voter_weight, 1000000);
     assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
     assert_eq!(
         voter_weight_record.weight_action,
@@ -201,7 +201,7 @@ async fn test_cast_vote_using_multiple_instructions() -> Result<(), TransportErr
         .get_voter_weight_record(&voter_weight_record_cookie.address)
         .await;
 
-    assert_eq!(voter_weight_record.voter_weight, 2);
+    assert_eq!(voter_weight_record.voter_weight, 2000000);
     assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
     assert_eq!(
         voter_weight_record.weight_action,

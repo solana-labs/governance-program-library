@@ -7,7 +7,6 @@ use spl_governance::state::realm;
 /// Creates an add-in Registrar for spl-gov Realm
 /// This instruction should only be executed once per realm/governing_token_mint to create the account
 #[derive(Accounts)]
-#[instruction(max_collections: u8)]
 pub struct CreateRegistrar<'info> {
     /// The Gateway Registrar
     /// There can only be a single registrar per governance Realm and governing mint of the Realm
@@ -59,7 +58,7 @@ pub struct CreateRegistrar<'info> {
 }
 
 /// Creates a new Registrar which stores the gatekeeper network that the realm uses
-pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_collections: u8) -> Result<()> {
+pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
     registrar.governance_program_id = ctx.accounts.governance_program_id.key();
     registrar.realm = ctx.accounts.realm.key();

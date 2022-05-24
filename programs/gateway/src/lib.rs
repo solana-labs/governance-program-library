@@ -19,9 +19,9 @@ pub mod gateway {
     use crate::state::VoterWeightAction;
 
     use super::*;
-    pub fn create_registrar(ctx: Context<CreateRegistrar>, max_collections: u8) -> Result<()> {
+    pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
         log_version();
-        instructions::create_registrar(ctx, max_collections)
+        instructions::create_registrar(ctx)
     }
     pub fn create_voter_weight_record(
         ctx: Context<CreateVoterWeightRecord>,

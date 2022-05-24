@@ -65,7 +65,7 @@ pub fn cast_vote<'a, 'b, 'c, 'info>(
         None
     ).or(Err(error!(GatewayError::InvalidGatewayToken)))?;
     
-    let voter_weight = 1;
+    let voter_weight = DEFAULT_VOTE_WEIGHT;
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     if voter_weight_record.weight_action_target == Some(proposal)

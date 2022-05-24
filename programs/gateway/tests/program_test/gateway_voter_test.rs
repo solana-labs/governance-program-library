@@ -2,7 +2,6 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use anchor_lang::prelude::{Pubkey};
-use solana_gateway::Gateway;
 use solana_gateway::instruction::{add_gatekeeper, issue_vanilla};
 use solana_gateway::state::{get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed};
 
@@ -36,7 +35,6 @@ pub struct RegistrarCookie {
     pub account: Registrar,
 
     pub realm_authority: Keypair,
-    pub max_collections: u8,
 }
 
 pub struct VoterWeightRecordCookie {
@@ -147,12 +145,8 @@ impl GatewayVoterTest {
         let registrar_key =
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
-        let max_collections = 10;
-
         let data =
-            anchor_lang::InstructionData::data(&gpl_gateway::instruction::CreateRegistrar {
-                max_collections,
-            });
+            anchor_lang::InstructionData::data(&gpl_gateway::instruction::CreateRegistrar {});
 
         let accounts = anchor_lang::ToAccountMetas::to_account_metas(
             &gpl_gateway::accounts::CreateRegistrar {
@@ -195,7 +189,6 @@ impl GatewayVoterTest {
             address: registrar_key,
             account,
             realm_authority: realm_cookie.get_realm_authority(),
-            max_collections,
         })
     }
 

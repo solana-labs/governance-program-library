@@ -5,12 +5,7 @@ use solana_gateway::Gateway;
 
 /// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the given target action only
-/// and hance the instruction has to be executed inside the same transaction as the corresponding spl-gov instruction
-///
-/// Note: UpdateVoterWeight is not cumulative the same way as CastNftVote and hence voter_weight for non voting scenarios
-/// can only be used with max 5 NFTs due to Solana transaction size limit
-/// It could be supported in future version by introducing bookkeeping accounts to track the NFTs
-/// which were already used to calculate the total weight
+/// and hence the instruction has to be executed inside the same transaction as the corresponding spl-gov instruction
 #[derive(Accounts)]
 #[instruction(voter_weight_action:VoterWeightAction)]
 pub struct UpdateVoterWeightRecord<'info> {
@@ -51,11 +46,10 @@ pub fn update_voter_weight_record(
         &ctx.accounts.registrar.gatekeeper_network,
         None
     ).or(Err(error!(GatewayError::InvalidGatewayToken)))?;
-    let voter_weight = 1;
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
-    voter_weight_record.voter_weight = voter_weight;
+    voter_weight_record.voter_weight = DEFAULT_VOTE_WEIGHT;
 
     // Record is only valid as of the current slot
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
