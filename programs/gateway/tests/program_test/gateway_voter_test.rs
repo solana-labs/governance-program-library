@@ -2,6 +2,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use anchor_lang::prelude::{Pubkey};
+use itertools::Either;
 use solana_gateway::instruction::{add_gatekeeper, issue_vanilla};
 use solana_gateway::state::{get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed};
 
@@ -24,7 +25,7 @@ use crate::program_test::program_test_bench::ProgramTestBench;
 
 use crate::program_test::governance_test::{ProposalCookie, RealmCookie, TokenOwnerRecordCookie};
 use crate::program_test::program_test_bench::WalletCookie;
-use crate::program_test::tools::NopOverride;
+use crate::program_test::tools::{NopOverride, extract_voting_weight_address};
 
 #[derive(Debug, PartialEq)]
 pub struct RegistrarCookie {
@@ -115,14 +116,15 @@ impl GatewayVoterTest {
             governance: governance_bench,
         }
     }
-
+    
     #[allow(dead_code)]
     pub async fn with_registrar(
         &mut self,
         realm_cookie: &RealmCookie,
         gateway_cookie: &GatewayCookie,
+        predecessor_cookie: Option<&RegistrarCookie>,
     ) -> Result<RegistrarCookie, TransportError> {
-        self.with_registrar_using_ix(realm_cookie, gateway_cookie, NopOverride, None)
+        self.with_registrar_using_ix(realm_cookie, gateway_cookie, predecessor_cookie, NopOverride, None)
             .await
     }
 
@@ -131,6 +133,7 @@ impl GatewayVoterTest {
         &mut self,
         realm_cookie: &RealmCookie,
         gateway_cookie: &GatewayCookie,
+        predecessor_cookie: Option<&RegistrarCookie>,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
     ) -> Result<RegistrarCookie, TransportError> {
@@ -171,6 +174,8 @@ impl GatewayVoterTest {
 
         let account = Registrar {
             governance_program_id: self.governance.program_id,
+            predecessor_plugin_registrar: predecessor_cookie
+                .map(|cookie| cookie.address),
             realm: realm_cookie.address,
             governing_token_mint: realm_cookie.account.community_mint,
             gatekeeper_network: gateway_cookie.gatekeeper_network.pubkey(),
@@ -341,7 +346,8 @@ impl GatewayVoterTest {
     pub async fn update_voter_weight_record(
         &self,
         registrar_cookie: &RegistrarCookie,
-        voter_weight_record_cookie: &mut VoterWeightRecordCookie,
+        input_voting_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
+        output_voter_weight_record_cookie: &mut VoterWeightRecordCookie,
         gateway_token_cookie: &GatewayTokenCookie,
         voter_weight_action: VoterWeightAction,
     ) -> Result<(), TransportError> {
@@ -355,7 +361,8 @@ impl GatewayVoterTest {
         let accounts = gpl_gateway::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             gateway_token: gateway_token_cookie.address,
-            voter_weight_record: voter_weight_record_cookie.address,
+            voter_weight_record: output_voter_weight_record_cookie.address,
+            input_voting_weight: extract_voting_weight_address(input_voting_weight_cookie),
         };
 
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
@@ -379,6 +386,7 @@ impl GatewayVoterTest {
         voter_cookie: &WalletCookie,
         gateway_token_cookie: &GatewayTokenCookie,
         voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
+        input_voting_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
         args: Option<CastVoteArgs>,
     ) -> Result<(), TransportError> {
         let args = args.unwrap_or_default();
@@ -392,6 +400,7 @@ impl GatewayVoterTest {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
             gateway_token: gateway_token_cookie.address,
+            input_voting_weight: extract_voting_weight_address(input_voting_weight_cookie),
         };
 
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);

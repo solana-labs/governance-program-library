@@ -29,6 +29,7 @@ pub struct MintCookie {
 }
 pub struct TokenAccountCookie {
     pub address: Pubkey,
+    pub amount: u64,
 }
 
 #[derive(Debug)]
@@ -61,7 +62,7 @@ impl ProgramTestBench {
             rent,
         }
     }
-
+    
     #[allow(dead_code)]
     pub async fn process_transaction(
         &self,
@@ -165,6 +166,7 @@ impl ProgramTestBench {
 
         Ok(TokenAccountCookie {
             address: token_account_keypair.pubkey(),
+            amount: 0,
         })
     }
 
@@ -190,6 +192,7 @@ impl ProgramTestBench {
 
         Ok(TokenAccountCookie {
             address: token_account_keypair.pubkey(),
+            amount
         })
     }
 

@@ -24,6 +24,7 @@ use crate::program_test::{
     program_test_bench::{MintCookie, ProgramTestBench, WalletCookie},
     tools::clone_keypair,
 };
+use crate::program_test::program_test_bench::TokenAccountCookie;
 
 pub struct RealmCookie {
     pub address: Pubkey,
@@ -306,7 +307,15 @@ impl GovernanceTest {
         &mut self,
         realm_cookie: &RealmCookie,
         token_owner_cookie: &WalletCookie,
+        tokens_to_deposit: u64,
     ) -> Result<TokenOwnerRecordCookie, TransportError> {
+        let token_account_cookie = self.bench
+            .with_tokens(
+                &realm_cookie.community_mint_cookie,
+                &token_owner_cookie.address,
+                tokens_to_deposit
+            ).await?;
+        
         let token_owner_record_key = get_token_owner_record_address(
             &self.program_id,
             &realm_cookie.address,
@@ -321,9 +330,20 @@ impl GovernanceTest {
             &realm_cookie.account.community_mint,
             &self.bench.payer.pubkey(),
         );
+        
+        let deposit_tokens_ix = deposit_governing_tokens(
+            &self.program_id, 
+            &realm_cookie.address, 
+            &token_account_cookie.address, 
+            &token_owner_cookie.address,
+            &token_owner_cookie.address,
+            &self.bench.payer.pubkey(),
+            tokens_to_deposit,
+            &realm_cookie.account.community_mint
+        );
 
         self.bench
-            .process_transaction(&[create_tor_ix], None)
+            .process_transaction(&[create_tor_ix, deposit_tokens_ix], Some(&[&token_owner_cookie.signer]))
             .await?;
 
         let account = TokenOwnerRecordV2 {
@@ -331,7 +351,7 @@ impl GovernanceTest {
             realm: realm_cookie.address,
             governing_token_mint: realm_cookie.account.community_mint,
             governing_token_owner: token_owner_cookie.address,
-            governing_token_deposit_amount: 0,
+            governing_token_deposit_amount: tokens_to_deposit,
             unrelinquished_votes_count: 0,
             total_votes_count: 0,
             outstanding_proposal_count: 0,

@@ -19,7 +19,7 @@ async fn test_create_registrar() -> Result<(), TransportError> {
     let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
     // Act
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie).await?;
+    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie, None).await?;
 
     // Assert
     let registrar = gateway_voter_test
@@ -42,7 +42,7 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
 
     // Act
     let err = gateway_voter_test
-        .with_registrar(&realm_cookie, &gateway_cookie)
+        .with_registrar(&realm_cookie, &gateway_cookie, None)
         .await
         .err()
         .unwrap();
@@ -67,6 +67,7 @@ async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<
         .with_registrar_using_ix(
             &realm_cookie,
             &gateway_cookie,
+            None,
             |i| i.accounts[4].is_signer = false, // realm_authority
             Some(&[]),
         )
@@ -98,6 +99,7 @@ async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result
         .with_registrar_using_ix(
             &realm_cookie,
             &gateway_cookie,
+            None,
             |i| i.accounts[1].pubkey = governance_program_id, //governance_program_id
             None,
         )
@@ -125,6 +127,7 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), Transpor
         .with_registrar_using_ix(
             &realm_cookie,
             &gateway_cookie,
+            None,
             |i| i.accounts[2].pubkey = Pubkey::new_unique(), // realm
             None,
         )
@@ -156,6 +159,7 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
         .with_registrar_using_ix(
             &realm_cookie,
             &gateway_cookie,
+            None,
             |i| i.accounts[3].pubkey = mint_cookie.address, // governing_token_mint
             None,
         )
