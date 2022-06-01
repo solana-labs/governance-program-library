@@ -31,3 +31,4 @@ spl-token = { version = "3.3", features = [ "no-entrypoint" ] }
 borsh = "0.9.1"
 solana-sdk = "1.9.5"
 solana-program-test = "1.9.13"
+spl-governance-addin-mock = "0.1.2"

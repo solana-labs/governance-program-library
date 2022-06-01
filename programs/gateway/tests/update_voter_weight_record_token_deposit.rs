@@ -5,7 +5,6 @@ use program_test::gateway_voter_test::GatewayVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
-use crate::program_test::program_test_bench::ProgramTestBench;
 
 mod program_test;
 

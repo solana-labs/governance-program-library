@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
-use solana_program::program_pack::{ IsInitialized, Pack };
+use solana_program::program_pack::{ IsInitialized };
+use crate::state::generic_voter_weight::GenericVoterWeight;
 
 use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
 
@@ -98,6 +99,37 @@ impl IsInitialized for VoterWeightRecord {
         self.realm != Default::default()
             && self.governing_token_mint != Default::default()
             && self.governing_token_owner != Default::default()
+    }
+}
+
+impl GenericVoterWeight for VoterWeightRecord {
+    
+    fn get_governing_token_mint(&self) -> Pubkey {
+        self.governing_token_mint
+    }
+
+    fn get_governing_token_owner(&self) -> Pubkey {
+        self.governing_token_owner
+    }
+
+    fn get_realm(&self) -> Pubkey {
+        self.realm
+    }
+
+    fn get_voter_weight(&self) -> u64 {
+        self.voter_weight
+    }
+
+    fn get_weight_action(&self) -> Option<VoterWeightAction> {
+        self.weight_action
+    }
+
+    fn get_weight_action_target(&self) -> Option<Pubkey> {
+        self.weight_action_target
+    }
+
+    fn get_vote_expiry(&self) -> Option<u64> {
+        self.voter_weight_expiry
     }
 }
 

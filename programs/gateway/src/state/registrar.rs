@@ -28,7 +28,7 @@ pub struct Registrar {
     
     /// If the plugin is one in a sequence, this is the previous plugin
     /// If set, then update_voter_weight_record will expect a voter_weight_record owned by this registrar
-    pub predecessor_plugin_registrar: Option<Pubkey>,
+    pub previous_voting_weight_plugin_registrar: Option<Pubkey>,
 
     /// Reserved for future upgrades
     pub reserved: [u8; 128],
@@ -68,7 +68,7 @@ mod test {
 
         let registrar = Registrar {
             governance_program_id: Pubkey::default(),
-            predecessor_plugin_registrar: Pubkey::default().into(),
+            previous_voting_weight_plugin_registrar: Pubkey::default().into(),
             realm: Pubkey::default(),
             governing_token_mint: Pubkey::default(),
             gatekeeper_network: Pubkey::default(),

@@ -1,9 +1,9 @@
+use std::cmp::max;
 use crate::error::GatewayError;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use solana_gateway::Gateway;
-use solana_program::program_pack::{Pack, IsInitialized};
-use spl_governance::state::token_owner_record::TokenOwnerRecordV2;
+use spl_governance::state::token_owner_record::{get_token_owner_record_data_for_realm_and_governing_mint};
 use spl_governance_tools::account::get_account_data;
 
 /// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...
@@ -28,12 +28,12 @@ pub struct UpdateVoterWeightRecord<'info> {
 
 
     #[account(
-        mut,
-        constraint = voter_weight_record.realm == registrar.realm
-        @ GatewayError::InvalidVoterWeightRecordRealm,
+    mut,
+    constraint = voter_weight_record.realm == registrar.realm
+    @ GatewayError::InvalidVoterWeightRecordRealm,
 
-        constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
-        @ GatewayError::InvalidVoterWeightRecordMint,
+    constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
+    @ GatewayError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 }
@@ -51,50 +51,87 @@ pub fn update_voter_weight_record(
         None
     ).or(Err(error!(GatewayError::InvalidGatewayToken)))?;
 
-
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
-    voter_weight_record.voter_weight = extract_input_voter_weight(&ctx.accounts.input_voting_weight.to_account_info(), &ctx.accounts.registrar);
-    msg!("voter_weight_record.voter_weight: {}", voter_weight_record.voter_weight);
+    let input_voting_weight_account = ctx.accounts.input_voting_weight.to_account_info();
 
-    // Record is only valid as of the current slot
-    voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
+    let clone_record = voter_weight_record.clone();
+    let input_voter_weight_record = parse_input_voter_weight_record(
+        &input_voting_weight_account,
+        &clone_record,
+        &ctx.accounts.registrar
+    )?;
 
-    // Set the action to make it specific and prevent being used for voting
-    voter_weight_record.weight_action = Some(voter_weight_action);
-    voter_weight_record.weight_action_target = target;
+    msg!("input_voter_weight_record.voter_weight: {}", input_voter_weight_record.get_voter_weight());
+    voter_weight_record.voter_weight = input_voter_weight_record.get_voter_weight();
+    voter_weight_record.weight_action = input_voter_weight_record.get_weight_action();
+    voter_weight_record.weight_action_target = input_voter_weight_record.get_weight_action_target();
+
+    // If the input voter weight record has an expiry, use the max between that and the current slot
+    // Otherwise use the current slot
+    let current_slot = Clock::get()?.slot;
+    voter_weight_record.voter_weight_expiry = input_voter_weight_record
+        .get_vote_expiry()
+        .map_or(
+            Some(current_slot), // no previous expiry, use current slot
+            |previous_expiry| Some(max(previous_expiry, current_slot))
+        ); 
 
     Ok(())
 }
 
 
-/// Attempt to parse the account as a VoterWeightRecord or a TokenOwnerRecordV2
-/// depending on which one succeeds, return the voter weight.
-fn extract_input_voter_weight(input_account: &AccountInfo, registrar: &Registrar) -> u64 {
-    msg!("extract_input_voter_weight");
-    match registrar.predecessor_plugin_registrar {
+/// Attempt to parse the input account as a VoterWeightRecord or a TokenOwnerRecordV2
+fn parse_input_voter_weight_record<'a>(
+    input_account: &'a AccountInfo,
+    voter_weight_record_to_update: &'a VoterWeightRecord,
+    registrar: &'a Registrar
+) -> Result<Box<dyn GenericVoterWeight + 'a>> {
+    msg!("parse_predecessor_voter_weight_record");
+    let predecessor_generic_voter_weight_record = parse_input_voter_weight_record_unchecked(input_account, registrar)?;
+
+    // ensure that the correct governance token is used
+    require!(
+        voter_weight_record_to_update.governing_token_mint == predecessor_generic_voter_weight_record.get_governing_token_mint(),
+        GatewayError::InvalidVoterWeightRecordRealm
+    );
+
+    // Ensure that the correct governance token is used
+    require!(
+        voter_weight_record_to_update.governing_token_owner == predecessor_generic_voter_weight_record.get_governing_token_owner(),
+        GatewayError::InvalidTokenOwnerForVoterWeightRecord
+    );
+
+    // Ensure that the realm matches the current realm
+    require!(
+        registrar.realm == predecessor_generic_voter_weight_record.get_realm(),
+        GatewayError::InvalidVoterWeightRecordRealm
+    );
+    
+    Ok(predecessor_generic_voter_weight_record)
+}
+
+fn parse_input_voter_weight_record_unchecked<'a>(input_account: &'a AccountInfo, registrar: &'a Registrar) -> Result<Box<dyn GenericVoterWeight + 'a>> {
+    match registrar.previous_voting_weight_plugin_registrar {
         None => {
-            msg!("Extracting voter weight from TokenOwnerRecordV2");
+            msg!("parse_predecessor_voter_weight_record expects TokenOwnerRecord (V1 or 2)");
             // If there is no predecessor plugin registrar, then the input account must be a TokenOwnerRecordV2
-            let parse_result: core::result::Result<TokenOwnerRecordV2, ProgramError> = get_account_data(&registrar.governance_program_id, input_account);
-            match parse_result {
-                Ok(token_owner_record) => token_owner_record.governing_token_deposit_amount,
-                Err(e) => {
-                    msg!("Failed to parse input account as TokenOwnerRecordV2: {:?}", e);
-                    DEFAULT_VOTE_WEIGHT
-                }, // TODO should probably be an error
-            }
+            let record = get_token_owner_record_data_for_realm_and_governing_mint(
+                &registrar.governance_program_id,
+                input_account,
+                &registrar.realm,
+                &registrar.governing_token_mint
+            ).or(Err(error!(GatewayError::InvalidPredecessorTokenOwnerRecord)))?;
+
+            Ok(Box::new(record))
         }
         Some(predecessor) => {
-            msg!("Extracting voter weight from VoterWeightRecord");
-            let parse_result: core::result::Result<VoterWeightRecord, ProgramError> = get_account_data(&predecessor, input_account);
-            match parse_result {
-                Ok(predecessor_voter_weight_record) => predecessor_voter_weight_record.voter_weight,
-                Err(e) => {
-                    msg!("Failed to parse input account as TokenOwnerRecordV2: {:?}", e);
-                    DEFAULT_VOTE_WEIGHT // TODO should probably be an error   
-                }
-            }
+            msg!("parse_predecessor_voter_weight_record expects VoterWeightRecord");
+            // If there is a predecessor plugin registrar, then the input account must be a VoterWeightRecord
+            let record: VoterWeightRecord = get_account_data(&predecessor, input_account)
+                .or(Err(error!(GatewayError::InvalidPredecessorVoterWeightRecord)))?;
+
+            Ok(Box::new(record))
         }
     }
 }

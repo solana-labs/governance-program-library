@@ -17,6 +17,12 @@ pub enum GatewayError {
     #[msg("CastVote Is Not Allowed")]
     CastVoteIsNotAllowed,
 
+    #[msg("Invalid TokenOwnerRecord as input voter weight")]
+    InvalidPredecessorTokenOwnerRecord,
+
+    #[msg("Invalid VoterWeightRecord as input voter weight")]
+    InvalidPredecessorVoterWeightRecord,
+    
     #[msg("Invalid VoterWeightRecord Realm")]
     InvalidVoterWeightRecordRealm,
 

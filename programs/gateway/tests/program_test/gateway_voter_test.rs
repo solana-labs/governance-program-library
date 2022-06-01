@@ -124,7 +124,28 @@ impl GatewayVoterTest {
         gateway_cookie: &GatewayCookie,
         predecessor_cookie: Option<&RegistrarCookie>,
     ) -> Result<RegistrarCookie, TransportError> {
-        self.with_registrar_using_ix(realm_cookie, gateway_cookie, predecessor_cookie, NopOverride, None)
+        self.with_registrar_using_ix(
+            realm_cookie, 
+            gateway_cookie, 
+                                     predecessor_cookie, 
+                                     &gpl_gateway::id(),
+                                     NopOverride, None)
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_dummy_registrar(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        gateway_cookie: &GatewayCookie,
+        predecessor_cookie: Option<&RegistrarCookie>,
+    ) -> Result<RegistrarCookie, TransportError> {
+        self.with_registrar_using_ix(
+            realm_cookie,
+            gateway_cookie,
+            predecessor_cookie,
+            &gpl_gateway::id(),
+            NopOverride, None)
             .await
     }
 
@@ -134,6 +155,7 @@ impl GatewayVoterTest {
         realm_cookie: &RealmCookie,
         gateway_cookie: &GatewayCookie,
         predecessor_cookie: Option<&RegistrarCookie>,
+        program_id: &Pubkey,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
     ) -> Result<RegistrarCookie, TransportError> {
@@ -158,7 +180,7 @@ impl GatewayVoterTest {
         );
 
         let mut create_registrar_ix = Instruction {
-            program_id: gpl_gateway::id(),
+            program_id: *program_id,
             accounts,
             data,
         };
@@ -169,12 +191,12 @@ impl GatewayVoterTest {
         let signers = signers_override.unwrap_or(default_signers);
 
         self.bench
-            .process_transaction(&[create_registrar_ix], Some(signers))
+            .process_transaction(&[create_registrar_ix], signers)
             .await?;
 
         let account = Registrar {
             governance_program_id: self.governance.program_id,
-            predecessor_plugin_registrar: predecessor_cookie
+            previous_voting_weight_plugin_registrar: predecessor_cookie
                 .map(|cookie| cookie.address),
             realm: realm_cookie.address,
             governing_token_mint: realm_cookie.account.community_mint,
@@ -216,7 +238,7 @@ impl GatewayVoterTest {
         let signers = signers_override.unwrap_or(default_signers);
 
         self.bench
-            .process_transaction(&[add_gatekeeper_ix], Some(signers))
+            .process_transaction(&[add_gatekeeper_ix], signers)
             .await?;
 
         Ok(GatewayCookie {
@@ -263,7 +285,7 @@ impl GatewayVoterTest {
         let signers = signers_override.unwrap_or(default_signers);
 
         self.bench
-            .process_transaction(&[issue_ix], Some(signers))
+            .process_transaction(&[issue_ix], signers)
             .await?;
 
         Ok(gateway_token_cookie)
@@ -322,7 +344,7 @@ impl GatewayVoterTest {
         instruction_override(&mut create_voter_weight_record_ix);
 
         self.bench
-            .process_transaction(&[create_voter_weight_record_ix], None)
+            .process_transaction(&[create_voter_weight_record_ix], &[])
             .await?;
 
         let account = VoterWeightRecord {
@@ -373,7 +395,7 @@ impl GatewayVoterTest {
             data,
         }];
 
-        self.bench.process_transaction(&instructions, None).await
+        self.bench.process_transaction(&instructions, &[]).await
     }
 
     /// Casts a vote
@@ -439,7 +461,7 @@ impl GatewayVoterTest {
         }
 
         self.bench
-            .process_transaction(&instructions, Some(&[&voter_cookie.signer]))
+            .process_transaction(&instructions, &[&voter_cookie.signer])
             .await?;
 
         Ok(())

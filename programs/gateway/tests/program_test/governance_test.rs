@@ -24,7 +24,6 @@ use crate::program_test::{
     program_test_bench::{MintCookie, ProgramTestBench, WalletCookie},
     tools::clone_keypair,
 };
-use crate::program_test::program_test_bench::TokenAccountCookie;
 
 pub struct RealmCookie {
     pub address: Pubkey,
@@ -112,7 +111,7 @@ impl GovernanceTest {
         );
 
         self.bench
-            .process_transaction(&[create_realm_ix], None)
+            .process_transaction(&[create_realm_ix], &[])
             .await?;
 
         let account = RealmV2 {
@@ -178,7 +177,7 @@ impl GovernanceTest {
         );
 
         self.bench
-            .process_transaction(&[create_tor_ix], None)
+            .process_transaction(&[create_tor_ix], &[])
             .await?;
 
         let deposit_ix = deposit_governing_tokens(
@@ -192,7 +191,7 @@ impl GovernanceTest {
             &governing_token_mint,
         );
 
-        self.bench.process_transaction(&[deposit_ix], None).await?;
+        self.bench.process_transaction(&[deposit_ix], &[]).await?;
 
         let governance_key = get_governance_address(
             &self.program_id,
@@ -222,7 +221,7 @@ impl GovernanceTest {
         self.bench
             .process_transaction(
                 &[create_governance_ix],
-                Some(&[&realm_cookie.realm_authority]),
+                &[&realm_cookie.realm_authority],
             )
             .await?;
 
@@ -263,7 +262,7 @@ impl GovernanceTest {
         );
 
         self.bench
-            .process_transaction(&[create_proposal_ix, sign_off_proposal_ix], None)
+            .process_transaction(&[create_proposal_ix, sign_off_proposal_ix], &[])
             .await?;
 
         let account = ProposalV2 {
@@ -315,7 +314,7 @@ impl GovernanceTest {
                 &token_owner_cookie.address,
                 tokens_to_deposit
             ).await?;
-        
+
         let token_owner_record_key = get_token_owner_record_address(
             &self.program_id,
             &realm_cookie.address,
@@ -330,20 +329,30 @@ impl GovernanceTest {
             &realm_cookie.account.community_mint,
             &self.bench.payer.pubkey(),
         );
-        
-        let deposit_tokens_ix = deposit_governing_tokens(
-            &self.program_id, 
-            &realm_cookie.address, 
-            &token_account_cookie.address, 
-            &token_owner_cookie.address,
-            &token_owner_cookie.address,
-            &self.bench.payer.pubkey(),
-            tokens_to_deposit,
-            &realm_cookie.account.community_mint
-        );
+
+        let mut instructions = vec![create_tor_ix];
+        let mut signers = vec![];
+
+        if tokens_to_deposit > 0 {
+            let deposit_tokens_ix = deposit_governing_tokens(
+                &self.program_id,
+                &realm_cookie.address,
+                &token_account_cookie.address,
+                &token_owner_cookie.address,
+                &token_owner_cookie.address,
+                &self.bench.payer.pubkey(),
+                tokens_to_deposit,
+                &realm_cookie.account.community_mint
+            );
+
+            instructions.push(deposit_tokens_ix);
+            signers.push(&token_owner_cookie.signer);
+        }
 
         self.bench
-            .process_transaction(&[create_tor_ix, deposit_tokens_ix], Some(&[&token_owner_cookie.signer]))
+            .process_transaction(
+                instructions.as_slice(),
+                signers.as_slice())
             .await?;
 
         let account = TokenOwnerRecordV2 {
@@ -384,7 +393,7 @@ impl GovernanceTest {
         );
 
         self.bench
-            .process_transaction(&[relinquish_vote_ix], Some(&[&token_owner_cookie.signer]))
+            .process_transaction(&[relinquish_vote_ix], &[&token_owner_cookie.signer])
             .await?;
 
         Ok(())

@@ -67,7 +67,7 @@ impl ProgramTestBench {
     pub async fn process_transaction(
         &self,
         instructions: &[Instruction],
-        signers: Option<&[&Keypair]>,
+        signers: &[&Keypair],
     ) -> Result<(), TransportError> {
         let mut context = self.context.borrow_mut();
 
@@ -75,10 +75,7 @@ impl ProgramTestBench {
             Transaction::new_with_payer(&instructions, Some(&context.payer.pubkey()));
 
         let mut all_signers = vec![&context.payer];
-
-        if let Some(signers) = signers {
-            all_signers.extend_from_slice(signers);
-        }
+        all_signers.extend_from_slice(signers);
 
         transaction.sign(&all_signers, context.last_blockhash);
 
@@ -151,7 +148,7 @@ impl ProgramTestBench {
             .unwrap(),
         ];
 
-        self.process_transaction(&instructions, Some(&[mint_keypair]))
+        self.process_transaction(&instructions, &[mint_keypair])
             .await
     }
 
@@ -213,7 +210,7 @@ impl ProgramTestBench {
         )
         .unwrap();
 
-        self.process_transaction(&[mint_instruction], Some(&[token_mint_authority]))
+        self.process_transaction(&[mint_instruction], &[token_mint_authority])
             .await
     }
 
@@ -250,7 +247,7 @@ impl ProgramTestBench {
 
         self.process_transaction(
             &[create_account_instruction, initialize_account_instruction],
-            Some(&[token_account_keypair]),
+            &[token_account_keypair],
         )
         .await
     }
@@ -268,7 +265,7 @@ impl ProgramTestBench {
             &system_program::id(),
         );
 
-        self.process_transaction(&[create_account_ix], Some(&[&account_keypair]))
+        self.process_transaction(&[create_account_ix], &[&account_keypair])
             .await
             .unwrap();
 
