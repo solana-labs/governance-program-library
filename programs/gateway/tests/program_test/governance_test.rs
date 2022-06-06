@@ -64,7 +64,7 @@ impl GovernanceTest {
 
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
-        program_test.add_program("spl_governance", Self::program_id(), None);
+        program_test.add_program("spl_governance_deposit_allowed", Self::program_id(), None);
     }
 
     #[allow(dead_code)]

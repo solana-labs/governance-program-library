@@ -4,6 +4,7 @@ use crate::state::*;
 use anchor_lang::prelude::*;
 use solana_gateway::Gateway;
 use spl_governance::state::token_owner_record::{get_token_owner_record_data_for_realm_and_governing_mint};
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use spl_governance_tools::account::get_account_data;
 
 /// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...
@@ -87,25 +88,24 @@ fn parse_input_voter_weight_record<'a>(
     voter_weight_record_to_update: &'a VoterWeightRecord,
     registrar: &'a Registrar
 ) -> Result<Box<dyn GenericVoterWeight + 'a>> {
-    msg!("parse_predecessor_voter_weight_record");
     let predecessor_generic_voter_weight_record = parse_input_voter_weight_record_unchecked(input_account, registrar)?;
 
     // ensure that the correct governance token is used
     require!(
         voter_weight_record_to_update.governing_token_mint == predecessor_generic_voter_weight_record.get_governing_token_mint(),
-        GatewayError::InvalidVoterWeightRecordRealm
+        GatewayError::InvalidPredecessorVoterWeightRecordGovTokenMint
     );
 
     // Ensure that the correct governance token is used
     require!(
         voter_weight_record_to_update.governing_token_owner == predecessor_generic_voter_weight_record.get_governing_token_owner(),
-        GatewayError::InvalidTokenOwnerForVoterWeightRecord
+        GatewayError::InvalidPredecessorVoterWeightRecordGovTokenOwner
     );
 
     // Ensure that the realm matches the current realm
     require!(
         registrar.realm == predecessor_generic_voter_weight_record.get_realm(),
-        GatewayError::InvalidVoterWeightRecordRealm
+        GatewayError::InvalidPredecessorVoterWeightRecordRealm
     );
     
     Ok(predecessor_generic_voter_weight_record)
@@ -128,7 +128,7 @@ fn parse_input_voter_weight_record_unchecked<'a>(input_account: &'a AccountInfo,
         Some(predecessor) => {
             msg!("parse_predecessor_voter_weight_record expects VoterWeightRecord");
             // If there is a predecessor plugin registrar, then the input account must be a VoterWeightRecord
-            let record: VoterWeightRecord = get_account_data(&predecessor, input_account)
+            let record: spl_governance_addin_api::voter_weight::VoterWeightRecord = get_account_data(&predecessor, input_account)
                 .or(Err(error!(GatewayError::InvalidPredecessorVoterWeightRecord)))?;
 
             Ok(Box::new(record))

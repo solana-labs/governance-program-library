@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 use solana_program::program_pack::{ IsInitialized };
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use crate::state::generic_voter_weight::GenericVoterWeight;
 
 use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
@@ -8,27 +9,6 @@ use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
 /// The default vote weight matches the default decimal places of a governance token
 /// so that a single vote using this plugin matches a single vote with a governance token 
 pub const DEFAULT_VOTE_WEIGHT: u64 = 1000000;
-
-/// VoterWeightAction enum as defined in spl-governance-addin-api
-/// It's redefined here for Anchor to export it to IDL
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq)]
-pub enum VoterWeightAction {
-    /// Cast vote for a proposal. Target: Proposal
-    CastVote,
-
-    /// Comment a proposal. Target: Proposal
-    CommentProposal,
-
-    /// Create Governance within a realm. Target: Realm
-    CreateGovernance,
-
-    /// Create a proposal for a governance. Target: Governance
-    CreateProposal,
-
-    /// Signs off a proposal for a governance. Target: Proposal
-    /// Note: SignOffProposal is not supported in the current version
-    SignOffProposal,
-}
 
 /// VoterWeightRecord account as defined in spl-governance-addin-api
 /// It's redefined here without account_discriminator for Anchor to treat it as native account
@@ -121,7 +101,41 @@ impl GenericVoterWeight for VoterWeightRecord {
     }
 
     fn get_weight_action(&self) -> Option<VoterWeightAction> {
-        self.weight_action
+        self.weight_action.clone()
+    }
+
+    fn get_weight_action_target(&self) -> Option<Pubkey> {
+        self.weight_action_target
+    }
+
+    fn get_vote_expiry(&self) -> Option<u64> {
+        self.voter_weight_expiry
+    }
+}
+
+// the "official" on-chain voter weight record has a discriminator field
+// when a predecessor voter weight is provided, it uses this struct instead of the one defined above. 
+// We add the GenericVoterWeight trait here to hide this from the rest of the code.
+impl GenericVoterWeight for spl_governance_addin_api::voter_weight::VoterWeightRecord {
+
+    fn get_governing_token_mint(&self) -> Pubkey {
+        self.governing_token_mint
+    }
+
+    fn get_governing_token_owner(&self) -> Pubkey {
+        self.governing_token_owner
+    }
+
+    fn get_realm(&self) -> Pubkey {
+        self.realm
+    }
+
+    fn get_voter_weight(&self) -> u64 {
+        self.voter_weight
+    }
+
+    fn get_weight_action(&self) -> Option<VoterWeightAction> {
+        self.weight_action.clone()
     }
 
     fn get_weight_action_target(&self) -> Option<Pubkey> {

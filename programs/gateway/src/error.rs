@@ -22,6 +22,15 @@ pub enum GatewayError {
 
     #[msg("Invalid VoterWeightRecord as input voter weight")]
     InvalidPredecessorVoterWeightRecord,
+
+    #[msg("Invalid VoterWeightRecord Realm for input voter weight")]
+    InvalidPredecessorVoterWeightRecordRealm,
+
+    #[msg("Invalid VoterWeightRecord Governance Token mint for input voter weight")]
+    InvalidPredecessorVoterWeightRecordGovTokenMint,
+
+    #[msg("Invalid VoterWeightRecord Governance Token owner for input voter weight")]
+    InvalidPredecessorVoterWeightRecordGovTokenOwner,
     
     #[msg("Invalid VoterWeightRecord Realm")]
     InvalidVoterWeightRecordRealm,

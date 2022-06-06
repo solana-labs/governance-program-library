@@ -9,15 +9,13 @@ pub mod state;
 
 pub mod tools;
 
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use crate::state::*;
 
 declare_id!("Ggatr3wgDLySEwA2qEjt1oiw4BUzp5yMLJyz21919dq6");
 
 #[program]
 pub mod gateway {
-
-    use crate::state::VoterWeightAction;
-
     use super::*;
     pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
         log_version();

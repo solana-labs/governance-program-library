@@ -3,8 +3,8 @@ use spl_governance::state::legacy::TokenOwnerRecordV1;
 // Add the generic voter weight trait to TokenOwnerRecord structs
 // so that they can be used as input voter weights into the plugin
 use spl_governance::state::token_owner_record::TokenOwnerRecordV2;
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use crate::state::generic_voter_weight::GenericVoterWeight;
-use crate::VoterWeightAction;
 
 impl GenericVoterWeight for TokenOwnerRecordV2 {
     fn get_governing_token_mint(&self) -> Pubkey {

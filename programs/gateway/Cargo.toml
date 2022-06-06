@@ -23,8 +23,9 @@ anchor-spl = "0.24.2"
 itertools = "0.10.2"
 solana-gateway = "0.2.2"
 solana-program = "1.9.13"
-spl-governance = { version = "2.2.2", features = ["no-entrypoint"] }
+spl-governance = { version = "2.2.4", features = ["no-entrypoint"] }
 spl-governance-tools=  "0.1.2"
+spl-governance-addin-api = "0.1.2"
 spl-token = { version = "3.3", features = [ "no-entrypoint" ] }
 
 [dev-dependencies]

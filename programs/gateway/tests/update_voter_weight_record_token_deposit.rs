@@ -5,22 +5,18 @@ use program_test::gateway_voter_test::GatewayVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 mod program_test;
 
 const EXPECTED_VOTES: u64 = 1000000;
 
 #[tokio::test]
-async fn test_update_voter_weight_record() -> Result<(), TransportError> {
+async fn test_update_voter_weight_record_with_predecessor() -> Result<(), TransportError> {
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let realm_cookie = gateway_voter_test.governance.with_realm().await?;
-    let gateway_cookie = gateway_voter_test.with_gateway().await?;
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie, None).await?;
-
-    let voter_cookie = gateway_voter_test.bench.with_wallet().await;
-    let gateway_token_cookie = gateway_voter_test.with_gateway_token(&gateway_cookie, &voter_cookie).await?;
+    let (realm_cookie, registrar_cookie, gateway_token_cookie, voter_cookie) = gateway_voter_test.setup(false).await?;
 
     let mut voter_weight_record_cookie = gateway_voter_test
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
@@ -53,9 +49,13 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 
     assert_eq!(voter_weight_record.voter_weight, EXPECTED_VOTES);
     assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
+    
+    // The gateway plugin by default does not register a weight action if used
+    // with no predecessor plugin
     assert_eq!(
         voter_weight_record.weight_action,
-        Some(VoterWeightAction::CreateProposal.into())
+        None
+        // Some(VoterWeightAction::CreateProposal.into())
     );
     assert_eq!(voter_weight_record.weight_action_target, None);
 
@@ -66,13 +66,9 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 async fn test_update_voter_weight_record_with_invalid_gateway_token_error() -> Result<(), TransportError> {
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
-
-    let realm_cookie = gateway_voter_test.governance.with_realm().await?;
-    let gateway_cookie = gateway_voter_test.with_gateway().await?;
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie, None).await?;
+    let (realm_cookie, registrar_cookie, _, voter_cookie) = gateway_voter_test.setup(false).await?;
 
     let different_gateway_cookie = gateway_voter_test.with_gateway().await?;
-    let voter_cookie = gateway_voter_test.bench.with_wallet().await;
     let invalid_gateway_token_cookie = gateway_voter_test.with_gateway_token(&different_gateway_cookie, &voter_cookie).await?;
 
     let mut voter_weight_record_cookie = gateway_voter_test
@@ -109,13 +105,7 @@ async fn test_update_voter_weight_record_with_invalid_gateway_token_error() -> R
 async fn test_cast_vote_with_update_voter_weight_record() -> Result<(), TransportError> {
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
-
-    let realm_cookie = gateway_voter_test.governance.with_realm().await?;
-    let gateway_cookie = gateway_voter_test.with_gateway().await?;
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie, None).await?;
-
-    let voter_cookie = gateway_voter_test.bench.with_wallet().await;
-    let gateway_token_cookie = gateway_voter_test.with_gateway_token(&gateway_cookie, &voter_cookie).await?;
+    let (realm_cookie, registrar_cookie, gateway_token_cookie, voter_cookie) = gateway_voter_test.setup(false).await?;
 
     let voter_token_owner_record_cookie = gateway_voter_test
         .governance
@@ -155,13 +145,18 @@ async fn test_cast_vote_with_update_voter_weight_record() -> Result<(), Transpor
 
     assert_eq!(voter_weight_record.voter_weight, EXPECTED_VOTES);
     assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
+
+    // The gateway plugin by default does not register a weight action or target if used
+    // with no predecessor plugin
     assert_eq!(
         voter_weight_record.weight_action,
-        Some(VoterWeightAction::CastVote.into())
+        None
+        // Some(VoterWeightAction::CastVote.into())
     );
     assert_eq!(
         voter_weight_record.weight_action_target,
-        Some(proposal_cookie.address)
+        None
+        // Some(proposal_cookie.address)
     );
 
     Ok(())

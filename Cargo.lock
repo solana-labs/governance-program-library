@@ -1072,6 +1072,7 @@ dependencies = [
  "solana-program-test",
  "solana-sdk",
  "spl-governance",
+ "spl-governance-addin-api",
  "spl-governance-addin-mock",
  "spl-governance-tools",
  "spl-token",
@@ -2854,9 +2855,9 @@ dependencies = [
 
 [[package]]
 name = "spl-governance"
-version = "2.2.2"
+version = "2.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9fd6f796ab18524eee7eb410cee28ecacbf5d7bc7221b0d1b126c0f766bb3aa"
+checksum = "6ab3e781972cd03348c14217739ddf946ab5324c32a85392237cf3ab9492df7a"
 dependencies = [
  "arrayref",
  "bincode",
