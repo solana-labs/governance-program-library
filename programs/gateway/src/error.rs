@@ -13,7 +13,7 @@ pub enum GatewayError {
 
     #[msg("Invalid MaxVoterWeightRecord Mint")]
     InvalidMaxVoterWeightRecordMint,
-    
+
     #[msg("CastVote Is Not Allowed")]
     CastVoteIsNotAllowed,
 
@@ -31,7 +31,7 @@ pub enum GatewayError {
 
     #[msg("Invalid VoterWeightRecord Governance Token owner for input voter weight")]
     InvalidPredecessorVoterWeightRecordGovTokenOwner,
-    
+
     #[msg("Invalid VoterWeightRecord Realm")]
     InvalidVoterWeightRecordRealm,
 

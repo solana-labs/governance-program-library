@@ -3,12 +3,12 @@ mod program_test;
 use anchor_lang::prelude::Pubkey;
 use program_test::gateway_voter_test::GatewayVoterTest;
 
+use gpl_gateway::error::GatewayError;
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, transport::TransportError};
-use gpl_gateway::error::GatewayError;
 
-use program_test::tools::{assert_anchor_err, assert_ix_err, assert_gateway_err};
+use program_test::tools::{assert_anchor_err, assert_gateway_err, assert_ix_err};
 
 #[tokio::test]
 async fn test_create_registrar() -> Result<(), TransportError> {
@@ -19,7 +19,9 @@ async fn test_create_registrar() -> Result<(), TransportError> {
     let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
     // Act
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie, None).await?;
+    let registrar_cookie = gateway_voter_test
+        .with_registrar(&realm_cookie, &gateway_cookie, None)
+        .await?;
 
     // Assert
     let registrar = gateway_voter_test

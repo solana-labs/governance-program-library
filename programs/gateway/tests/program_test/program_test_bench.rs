@@ -62,7 +62,7 @@ impl ProgramTestBench {
             rent,
         }
     }
-    
+
     #[allow(dead_code)]
     pub async fn process_transaction(
         &self,
@@ -189,7 +189,7 @@ impl ProgramTestBench {
 
         Ok(TokenAccountCookie {
             address: token_account_keypair.pubkey(),
-            amount
+            amount,
         })
     }
 

@@ -1,29 +1,18 @@
 use std::str::FromStr;
 use std::sync::Arc;
 
-use anchor_lang::prelude::{Pubkey};
+use anchor_lang::prelude::Pubkey;
 
-use gpl_gateway::{
-    state::*,
-};
-use solana_sdk::{
-    transport::TransportError,
-    signature::Keypair,
-    signer::Signer
-};
-use spl_governance_addin_mock::{instruction::*};
+use gpl_gateway::state::*;
+use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
+use spl_governance_addin_mock::instruction::*;
 
+use crate::program_test::{
+    gateway_voter_test::VoterWeightRecordCookie,
+    governance_test::RealmCookie,
+    program_test_bench::{ProgramTestBench, WalletCookie},
+};
 use solana_program_test::ProgramTest;
-use crate::{
-    program_test::{
-        gateway_voter_test::VoterWeightRecordCookie,
-        governance_test::RealmCookie,
-        program_test_bench::{
-            ProgramTestBench,
-            WalletCookie
-        }
-    }
-};
 
 pub struct PredecessorPluginTest {
     pub bench: Arc<ProgramTestBench>,
@@ -38,14 +27,10 @@ impl PredecessorPluginTest {
     pub fn add_program(program_test: &mut ProgramTest) {
         program_test.add_program("spl_governance_addin_mock", Self::program_id(), None);
     }
-    
+
     #[allow(dead_code)]
-    pub fn new(
-        bench: Arc<ProgramTestBench>,
-    ) -> Self {
-        PredecessorPluginTest {
-            bench,
-        }
+    pub fn new(bench: Arc<ProgramTestBench>) -> Self {
+        PredecessorPluginTest { bench }
     }
 
     #[allow(dead_code)]
@@ -57,7 +42,7 @@ impl PredecessorPluginTest {
     ) -> Result<VoterWeightRecordCookie, TransportError> {
         let governing_token_owner = voter_cookie.address;
         let voter_weight_record_account = Keypair::new();
-        
+
         let setup_voter_weight_record_ix = setup_voter_weight_record(
             &Self::program_id(),
             &realm_cookie.address,
@@ -65,10 +50,17 @@ impl PredecessorPluginTest {
             &voter_cookie.address,
             &voter_weight_record_account.pubkey(),
             &self.bench.payer.pubkey(),
-            voter_weight, Some(0), None, None);
+            voter_weight,
+            Some(0),
+            None,
+            None,
+        );
 
         self.bench
-            .process_transaction(&[setup_voter_weight_record_ix], &[&voter_weight_record_account])
+            .process_transaction(
+                &[setup_voter_weight_record_ix],
+                &[&voter_weight_record_account],
+            )
             .await?;
 
         let account = VoterWeightRecord {

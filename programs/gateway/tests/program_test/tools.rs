@@ -1,12 +1,12 @@
+use crate::program_test::gateway_voter_test::VoterWeightRecordCookie;
+use crate::program_test::governance_test::TokenOwnerRecordCookie;
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
+use gpl_gateway::error::GatewayError;
 use itertools::Either;
 use solana_program::instruction::InstructionError;
 use solana_program::pubkey::Pubkey;
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
 use spl_governance_tools::error::GovernanceToolsError;
-use gpl_gateway::error::GatewayError;
-use crate::program_test::gateway_voter_test::VoterWeightRecordCookie;
-use crate::program_test::governance_test::TokenOwnerRecordCookie;
 
 pub fn clone_keypair(source: &Keypair) -> Keypair {
     Keypair::from_bytes(&source.to_bytes()).unwrap()
@@ -79,8 +79,11 @@ pub fn assert_ix_err(banks_client_error: TransportError, ix_error: InstructionEr
     };
 }
 
-pub fn extract_voting_weight_address(account: &Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>) -> Pubkey {
+pub fn extract_voting_weight_address(
+    account: &Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
+) -> Pubkey {
     account
         .map_left(|cookie| cookie.address)
-        .map_right(|cookie| cookie.address).into_inner()
+        .map_right(|cookie| cookie.address)
+        .into_inner()
 }

@@ -9,9 +9,6 @@ pub mod state;
 
 pub mod tools;
 
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
-use crate::state::*;
-
 declare_id!("Ggatr3wgDLySEwA2qEjt1oiw4BUzp5yMLJyz21919dq6");
 
 #[program]
@@ -28,13 +25,9 @@ pub mod gateway {
         log_version();
         instructions::create_voter_weight_record(ctx, governing_token_owner)
     }
-    pub fn update_voter_weight_record(
-        ctx: Context<UpdateVoterWeightRecord>,
-        voter_weight_action: VoterWeightAction,
-        target: Option<Pubkey>,
-    ) -> Result<()> {
+    pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
         log_version();
-        instructions::update_voter_weight_record(ctx, voter_weight_action, target)
+        instructions::update_voter_weight_record(ctx)
     }
 }
 

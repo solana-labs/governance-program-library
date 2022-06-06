@@ -219,10 +219,7 @@ impl GovernanceTest {
         );
 
         self.bench
-            .process_transaction(
-                &[create_governance_ix],
-                &[&realm_cookie.realm_authority],
-            )
+            .process_transaction(&[create_governance_ix], &[&realm_cookie.realm_authority])
             .await?;
 
         let proposal_index: u32 = 0;
@@ -308,12 +305,14 @@ impl GovernanceTest {
         token_owner_cookie: &WalletCookie,
         tokens_to_deposit: u64,
     ) -> Result<TokenOwnerRecordCookie, TransportError> {
-        let token_account_cookie = self.bench
+        let token_account_cookie = self
+            .bench
             .with_tokens(
                 &realm_cookie.community_mint_cookie,
                 &token_owner_cookie.address,
-                tokens_to_deposit
-            ).await?;
+                tokens_to_deposit,
+            )
+            .await?;
 
         let token_owner_record_key = get_token_owner_record_address(
             &self.program_id,
@@ -342,7 +341,7 @@ impl GovernanceTest {
                 &token_owner_cookie.address,
                 &self.bench.payer.pubkey(),
                 tokens_to_deposit,
-                &realm_cookie.account.community_mint
+                &realm_cookie.account.community_mint,
             );
 
             instructions.push(deposit_tokens_ix);
@@ -350,9 +349,7 @@ impl GovernanceTest {
         }
 
         self.bench
-            .process_transaction(
-                instructions.as_slice(),
-                signers.as_slice())
+            .process_transaction(instructions.as_slice(), signers.as_slice())
             .await?;
 
         let account = TokenOwnerRecordV2 {

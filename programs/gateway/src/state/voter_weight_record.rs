@@ -1,13 +1,12 @@
-use anchor_lang::prelude::*;
-use solana_program::program_pack::{ IsInitialized };
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use crate::state::generic_voter_weight::GenericVoterWeight;
+use anchor_lang::prelude::*;
+use solana_program::program_pack::IsInitialized;
+use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
 
-
 /// The default vote weight matches the default decimal places of a governance token
-/// so that a single vote using this plugin matches a single vote with a governance token 
+/// so that a single vote using this plugin matches a single vote with a governance token
 pub const DEFAULT_VOTE_WEIGHT: u64 = 1000000;
 
 /// VoterWeightRecord account as defined in spl-governance-addin-api
@@ -56,7 +55,9 @@ pub struct VoterWeightRecord {
 }
 
 impl VoterWeightRecord {
-    pub fn get_space() -> usize { DISCRIMINATOR_SIZE + PUBKEY_SIZE * 4 + 8 + 1 + 8 + 1 + 1 + 1 + 8 }
+    pub fn get_space() -> usize {
+        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 4 + 8 + 1 + 8 + 1 + 1 + 1 + 8
+    }
 }
 
 impl Default for VoterWeightRecord {
@@ -83,7 +84,6 @@ impl IsInitialized for VoterWeightRecord {
 }
 
 impl GenericVoterWeight for VoterWeightRecord {
-    
     fn get_governing_token_mint(&self) -> Pubkey {
         self.governing_token_mint
     }
@@ -114,10 +114,9 @@ impl GenericVoterWeight for VoterWeightRecord {
 }
 
 // the "official" on-chain voter weight record has a discriminator field
-// when a predecessor voter weight is provided, it uses this struct instead of the one defined above. 
+// when a predecessor voter weight is provided, it uses this struct instead of the one defined above.
 // We add the GenericVoterWeight trait here to hide this from the rest of the code.
 impl GenericVoterWeight for spl_governance_addin_api::voter_weight::VoterWeightRecord {
-
     fn get_governing_token_mint(&self) -> Pubkey {
         self.governing_token_mint
     }

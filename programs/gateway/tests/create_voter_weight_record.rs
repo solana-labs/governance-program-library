@@ -14,7 +14,9 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
     let realm_cookie = gateway_voter_test.governance.with_realm().await?;
     let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie, None).await?;
+    let registrar_cookie = gateway_voter_test
+        .with_registrar(&realm_cookie, &gateway_cookie, None)
+        .await?;
 
     let voter_cookie = gateway_voter_test.bench.with_wallet().await;
 
@@ -42,7 +44,9 @@ async fn test_create_voter_weight_record_with_invalid_realm_error() -> Result<()
     let realm_cookie = gateway_voter_test.governance.with_realm().await?;
     let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie, None).await?;
+    let registrar_cookie = gateway_voter_test
+        .with_registrar(&realm_cookie, &gateway_cookie, None)
+        .await?;
 
     let realm_cookie2 = gateway_voter_test.governance.with_realm().await?;
 
@@ -73,7 +77,9 @@ async fn test_create_voter_weight_record_with_invalid_mint_error() -> Result<(),
     let realm_cookie = gateway_voter_test.governance.with_realm().await?;
     let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie, None).await?;
+    let registrar_cookie = gateway_voter_test
+        .with_registrar(&realm_cookie, &gateway_cookie, None)
+        .await?;
 
     let realm_cookie2 = gateway_voter_test.governance.with_realm().await?;
 
@@ -104,7 +110,9 @@ async fn test_create_voter_weight_record_with_already_exists_error() -> Result<(
     let realm_cookie = gateway_voter_test.governance.with_realm().await?;
     let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie, None).await?;
+    let registrar_cookie = gateway_voter_test
+        .with_registrar(&realm_cookie, &gateway_cookie, None)
+        .await?;
 
     let voter_cookie = gateway_voter_test.bench.with_wallet().await;
 
