@@ -196,7 +196,7 @@ impl GatewayVoterTest {
 
         let account = Registrar {
             governance_program_id: self.governance.program_id,
-            previous_voting_weight_plugin_registrar: predecessor_program_id,
+            previous_voting_weight_plugin_program_id: predecessor_program_id,
             realm: realm_cookie.address,
             governing_token_mint: realm_cookie.account.community_mint,
             gatekeeper_network: gateway_cookie.gatekeeper_network.pubkey(),

@@ -113,7 +113,7 @@ fn parse_input_voter_weight_record_unchecked<'a>(
     input_account: &'a AccountInfo,
     registrar: &'a Registrar,
 ) -> Result<Box<dyn GenericVoterWeight + 'a>> {
-    match registrar.previous_voting_weight_plugin_registrar {
+    match registrar.previous_voting_weight_plugin_program_id {
         None => {
             msg!("parse_predecessor_voter_weight_record expects TokenOwnerRecord (V1 or 2)");
             // If there is no predecessor plugin registrar, then the input account must be a TokenOwnerRecordV2

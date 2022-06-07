@@ -63,11 +63,11 @@ pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
     registrar.governing_token_mint = ctx.accounts.governing_token_mint.key();
     registrar.gatekeeper_network = ctx.accounts.gatekeeper_network.key();
 
-    // If the plugin has a previous plugin registrar, it "inherits" the vote weight from a vote_weight_account owned
+    // If the plugin has a previous voter weight plugin, it "inherits" the vote weight from a vote_weight_account owned
     // by the previous plugin. This chain is registered here.
-    let previous_vote_weight_plugin_registrar = ctx.remaining_accounts.get(0);
-    registrar.previous_voting_weight_plugin_registrar =
-        previous_vote_weight_plugin_registrar.map(|account| account.key());
+    let previous_vote_weight_plugin_program_id = ctx.remaining_accounts.get(0);
+    registrar.previous_voting_weight_plugin_program_id =
+        previous_vote_weight_plugin_program_id.map(|account| account.key());
 
     // Verify that realm_authority is the expected authority of the Realm
     // and that the mint matches one of the realm mints too.
