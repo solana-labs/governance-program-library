@@ -9,9 +9,9 @@ use spl_governance_tools::account::dispose_account;
 /// Disposes NftVoteRecord and recovers the rent from the accounts   
 /// It can only be executed when voting on the target Proposal ended or voter withdrew vote from the Proposal
 ///
-/// Note: If a voter votes with NFT and transfers the token then in the current version the new owner can't withdraw the vote
+/// Note: If a voter votes with NFT and transfers the token then in the current version of the program the new owner can't withdraw the vote
 /// In order to support that scenario a change in spl-governance is needed
-/// It would have to support revoke_vote instruction which would take as input VoteWeightRecord with
+/// It would have to support revoke_vote instruction which would take as input VoteWeightRecord with the following values:
 /// weight_action: RevokeVote, weight_action_target: VoteRecord, voter_weight: sum(previous owner NFT weight)
 /// The instruction would decrease the previous voter total VoteRecord.voter_weight by the provided VoteWeightRecord.voter_weight
 /// Once the spl-governance instruction is supported then nft-voter plugin should implement revoke_nft_vote instruction
