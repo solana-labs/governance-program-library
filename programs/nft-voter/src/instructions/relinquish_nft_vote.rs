@@ -14,6 +14,8 @@ use spl_governance_tools::account::dispose_account;
 /// It would have to support revoke_vote instruction which would take as input VoteWeightRecord with
 /// weight_action: RevokeVote, weight_action_target: VoteRecord, voter_weight: sum(previous owner NFT weight)
 /// The instruction would decrease the previous voter total VoteRecord.voter_weight by the provided VoteWeightRecord.voter_weight
+/// Once the spl-governance instruction is supported then nft-voter plugin should implement revoke_nft_vote instruction
+/// to supply the required VoteWeightRecord and delete relevant NftVoteRecords
 #[derive(Accounts)]
 pub struct RelinquishNftVote<'info> {
     /// The NFT voting Registrar
