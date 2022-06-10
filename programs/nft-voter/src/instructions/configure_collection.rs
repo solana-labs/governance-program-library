@@ -65,6 +65,11 @@ pub fn configure_collection(
         NftVoterError::InvalidRealmAuthority
     );
 
+    // Changes to the collections config can accidentally tip the scales for outstanding proposals and hence we disallow it
+    if realm.voting_proposal_count > 0 {
+        return err!(NftVoterError::CannotConfigureCollectionWithVotingProposals);
+    }
+
     let collection = &ctx.accounts.collection;
 
     let collection_config = CollectionConfig {

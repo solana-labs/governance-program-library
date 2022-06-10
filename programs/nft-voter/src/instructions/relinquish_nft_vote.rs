@@ -8,6 +8,14 @@ use spl_governance_tools::account::dispose_account;
 
 /// Disposes NftVoteRecord and recovers the rent from the accounts   
 /// It can only be executed when voting on the target Proposal ended or voter withdrew vote from the Proposal
+///
+/// Note: If a voter votes with NFT and transfers the token then in the current version of the program the new owner can't withdraw the vote
+/// In order to support that scenario a change in spl-governance is needed
+/// It would have to support revoke_vote instruction which would take as input VoteWeightRecord with the following values:
+/// weight_action: RevokeVote, weight_action_target: VoteRecord, voter_weight: sum(previous owner NFT weight)
+/// The instruction would decrease the previous voter total VoteRecord.voter_weight by the provided VoteWeightRecord.voter_weight
+/// Once the spl-governance instruction is supported then nft-voter plugin should implement revoke_nft_vote instruction
+/// to supply the required VoteWeightRecord and delete relevant NftVoteRecords
 #[derive(Accounts)]
 pub struct RelinquishNftVote<'info> {
     /// The NFT voting Registrar
@@ -95,6 +103,19 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
         );
     }
 
+    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
+
+    // Prevent relinquishing NftVoteRecords within the VoterWeightRecord expiration period
+    // It's needed when multiple stacked voter-weight plugins are used
+    // Without the assertion the following vector of attack exists
+    // 1) nft-voter.cast_nft_vote()
+    // 2) voter-weight-plugin.cast_vote()
+    // 3) nft-voter.relinquish_nft_vote()
+    // 4) spl-gov.cast_vote() -> spl-gov uses VoterWeightRecord provided by voter-weight-plugin in step 2) while the nft vote is withdrawn and could be used to vote again
+    if voter_weight_record.voter_weight_expiry >= Some(Clock::get()?.slot) {
+        return err!(NftVoterError::VoterWeightRecordMustBeExpired);
+    }
+
     // Dispose all NftVoteRecords
     for nft_vote_record_info in ctx.remaining_accounts.iter() {
         // Ensure NftVoteRecord is for the given Proposal and TokenOwner
@@ -106,8 +127,6 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
 
         dispose_account(nft_vote_record_info, &ctx.accounts.beneficiary);
     }
-
-    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     // Reset VoterWeightRecord and set expiry to expired to prevent it from being used
     voter_weight_record.voter_weight = 0;
