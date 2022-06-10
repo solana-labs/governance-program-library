@@ -103,6 +103,19 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
         );
     }
 
+    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
+
+    // Prevent relinquishing NftVoteRecords within the VoterWeightRecord expiration period
+    // It's needed when multiple stacked voter-weight plugins are used
+    // Without the assertion the following vector of attack exists
+    // 1) nft-voter.cast_nft_vote()
+    // 2) voter-weight-plugin.cast_vote()
+    // 3) nft-voter.relinquish_nft_vote()
+    // 4) spl-gov.cast_vote() -> spl-gov uses VoterWeightRecord provided by voter-weight-plugin in step 2) while the nft vote is withdrawn and could be used to vote again
+    if voter_weight_record.voter_weight_expiry >= Some(Clock::get()?.slot) {
+        return err!(NftVoterError::VoterWeightRecordMustBeExpired);
+    }
+
     // Dispose all NftVoteRecords
     for nft_vote_record_info in ctx.remaining_accounts.iter() {
         // Ensure NftVoteRecord is for the given Proposal and TokenOwner
@@ -114,8 +127,6 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
 
         dispose_account(nft_vote_record_info, &ctx.accounts.beneficiary);
     }
-
-    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     // Reset VoterWeightRecord and set expiry to expired to prevent it from being used
     voter_weight_record.voter_weight = 0;
