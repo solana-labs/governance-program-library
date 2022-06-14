@@ -126,7 +126,7 @@ export type Gateway = {
   ],
   "accounts": [
     {
-      "name": "Registrar",
+      "name": "registrar",
       "type": {
         "kind": "struct",
         "fields": [
@@ -159,7 +159,7 @@ export type Gateway = {
       }
     },
     {
-      "name": "VoterWeightRecord",
+      "name": "voterWeightRecord",
       "type": {
         "kind": "struct",
         "fields": [
@@ -419,7 +419,7 @@ export const IDL: Gateway = {
   ],
   "accounts": [
     {
-      "name": "Registrar",
+      "name": "registrar",
       "type": {
         "kind": "struct",
         "fields": [
@@ -452,7 +452,7 @@ export const IDL: Gateway = {
       }
     },
     {
-      "name": "VoterWeightRecord",
+      "name": "voterWeightRecord",
       "type": {
         "kind": "struct",
         "fields": [
