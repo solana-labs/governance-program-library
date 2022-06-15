@@ -9,7 +9,7 @@ pub mod state;
 
 pub mod tools;
 
-declare_id!("Ggatr3wgDLySEwA2qEjt1oiw4BUzp5yMLJyz21919dq6");
+declare_id!("GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk");
 
 #[program]
 pub mod gateway {
