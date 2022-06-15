@@ -1,13 +1,35 @@
 use crate::state::generic_voter_weight::GenericVoterWeight;
 use anchor_lang::prelude::*;
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 use solana_program::program_pack::IsInitialized;
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
 
 /// The default vote weight matches the default decimal places of a governance token
 /// so that a single vote using this plugin matches a single vote with a governance token
 pub const DEFAULT_VOTE_WEIGHT: u64 = 1000000;
+
+/// VoterWeightAction enum as defined in spl-governance-addin-api
+/// It's redefined here for Anchor to export it to IDL
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq, FromPrimitive)]
+pub enum VoterWeightAction {
+    /// Cast vote for a proposal. Target: Proposal
+    CastVote,
+
+    /// Comment a proposal. Target: Proposal
+    CommentProposal,
+
+    /// Create Governance within a realm. Target: Realm
+    CreateGovernance,
+
+    /// Create a proposal for a governance. Target: Governance
+    CreateProposal,
+
+    /// Signs off a proposal for a governance. Target: Proposal
+    /// Note: SignOffProposal is not supported in the current version
+    SignOffProposal,
+}
 
 /// VoterWeightRecord account as defined in spl-governance-addin-api
 /// It's redefined here without account_discriminator for Anchor to treat it as native account
@@ -133,8 +155,14 @@ impl GenericVoterWeight for spl_governance_addin_api::voter_weight::VoterWeightR
         self.voter_weight
     }
 
+    // The GenericVoterWeight interface expects a crate-defined VoterWeightAction.
+    // This is identical to spl_governance_addin_api::voter_weight::VoterWeightAction, but added here
+    // so that Anchor will create the mapping correctly in the IDL.
+    // This function converts the spl_governance_addin_api::voter_weight::VoterWeightAction to the
+    // crate-defined VoterWeightAction by mapping the enum values by integer.
+    // Note - it is imperative that the two enums stay in sync to avoid errors here.
     fn get_weight_action(&self) -> Option<VoterWeightAction> {
-        self.weight_action.clone()
+        self.weight_action.clone().map(|x| FromPrimitive::from_u32(x as u32).unwrap() )
     }
 
     fn get_weight_action_target(&self) -> Option<Pubkey> {
