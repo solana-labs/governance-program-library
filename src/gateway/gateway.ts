@@ -49,6 +49,47 @@ export type Gateway = {
       "args": []
     },
     {
+      "name": "updateRegistrar",
+      "accounts": [
+        {
+          "name": "registrar",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governanceProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "realm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "realmAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "gatekeeperNetwork",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "createVoterWeightRecord",
       "accounts": [
         {
@@ -338,6 +379,47 @@ export const IDL: Gateway = {
         },
         {
           "name": "governingTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "realmAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "gatekeeperNetwork",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "updateRegistrar",
+      "accounts": [
+        {
+          "name": "registrar",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governanceProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "realm",
           "isMut": false,
           "isSigner": false
         },

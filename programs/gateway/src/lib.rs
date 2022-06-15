@@ -18,6 +18,10 @@ pub mod gateway {
         log_version();
         instructions::create_registrar(ctx)
     }
+    pub fn update_registrar(ctx: Context<UpdateRegistrar>) -> Result<()> {
+        log_version();
+        instructions::update_registrar(ctx)
+    }
     pub fn create_voter_weight_record(
         ctx: Context<CreateVoterWeightRecord>,
         governing_token_owner: Pubkey,

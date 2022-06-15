@@ -1,11 +1,9 @@
 use gpl_gateway::error::GatewayError;
-use gpl_gateway::state::*;
 use itertools::Either;
 use program_test::gateway_voter_test::GatewayVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 mod program_test;
 
@@ -16,7 +14,7 @@ async fn test_update_voter_weight_record_with_predecessor() -> Result<(), Transp
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, gateway_token_cookie, voter_cookie) =
+    let (realm_cookie, registrar_cookie, _, gateway_token_cookie, voter_cookie) =
         gateway_voter_test.setup(false).await?;
 
     let mut voter_weight_record_cookie = gateway_voter_test
@@ -66,7 +64,8 @@ async fn test_update_voter_weight_record_with_invalid_gateway_token_error(
 ) -> Result<(), TransportError> {
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
-    let (realm_cookie, registrar_cookie, _, voter_cookie) = gateway_voter_test.setup(false).await?;
+    let (realm_cookie, registrar_cookie, _, _, voter_cookie) =
+        gateway_voter_test.setup(false).await?;
 
     let different_gateway_cookie = gateway_voter_test.with_gateway().await?;
     let invalid_gateway_token_cookie = gateway_voter_test
@@ -106,7 +105,7 @@ async fn test_update_voter_weight_record_with_invalid_gateway_token_error(
 async fn test_cast_vote_with_update_voter_weight_record() -> Result<(), TransportError> {
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
-    let (realm_cookie, registrar_cookie, gateway_token_cookie, voter_cookie) =
+    let (realm_cookie, registrar_cookie, _, gateway_token_cookie, voter_cookie) =
         gateway_voter_test.setup(false).await?;
 
     let voter_token_owner_record_cookie = gateway_voter_test

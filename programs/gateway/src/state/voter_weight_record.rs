@@ -123,7 +123,7 @@ impl GenericVoterWeight for VoterWeightRecord {
     }
 
     fn get_weight_action(&self) -> Option<VoterWeightAction> {
-        self.weight_action.clone()
+        self.weight_action
     }
 
     fn get_weight_action_target(&self) -> Option<Pubkey> {
@@ -162,7 +162,9 @@ impl GenericVoterWeight for spl_governance_addin_api::voter_weight::VoterWeightR
     // crate-defined VoterWeightAction by mapping the enum values by integer.
     // Note - it is imperative that the two enums stay in sync to avoid errors here.
     fn get_weight_action(&self) -> Option<VoterWeightAction> {
-        self.weight_action.clone().map(|x| FromPrimitive::from_u32(x as u32).unwrap() )
+        self.weight_action
+            .clone()
+            .map(|x| FromPrimitive::from_u32(x as u32).unwrap())
     }
 
     fn get_weight_action_target(&self) -> Option<Pubkey> {

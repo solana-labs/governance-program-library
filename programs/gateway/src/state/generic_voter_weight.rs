@@ -1,5 +1,5 @@
-use solana_program::pubkey::Pubkey;
 use crate::state::VoterWeightAction;
+use solana_program::pubkey::Pubkey;
 
 /// A generic trait representing a voter weight,
 /// that can be passed as an input into the plugin

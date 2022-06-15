@@ -1,7 +1,6 @@
 use crate::error::GatewayError;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 
 /// Updates the  Registrar for spl-gov Realm
@@ -11,6 +10,11 @@ pub struct UpdateRegistrar<'info> {
     /// The Gateway Plugin Registrar to be updated
     #[account(mut)]
     pub registrar: Account<'info, Registrar>,
+
+    /// The program id of the spl-governance program the realm belongs to
+    /// CHECK: Can be any instance of spl-governance and it's not known at the compilation time
+    #[account(executable)]
+    pub governance_program_id: UncheckedAccount<'info>,
 
     /// An spl-governance Realm
     ///
@@ -37,15 +41,16 @@ pub struct UpdateRegistrar<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Updates a Registrar gatekeeperNetwork or a previous plugin registrar
-pub fn update_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
+/// Updates a Registrar gatekeeperNetwork or a previous plugin program ID
+pub fn update_registrar(ctx: Context<UpdateRegistrar>) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
     registrar.gatekeeper_network = ctx.accounts.gatekeeper_network.key();
 
-    // If the plugin has a previous plugin registrar, it "inherits" the vote weight from a vote_weight_account owned
+    // If the plugin has a previous plugin, it "inherits" the vote weight from a vote_weight_account owned
     // by the previous plugin. This chain is registered here.
-    let previous_vote_weight_plugin_registrar = ctx.remaining_accounts.get(0);
-    registrar.previous_voting_weight_plugin_registrar = previous_vote_weight_plugin_registrar.map(|account| account.key());
+    let previous_voting_weight_plugin_program_id = ctx.remaining_accounts.get(0);
+    registrar.previous_voting_weight_plugin_program_id =
+        previous_voting_weight_plugin_program_id.map(|account| account.key());
 
     // Verify that realm_authority is the expected authority of the Realm
     // and that the mint matches one of the realm mints too.

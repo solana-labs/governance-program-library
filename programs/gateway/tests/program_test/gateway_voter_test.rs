@@ -19,7 +19,6 @@ use spl_governance::{
 };
 
 use solana_program_test::ProgramTest;
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 use crate::program_test::{
     governance_test::{GovernanceTest, ProposalCookie, RealmCookie, TokenOwnerRecordCookie},
@@ -217,6 +216,7 @@ impl GatewayVoterTest {
         (
             RealmCookie,
             RegistrarCookie,
+            GatewayCookie,
             GatewayTokenCookie,
             WalletCookie,
         ),
@@ -244,6 +244,7 @@ impl GatewayVoterTest {
         Ok((
             realm_cookie,
             registrar_cookie,
+            gateway_cookie,
             gateway_token_cookie,
             voter_cookie,
         ))
@@ -422,6 +423,71 @@ impl GatewayVoterTest {
         }];
 
         self.bench.process_transaction(&instructions, &[]).await
+    }
+
+    #[allow(dead_code)]
+    pub async fn update_registrar(
+        &self,
+        realm_cookie: &RealmCookie,
+        registrar_cookie: &RegistrarCookie,
+        gateway_cookie: &GatewayCookie,
+        predecessor_program_id: Option<Pubkey>,
+    ) -> Result<(), TransportError> {
+        self.update_registrar_using_ix(
+            realm_cookie,
+            registrar_cookie,
+            gateway_cookie,
+            predecessor_program_id,
+            NopOverride,
+            None,
+        )
+        .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn update_registrar_using_ix<F: Fn(&mut Instruction)>(
+        &self,
+        realm_cookie: &RealmCookie,
+        registrar_cookie: &RegistrarCookie,
+        gateway_cookie: &GatewayCookie,
+        predecessor_program_id: Option<Pubkey>,
+        instruction_override: F,
+        signers_override: Option<&[&Keypair]>,
+    ) -> Result<(), TransportError> {
+        let data =
+            anchor_lang::InstructionData::data(&gpl_gateway::instruction::UpdateRegistrar {});
+
+        let mut accounts = anchor_lang::ToAccountMetas::to_account_metas(
+            &gpl_gateway::accounts::UpdateRegistrar {
+                registrar: registrar_cookie.address,
+                realm: realm_cookie.address,
+                governance_program_id: self.governance.program_id,
+                realm_authority: realm_cookie.get_realm_authority().pubkey(),
+                gatekeeper_network: gateway_cookie.gatekeeper_network.pubkey(),
+                payer: self.bench.payer.pubkey(),
+                system_program: solana_sdk::system_program::id(),
+            },
+            None,
+        );
+
+        if let Some(predecessor_id) = predecessor_program_id {
+            accounts.push(AccountMeta::new_readonly(predecessor_id, false));
+        }
+
+        let mut update_registrar_ix = Instruction {
+            program_id: gpl_gateway::id(),
+            accounts,
+            data,
+        };
+
+        instruction_override(&mut update_registrar_ix);
+
+        let default_signers = &[&realm_cookie.realm_authority];
+        let signers = signers_override.unwrap_or(default_signers);
+
+        self.bench
+            .process_transaction(&[update_registrar_ix], signers)
+            .await
     }
 
     /// Casts a vote

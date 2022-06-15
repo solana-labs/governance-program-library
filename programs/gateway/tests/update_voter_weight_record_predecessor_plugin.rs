@@ -1,13 +1,10 @@
 use crate::program_test::governance_test::RealmCookie;
-use anchor_lang::Key;
-use gpl_gateway::{error::GatewayError, state::*};
 use itertools::Either;
 use program_test::{gateway_voter_test::GatewayVoterTest, tools::*};
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
 use spl_governance::state::realm::RealmV2;
-use spl_governance_addin_api::voter_weight::VoterWeightAction;
 
 mod program_test;
 
@@ -19,11 +16,11 @@ async fn test_update_voter_weight_record_with_predecessor_voter_weight_record(
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, gateway_token_cookie, voter_cookie) =
+    let (realm_cookie, registrar_cookie, _, gateway_token_cookie, voter_cookie) =
         gateway_voter_test.setup(true).await?;
 
     // the voter weight record from the registered predecessor plugin (will give a constant weight)
-    let mut predecessor_voter_weight_record_cookie = gateway_voter_test
+    let predecessor_voter_weight_record_cookie = gateway_voter_test
         .predecessor_plugin
         .with_voter_weight_record(&realm_cookie, &voter_cookie, EXPECTED_VOTES)
         .await?;
@@ -68,7 +65,7 @@ async fn test_update_fails_with_predecessor_from_different_realm() -> Result<(),
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, gateway_token_cookie, voter_cookie) =
+    let (realm_cookie, registrar_cookie, _, gateway_token_cookie, voter_cookie) =
         gateway_voter_test.setup(true).await?;
 
     let different_realm_cookie = RealmCookie {
@@ -77,7 +74,7 @@ async fn test_update_fails_with_predecessor_from_different_realm() -> Result<(),
     };
 
     // the voter weight record from the registered predecessor plugin (will give a constant weight)
-    let mut predecessor_voter_weight_record_cookie = gateway_voter_test
+    let predecessor_voter_weight_record_cookie = gateway_voter_test
         .predecessor_plugin
         .with_voter_weight_record(&different_realm_cookie, &voter_cookie, EXPECTED_VOTES)
         .await?;
@@ -113,7 +110,7 @@ async fn test_update_fails_with_predecessor_for_different_governance() -> Result
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, gateway_token_cookie, voter_cookie) =
+    let (realm_cookie, registrar_cookie, _, gateway_token_cookie, voter_cookie) =
         gateway_voter_test.setup(true).await?;
 
     let different_community_mint_cookie = gateway_voter_test.bench.with_mint().await?;
@@ -128,7 +125,7 @@ async fn test_update_fails_with_predecessor_for_different_governance() -> Result
     };
 
     // the voter weight record from the registered predecessor plugin (will give a constant weight)
-    let mut predecessor_voter_weight_record_cookie = gateway_voter_test
+    let predecessor_voter_weight_record_cookie = gateway_voter_test
         .predecessor_plugin
         .with_voter_weight_record(&different_token_realm_cookie, &voter_cookie, EXPECTED_VOTES)
         .await?;
@@ -163,13 +160,13 @@ async fn test_update_fails_with_predecessor_with_a_different_owner() -> Result<(
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, gateway_token_cookie, voter_cookie) =
+    let (realm_cookie, registrar_cookie, _, gateway_token_cookie, voter_cookie) =
         gateway_voter_test.setup(true).await?;
 
     let different_voter_cookie = gateway_voter_test.bench.with_wallet().await;
 
     // the voter weight record from the registered predecessor plugin (will give a constant weight)
-    let mut predecessor_voter_weight_record_cookie = gateway_voter_test
+    let predecessor_voter_weight_record_cookie = gateway_voter_test
         .predecessor_plugin
         .with_voter_weight_record(&realm_cookie, &different_voter_cookie, EXPECTED_VOTES)
         .await?;
@@ -205,11 +202,11 @@ async fn test_cast_vote_with_update_voter_weight_record_and_predecessor(
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, gateway_token_cookie, voter_cookie) =
+    let (realm_cookie, registrar_cookie, _, gateway_token_cookie, voter_cookie) =
         gateway_voter_test.setup(true).await?;
 
     // the voter weight record from the registered predecessor plugin (will give a constant weight)
-    let mut predecessor_voter_weight_record_cookie = gateway_voter_test
+    let predecessor_voter_weight_record_cookie = gateway_voter_test
         .predecessor_plugin
         .with_voter_weight_record(&realm_cookie, &voter_cookie, EXPECTED_VOTES)
         .await?;
