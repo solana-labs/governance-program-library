@@ -1,4 +1,4 @@
-use crate::program_test::squads_voter_test::SquadsVoterTest;
+use crate::program_test::realm_voter_test::RealmVoterTest;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
 
@@ -7,20 +7,20 @@ mod program_test;
 #[tokio::test]
 async fn test_create_max_voter_weight_record() -> Result<(), TransportError> {
     // Arrange
-    let mut squads_voter_test = SquadsVoterTest::start_new().await;
+    let mut realm_voter_test = RealmVoterTest::start_new().await;
 
-    let realm_cookie = squads_voter_test.governance.with_realm().await?;
+    let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = squads_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
     // Act
-    let max_voter_weight_record_cookie = squads_voter_test
+    let max_voter_weight_record_cookie = realm_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
     // Assert
 
-    let max_voter_weight_record = squads_voter_test
+    let max_voter_weight_record = realm_voter_test
         .get_max_voter_weight_record(&max_voter_weight_record_cookie.address)
         .await;
 
@@ -36,16 +36,16 @@ async fn test_create_max_voter_weight_record() -> Result<(), TransportError> {
 // async fn test_create_max_voter_weight_record_with_invalid_realm_error() -> Result<(), TransportError>
 // {
 //     // Arrange
-//     let mut squads_voter_test = NftVoterTest::start_new().await;
+//     let mut realm_voter_test = NftVoterTest::start_new().await;
 
-//     let realm_cookie = squads_voter_test.governance.with_realm().await?;
+//     let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
-//     let registrar_cookie = squads_voter_test.with_registrar(&realm_cookie).await?;
+//     let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
-//     let realm_cookie2 = squads_voter_test.governance.with_realm().await?;
+//     let realm_cookie2 = realm_voter_test.governance.with_realm().await?;
 
 //     // Act
-//     let err = squads_voter_test
+//     let err = realm_voter_test
 //         .with_max_voter_weight_record_using_ix(&registrar_cookie, |i| {
 //             i.accounts[2].pubkey = realm_cookie2.address // Realm
 //         })
@@ -65,16 +65,16 @@ async fn test_create_max_voter_weight_record() -> Result<(), TransportError> {
 // async fn test_create_max_voter_weight_record_with_invalid_mint_error() -> Result<(), TransportError>
 // {
 //     // Arrange
-//     let mut squads_voter_test = NftVoterTest::start_new().await;
+//     let mut realm_voter_test = NftVoterTest::start_new().await;
 
-//     let realm_cookie = squads_voter_test.governance.with_realm().await?;
+//     let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
-//     let registrar_cookie = squads_voter_test.with_registrar(&realm_cookie).await?;
+//     let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
-//     let realm_cookie2 = squads_voter_test.governance.with_realm().await?;
+//     let realm_cookie2 = realm_voter_test.governance.with_realm().await?;
 
 //     // Act
-//     let err = squads_voter_test
+//     let err = realm_voter_test
 //         .with_max_voter_weight_record_using_ix(&registrar_cookie, |i| {
 //             i.accounts[2].pubkey = realm_cookie2.address // Mint
 //         })
@@ -94,20 +94,20 @@ async fn test_create_max_voter_weight_record() -> Result<(), TransportError> {
 // async fn test_create_max_voter_weight_record_with_already_exists_error(
 // ) -> Result<(), TransportError> {
 //     // Arrange
-//     let mut squads_voter_test = NftVoterTest::start_new().await;
+//     let mut realm_voter_test = NftVoterTest::start_new().await;
 
-//     let realm_cookie = squads_voter_test.governance.with_realm().await?;
+//     let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
-//     let registrar_cookie = squads_voter_test.with_registrar(&realm_cookie).await?;
+//     let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
-//     squads_voter_test
+//     realm_voter_test
 //         .with_max_voter_weight_record(&registrar_cookie)
 //         .await?;
 
-//     squads_voter_test.bench.advance_clock().await;
+//     realm_voter_test.bench.advance_clock().await;
 
 //     // Act
-//     let err = squads_voter_test
+//     let err = realm_voter_test
 //         .with_max_voter_weight_record(&registrar_cookie)
 //         .await
 //         .err()

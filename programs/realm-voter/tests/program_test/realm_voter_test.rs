@@ -2,10 +2,10 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::{AccountMeta, Pubkey};
 
-use gpl_squads_voter::state::max_voter_weight_record::{
+use gpl_realm_voter::state::max_voter_weight_record::{
     get_max_voter_weight_record_address, MaxVoterWeightRecord,
 };
-use gpl_squads_voter::state::*;
+use gpl_realm_voter::state::*;
 use solana_sdk::transport::TransportError;
 
 use solana_program_test::ProgramTest;
@@ -56,28 +56,28 @@ impl Default for ConfigureSquadArgs {
     }
 }
 
-pub struct SquadsVoterTest {
+pub struct RealmVoterTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
     pub governance: GovernanceTest,
     pub squads: SquadsTest,
 }
 
-impl SquadsVoterTest {
+impl RealmVoterTest {
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
-        program_test.add_program("gpl_squads_voter", gpl_squads_voter::id(), None);
+        program_test.add_program("gpl_realm_voter", gpl_realm_voter::id(), None);
     }
 
     #[allow(dead_code)]
     pub async fn start_new() -> Self {
         let mut program_test = ProgramTest::default();
 
-        SquadsVoterTest::add_program(&mut program_test);
+        RealmVoterTest::add_program(&mut program_test);
         GovernanceTest::add_program(&mut program_test);
         SquadsTest::add_program(&mut program_test);
 
-        let program_id = gpl_squads_voter::id();
+        let program_id = gpl_realm_voter::id();
 
         let bench = ProgramTestBench::start_new(program_test).await;
         let bench_rc = Arc::new(bench);
@@ -116,12 +116,12 @@ impl SquadsVoterTest {
         let max_squads = 10;
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_squads_voter::instruction::CreateRegistrar {
+            anchor_lang::InstructionData::data(&gpl_realm_voter::instruction::CreateRegistrar {
                 max_squads,
             });
 
         let accounts = anchor_lang::ToAccountMetas::to_account_metas(
-            &gpl_squads_voter::accounts::CreateRegistrar {
+            &gpl_realm_voter::accounts::CreateRegistrar {
                 registrar: registrar_key,
                 realm: realm_cookie.address,
                 governance_program_id: self.governance.program_id,
@@ -134,7 +134,7 @@ impl SquadsVoterTest {
         );
 
         let mut create_registrar_ix = Instruction {
-            program_id: gpl_squads_voter::id(),
+            program_id: gpl_realm_voter::id(),
             accounts,
             data,
         };
@@ -190,16 +190,16 @@ impl SquadsVoterTest {
                 registrar_cookie.account.governing_token_mint.as_ref(),
                 governing_token_owner.as_ref(),
             ],
-            &gpl_squads_voter::id(),
+            &gpl_realm_voter::id(),
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_squads_voter::instruction::CreateVoterWeightRecord {
+            &gpl_realm_voter::instruction::CreateVoterWeightRecord {
                 governing_token_owner,
             },
         );
 
-        let accounts = gpl_squads_voter::accounts::CreateVoterWeightRecord {
+        let accounts = gpl_realm_voter::accounts::CreateVoterWeightRecord {
             governance_program_id: self.governance.program_id,
             realm: registrar_cookie.account.realm,
             realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
@@ -209,7 +209,7 @@ impl SquadsVoterTest {
         };
 
         let mut create_voter_weight_record_ix = Instruction {
-            program_id: gpl_squads_voter::id(),
+            program_id: gpl_realm_voter::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
@@ -258,10 +258,10 @@ impl SquadsVoterTest {
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_squads_voter::instruction::CreateMaxVoterWeightRecord {},
+            &gpl_realm_voter::instruction::CreateMaxVoterWeightRecord {},
         );
 
-        let accounts = gpl_squads_voter::accounts::CreateMaxVoterWeightRecord {
+        let accounts = gpl_realm_voter::accounts::CreateMaxVoterWeightRecord {
             governance_program_id: self.governance.program_id,
             realm: registrar_cookie.account.realm,
             realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
@@ -271,7 +271,7 @@ impl SquadsVoterTest {
         };
 
         let mut create_max_voter_weight_record_ix = Instruction {
-            program_id: gpl_squads_voter::id(),
+            program_id: gpl_realm_voter::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
@@ -304,10 +304,10 @@ impl SquadsVoterTest {
         squads_member_cookies: &[&SquadMemberCookie],
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_squads_voter::instruction::UpdateVoterWeightRecord {},
+            &gpl_realm_voter::instruction::UpdateVoterWeightRecord {},
         );
 
-        let accounts = gpl_squads_voter::accounts::UpdateVoterWeightRecord {
+        let accounts = gpl_realm_voter::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
         };
@@ -322,7 +322,7 @@ impl SquadsVoterTest {
         }
 
         let instructions = vec![Instruction {
-            program_id: gpl_squads_voter::id(),
+            program_id: gpl_realm_voter::id(),
             accounts: account_metas,
             data,
         }];
@@ -338,10 +338,10 @@ impl SquadsVoterTest {
         squads_cookies: &[&SquadCookie],
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_squads_voter::instruction::UpdateMaxVoterWeightRecord {},
+            &gpl_realm_voter::instruction::UpdateMaxVoterWeightRecord {},
         );
 
-        let accounts = gpl_squads_voter::accounts::UpdateMaxVoterWeightRecord {
+        let accounts = gpl_realm_voter::accounts::UpdateMaxVoterWeightRecord {
             registrar: registrar_cookie.address,
             max_voter_weight_record: max_voter_weight_record_cookie.address,
         };
@@ -353,7 +353,7 @@ impl SquadsVoterTest {
         }
 
         let instructions = vec![Instruction {
-            program_id: gpl_squads_voter::id(),
+            program_id: gpl_realm_voter::id(),
             accounts: account_metas,
             data,
         }];
@@ -384,11 +384,11 @@ impl SquadsVoterTest {
         let args = args.unwrap_or_default();
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_squads_voter::instruction::ConfigureSquad {
+            anchor_lang::InstructionData::data(&gpl_realm_voter::instruction::ConfigureSquad {
                 weight: args.weight,
             });
 
-        let accounts = gpl_squads_voter::accounts::ConfigureSquad {
+        let accounts = gpl_realm_voter::accounts::ConfigureSquad {
             registrar: registrar_cookie.address,
             realm: registrar_cookie.account.realm,
             realm_authority: registrar_cookie.realm_authority.pubkey(),
@@ -396,7 +396,7 @@ impl SquadsVoterTest {
         };
 
         let mut configure_squad_ix = Instruction {
-            program_id: gpl_squads_voter::id(),
+            program_id: gpl_realm_voter::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };

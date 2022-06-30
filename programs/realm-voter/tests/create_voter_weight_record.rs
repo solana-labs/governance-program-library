@@ -1,4 +1,4 @@
-use crate::program_test::squads_voter_test::SquadsVoterTest;
+use crate::program_test::realm_voter_test::RealmVoterTest;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
 
@@ -7,22 +7,22 @@ mod program_test;
 #[tokio::test]
 async fn test_create_voter_weight_record() -> Result<(), TransportError> {
     // Arrange
-    let mut squads_voter_test = SquadsVoterTest::start_new().await;
+    let mut realm_voter_test = RealmVoterTest::start_new().await;
 
-    let realm_cookie = squads_voter_test.governance.with_realm().await?;
+    let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = squads_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
-    let voter_cookie = squads_voter_test.bench.with_wallet().await;
+    let voter_cookie = realm_voter_test.bench.with_wallet().await;
 
     // Act
-    let voter_weight_record_cookie = squads_voter_test
+    let voter_weight_record_cookie = realm_voter_test
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
     // Assert
 
-    let voter_weight_record = squads_voter_test
+    let voter_weight_record = realm_voter_test
         .get_voter_weight_record(&voter_weight_record_cookie.address)
         .await;
 
@@ -34,18 +34,18 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
 // #[tokio::test]
 // async fn test_create_voter_weight_record_with_invalid_realm_error() -> Result<(), TransportError> {
 //     // Arrange
-//     let mut squads_voter_test = NftVoterTest::start_new().await;
+//     let mut realm_voter_test = NftVoterTest::start_new().await;
 
-//     let realm_cookie = squads_voter_test.governance.with_realm().await?;
+//     let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
-//     let registrar_cookie = squads_voter_test.with_registrar(&realm_cookie).await?;
+//     let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
-//     let realm_cookie2 = squads_voter_test.governance.with_realm().await?;
+//     let realm_cookie2 = realm_voter_test.governance.with_realm().await?;
 
-//     let voter_cookie = squads_voter_test.bench.with_wallet().await;
+//     let voter_cookie = realm_voter_test.bench.with_wallet().await;
 
 //     // Act
-//     let err = squads_voter_test
+//     let err = realm_voter_test
 //         .with_voter_weight_record_using_ix(&registrar_cookie, &voter_cookie, |i| {
 //             i.accounts[2].pubkey = realm_cookie2.address // Realm
 //         })
@@ -64,18 +64,18 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
 // #[tokio::test]
 // async fn test_create_voter_weight_record_with_invalid_mint_error() -> Result<(), TransportError> {
 //     // Arrange
-//     let mut squads_voter_test = NftVoterTest::start_new().await;
+//     let mut realm_voter_test = NftVoterTest::start_new().await;
 
-//     let realm_cookie = squads_voter_test.governance.with_realm().await?;
+//     let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
-//     let registrar_cookie = squads_voter_test.with_registrar(&realm_cookie).await?;
+//     let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
-//     let realm_cookie2 = squads_voter_test.governance.with_realm().await?;
+//     let realm_cookie2 = realm_voter_test.governance.with_realm().await?;
 
-//     let voter_cookie = squads_voter_test.bench.with_wallet().await;
+//     let voter_cookie = realm_voter_test.bench.with_wallet().await;
 
 //     // Act
-//     let err = squads_voter_test
+//     let err = realm_voter_test
 //         .with_voter_weight_record_using_ix(&registrar_cookie, &voter_cookie, |i| {
 //             i.accounts[2].pubkey = realm_cookie2.address // Mint
 //         })
@@ -94,22 +94,22 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
 // #[tokio::test]
 // async fn test_create_voter_weight_record_with_already_exists_error() -> Result<(), TransportError> {
 //     // Arrange
-//     let mut squads_voter_test = NftVoterTest::start_new().await;
+//     let mut realm_voter_test = NftVoterTest::start_new().await;
 
-//     let realm_cookie = squads_voter_test.governance.with_realm().await?;
+//     let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
-//     let registrar_cookie = squads_voter_test.with_registrar(&realm_cookie).await?;
+//     let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
-//     let voter_cookie = squads_voter_test.bench.with_wallet().await;
+//     let voter_cookie = realm_voter_test.bench.with_wallet().await;
 
-//     squads_voter_test
+//     realm_voter_test
 //         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
 //         .await?;
 
-//     squads_voter_test.bench.advance_clock().await;
+//     realm_voter_test.bench.advance_clock().await;
 
 //     // Act
-//     let err = squads_voter_test
+//     let err = realm_voter_test
 //         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
 //         .await
 //         .err()

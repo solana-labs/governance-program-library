@@ -1113,7 +1113,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "gpl-squads-voter"
+name = "gpl-realm-voter"
 version = "0.0.1"
 dependencies = [
  "anchor-lang",

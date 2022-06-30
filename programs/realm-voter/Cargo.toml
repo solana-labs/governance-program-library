@@ -1,13 +1,13 @@
 [package]
-name = "gpl-squads-voter"
+name = "gpl-realm-voter"
 version = "0.0.1"
-description = "SPL Governance addin implementing Squads Protocol based governance"
+description = "SPL Governance addin implementing governance power through Realms meembership"
 license = "Apache-2.0"
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "gpl_squads_voter"
+name = "gpl_realm_voter"
 
 [features]
 no-entrypoint = []
