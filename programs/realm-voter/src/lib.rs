@@ -9,10 +9,10 @@ pub mod state;
 
 pub mod tools;
 
-declare_id!("GSqds6KYQf5tXEHwrDszu6AqkVXinFCKDwUfTLzp1jEH");
+declare_id!("GRmVtfLq2BPeWs5EDoQoZc787VYkhdkA11k63QM1Xemz");
 
 #[program]
-pub mod squads_voter {
+pub mod realm_voter {
 
     use super::*;
     pub fn create_registrar(

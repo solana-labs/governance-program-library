@@ -1,5 +1,4 @@
 use crate::{
-    error::RealmVoterError,
     id,
     state::GovernanceProgramConfig,
     tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
@@ -42,7 +41,7 @@ impl Registrar {
         DISCRIMINATOR_SIZE
             + PUBKEY_SIZE * 3
             + 4
-            + max_governance_programs as usize * (PUBKEY_SIZE + 8)
+            + max_governance_programs as usize * (PUBKEY_SIZE + 8 + 8)
             + 8
             + 128
     }
@@ -59,16 +58,6 @@ pub fn get_registrar_seeds<'a>(
 /// Returns Registrar PDA address
 pub fn get_registrar_address(realm: &Pubkey, governing_token_mint: &Pubkey) -> Pubkey {
     Pubkey::find_program_address(&get_registrar_seeds(realm, governing_token_mint), &id()).0
-}
-
-impl Registrar {
-    pub fn get_squad_config(&self, squad: &Pubkey) -> Result<&GovernanceProgramConfig> {
-        return self
-            .governance_program_configs
-            .iter()
-            .find(|sc| sc.program_id == *squad)
-            .ok_or_else(|| RealmVoterError::SquadNotFound.into());
-    }
 }
 
 #[cfg(test)]

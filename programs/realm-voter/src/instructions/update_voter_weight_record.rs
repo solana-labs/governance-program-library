@@ -3,12 +3,13 @@ use crate::state::*;
 use anchor_lang::prelude::*;
 use spl_governance::state::token_owner_record;
 
-/// Updates VoterWeightRecord to evaluate governance power for users and the Squads they belong to
+/// Updates VoterWeightRecord to evaluate governance power for users and the Realm DAO they belong to
+/// Realm DAO membership is evaluated via a valid TokenOwnerRecord which must belong to one of the configured spl-governance instances
 /// This instruction updates VoterWeightRecord which is valid for the current Slot only
 /// The instruction must be executed inside the same transaction as the corresponding spl-gov instruction
 #[derive(Accounts)]
 pub struct UpdateVoterWeightRecord<'info> {
-    /// The Squads voting Registrar
+    /// The RealmVoter voting Registrar
     pub registrar: Account<'info, Registrar>,
 
     #[account(

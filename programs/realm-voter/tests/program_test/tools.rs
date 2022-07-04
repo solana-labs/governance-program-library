@@ -15,14 +15,14 @@ pub fn NopOverride<T>(_: &mut T) {}
 #[allow(dead_code)]
 pub fn assert_realm_voter_err(
     banks_client_error: TransportError,
-    squad_voter_error: RealmVoterError,
+    realm_voter_error: RealmVoterError,
 ) {
     let tx_error = banks_client_error.unwrap();
 
     match tx_error {
         TransactionError::InstructionError(_, instruction_error) => match instruction_error {
             InstructionError::Custom(e) => {
-                assert_eq!(e, squad_voter_error as u32 + ERROR_CODE_OFFSET)
+                assert_eq!(e, realm_voter_error as u32 + ERROR_CODE_OFFSET)
             }
             _ => panic!("{:?} Is not InstructionError::Custom()", instruction_error),
         },

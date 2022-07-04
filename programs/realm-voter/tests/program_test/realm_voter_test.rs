@@ -21,8 +21,6 @@ use crate::program_test::program_test_bench::WalletCookie;
 
 use crate::program_test::tools::NopOverride;
 
-use crate::program_test::squads_test::{SquadMemberCookie, SquadsTest};
-
 use super::governance_test::TokenOwnerRecordCookie;
 
 #[derive(Debug, PartialEq)]
@@ -66,7 +64,6 @@ pub struct RealmVoterTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
     pub governance: GovernanceTest,
-    pub squads: SquadsTest,
 }
 
 impl RealmVoterTest {
@@ -81,7 +78,6 @@ impl RealmVoterTest {
 
         RealmVoterTest::add_program(&mut program_test);
         GovernanceTest::add_program(&mut program_test);
-        SquadsTest::add_program(&mut program_test);
 
         let program_id = gpl_realm_voter::id();
 
@@ -90,13 +86,11 @@ impl RealmVoterTest {
 
         let governance_bench =
             GovernanceTest::new(bench_rc.clone(), Some(program_id), Some(program_id));
-        let squads_bench = SquadsTest::new(bench_rc.clone());
 
         Self {
             program_id,
             bench: bench_rc,
             governance: governance_bench,
-            squads: squads_bench,
         }
     }
 
@@ -416,22 +410,22 @@ impl RealmVoterTest {
             governance_program_id: governance_program_cookie.program_id.clone(),
         };
 
-        let mut configure_squad_ix = Instruction {
+        let mut configure_governance_program_ix = Instruction {
             program_id: gpl_realm_voter::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
 
-        instruction_override(&mut configure_squad_ix);
+        instruction_override(&mut configure_governance_program_ix);
 
         let default_signers = &[&registrar_cookie.realm_authority];
         let signers = signers_override.unwrap_or(default_signers);
 
         self.bench
-            .process_transaction(&[configure_squad_ix], Some(signers))
+            .process_transaction(&[configure_governance_program_ix], Some(signers))
             .await?;
 
-        let squad_config = GovernanceProgramConfig {
+        let governance_program_config = GovernanceProgramConfig {
             program_id: governance_program_cookie.program_id.clone(),
 
             reserved: [0; 8],
@@ -439,7 +433,7 @@ impl RealmVoterTest {
         };
 
         Ok(GovernanceProgramConfigCookie {
-            program_config: squad_config,
+            program_config: governance_program_config,
         })
     }
 

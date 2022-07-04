@@ -38,7 +38,7 @@ pub struct CreateRegistrar<'info> {
     /// Either the realm community mint or the council mint.
     /// It must match Realm.community_mint or Realm.config.council_mint
     ///
-    /// Note: Once the Squads plugin is enabled the governing_token_mint is used only as identity
+    /// Note: Once the Realm voter plugin is enabled the governing_token_mint is used only as identity
     /// for the voting population and the tokens of that are no longer used
     pub governing_token_mint: Account<'info, Mint>,
 
@@ -51,14 +51,14 @@ pub struct CreateRegistrar<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Creates a new Registrar which stores Squads voting configuration for given Realm
+/// Creates a new Registrar which stores Realms voter configuration for the given Realm
 ///
-/// To use the registrar, call ConfigureSquad to register Squads which will be
+/// To use the registrar, call ConfigureGovernanceProgram to register spl-governance instance which will be
 /// used for governance
 ///
-/// max_squads is used to allocate account size for the maximum number of governing Squads
+/// max_governance_programs is used to allocate account size for the maximum number of configured spl-governance instances
 /// Note: Once Solana runtime supports account resizing the max value won't be required
-pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_squads: u8) -> Result<()> {
+pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_governance_programs: u8) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
     registrar.governance_program_id = ctx.accounts.governance_program_id.key();
     registrar.realm = ctx.accounts.realm.key();

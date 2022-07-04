@@ -23,12 +23,6 @@ pub enum RealmVoterError {
     #[msg("Invalid TokenOwner for VoterWeightRecord")]
     InvalidTokenOwnerForVoterWeightRecord,
 
-    #[msg("Squad not found")]
-    SquadNotFound,
-
-    #[msg("Duplicated Squad detected")]
-    DuplicatedSquadDetected,
-
     #[msg("Invalid GovernanceProgram weight")]
     InvalidGovernanceProgramWeight,
 }
