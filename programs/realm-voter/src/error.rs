@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
-pub enum SquadsVoterError {
+pub enum RealmVoterError {
     #[msg("Invalid Realm Authority")]
     InvalidRealmAuthority,
 
@@ -28,4 +28,7 @@ pub enum SquadsVoterError {
 
     #[msg("Duplicated Squad detected")]
     DuplicatedSquadDetected,
+
+    #[msg("Invalid GovernanceProgram weight")]
+    InvalidGovernanceProgramWeight,
 }

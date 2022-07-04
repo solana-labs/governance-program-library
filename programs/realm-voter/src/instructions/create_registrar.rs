@@ -1,4 +1,4 @@
-use crate::error::SquadsVoterError;
+use crate::error::RealmVoterError;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
@@ -74,7 +74,7 @@ pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_squads: u8) -> Resul
 
     require!(
         realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
-        SquadsVoterError::InvalidRealmAuthority
+        RealmVoterError::InvalidRealmAuthority
     );
 
     Ok(())

@@ -1,4 +1,4 @@
-use crate::program_test::realm_voter_test::{ConfigureSquadArgs, RealmVoterTest};
+use crate::program_test::realm_voter_test::{ConfigureGovernanceProgramArgs, RealmVoterTest};
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
 
@@ -13,13 +13,13 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 
     let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
-    let squad_cookie = realm_voter_test.squads.with_squad().await?;
+    let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
 
     realm_voter_test
-        .with_squad_config(
+        .with_governance_program_config(
             &registrar_cookie,
-            &squad_cookie,
-            Some(ConfigureSquadArgs { weight: 10 }),
+            &governance_program_cookie,
+            Some(ConfigureGovernanceProgramArgs { weight: 10 }),
         )
         .await?;
 
@@ -29,22 +29,22 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
-    let squad_member_cookie = realm_voter_test
-        .squads
-        .with_squad_member(&squad_cookie)
-        .await?;
+    // let squad_member_cookie = realm_voter_test
+    //     .squads
+    //     .with_squad_member(&squad_cookie)
+    //     .await?;
 
     realm_voter_test.bench.advance_clock().await;
     let clock = realm_voter_test.bench.get_clock().await;
 
     // Act
-    realm_voter_test
-        .update_voter_weight_record(
-            &registrar_cookie,
-            &mut voter_weight_record_cookie,
-            &[&squad_member_cookie],
-        )
-        .await?;
+    // realm_voter_test
+    //     .update_voter_weight_record(
+    //         &registrar_cookie,
+    //         &mut voter_weight_record_cookie,
+    //         &[&squad_member_cookie],
+    //     )
+    //     .await?;
 
     // Assert
 

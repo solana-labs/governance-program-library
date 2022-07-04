@@ -1,5 +1,5 @@
 use crate::{
-    error::SquadsVoterError,
+    error::RealmVoterError,
     id,
     state::GovernanceProgramConfig,
     tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
@@ -67,7 +67,7 @@ impl Registrar {
             .governance_program_configs
             .iter()
             .find(|sc| sc.program_id == *squad)
-            .ok_or_else(|| SquadsVoterError::SquadNotFound.into());
+            .ok_or_else(|| RealmVoterError::SquadNotFound.into());
     }
 }
 

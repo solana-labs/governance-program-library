@@ -1,5 +1,5 @@
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
-use gpl_realm_voter::error::SquadsVoterError;
+use gpl_realm_voter::error::RealmVoterError;
 use solana_program::instruction::InstructionError;
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
 use spl_governance_tools::error::GovernanceToolsError;
@@ -13,9 +13,9 @@ pub fn clone_keypair(source: &Keypair) -> Keypair {
 pub fn NopOverride<T>(_: &mut T) {}
 
 #[allow(dead_code)]
-pub fn assert_squads_voter_err(
+pub fn assert_realm_voter_err(
     banks_client_error: TransportError,
-    squad_voter_error: SquadsVoterError,
+    squad_voter_error: RealmVoterError,
 ) {
     let tx_error = banks_client_error.unwrap();
 

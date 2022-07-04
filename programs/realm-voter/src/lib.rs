@@ -42,9 +42,12 @@ pub mod squads_voter {
         instructions::update_max_voter_weight_record(ctx)
     }
 
-    pub fn configure_squad(ctx: Context<ConfigureSquad>) -> Result<()> {
+    pub fn configure_governance_program(
+        ctx: Context<ConfigureGovernanceProgram>,
+        weight: u64,
+    ) -> Result<()> {
         log_version();
-        instructions::configure_squad(ctx)
+        instructions::configure_governance_program(ctx, weight)
     }
 }
 

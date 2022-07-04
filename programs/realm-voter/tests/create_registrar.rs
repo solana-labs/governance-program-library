@@ -1,14 +1,14 @@
 mod program_test;
 
 use anchor_lang::prelude::Pubkey;
-use gpl_realm_voter::error::SquadsVoterError;
+use gpl_realm_voter::error::RealmVoterError;
 use program_test::realm_voter_test::RealmVoterTest;
 
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, transport::TransportError};
 
-use program_test::tools::{assert_anchor_err, assert_ix_err, assert_squads_voter_err};
+use program_test::tools::{assert_anchor_err, assert_ix_err, assert_realm_voter_err};
 
 #[tokio::test]
 async fn test_create_registrar() -> Result<(), TransportError> {
@@ -45,7 +45,7 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
         .err()
         .unwrap();
 
-    assert_squads_voter_err(err, SquadsVoterError::InvalidRealmAuthority);
+    assert_realm_voter_err(err, RealmVoterError::InvalidRealmAuthority);
 
     Ok(())
 }

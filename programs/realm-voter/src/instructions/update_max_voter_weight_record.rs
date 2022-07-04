@@ -1,4 +1,4 @@
-use crate::error::SquadsVoterError;
+use crate::error::RealmVoterError;
 use crate::state::max_voter_weight_record::MaxVoterWeightRecord;
 use crate::state::*;
 use anchor_lang::prelude::*;
@@ -14,10 +14,10 @@ pub struct UpdateMaxVoterWeightRecord<'info> {
     #[account(
         mut,
         constraint = max_voter_weight_record.realm == registrar.realm
-        @ SquadsVoterError::InvalidVoterWeightRecordRealm,
+        @ RealmVoterError::InvalidVoterWeightRecordRealm,
 
         constraint = max_voter_weight_record.governing_token_mint == registrar.governing_token_mint
-        @ SquadsVoterError::InvalidVoterWeightRecordMint,
+        @ RealmVoterError::InvalidVoterWeightRecordMint,
     )]
     pub max_voter_weight_record: Account<'info, MaxVoterWeightRecord>,
     //

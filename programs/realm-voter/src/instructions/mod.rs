@@ -1,5 +1,5 @@
-pub use configure_squad::*;
-mod configure_squad;
+pub use configure_governance_program::*;
+mod configure_governance_program;
 
 pub use create_registrar::*;
 mod create_registrar;

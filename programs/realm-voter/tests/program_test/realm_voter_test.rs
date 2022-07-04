@@ -42,15 +42,19 @@ pub struct MaxVoterWeightRecordCookie {
     pub account: MaxVoterWeightRecord,
 }
 
-pub struct SquadConfigCookie {
-    pub squad_config: GovernanceProgramConfig,
+pub struct GovernanceProgramConfigCookie {
+    pub program_config: GovernanceProgramConfig,
 }
 
-pub struct ConfigureSquadArgs {
+pub struct GovernanceProgramCookie {
+    pub program_id: Pubkey,
+}
+
+pub struct ConfigureGovernanceProgramArgs {
     pub weight: u64,
 }
 
-impl Default for ConfigureSquadArgs {
+impl Default for ConfigureGovernanceProgramArgs {
     fn default() -> Self {
         Self { weight: 1 }
     }
@@ -92,6 +96,17 @@ impl RealmVoterTest {
             governance: governance_bench,
             squads: squads_bench,
         }
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_governance_program(
+        &mut self,
+        program_id: Option<Pubkey>,
+    ) -> GovernanceProgramCookie {
+        let program_id = program_id.unwrap_or(GovernanceTest::program_id());
+
+        // Use the spl-governance instance used for testing
+        GovernanceProgramCookie { program_id }
     }
 
     #[allow(dead_code)]
@@ -363,35 +378,44 @@ impl RealmVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_squad_config(
+    pub async fn with_governance_program_config(
         &mut self,
         registrar_cookie: &RegistrarCookie,
-        squad_cookie: &SquadCookie,
-        args: Option<ConfigureSquadArgs>,
-    ) -> Result<SquadConfigCookie, TransportError> {
-        self.with_squad_config_using_ix(registrar_cookie, squad_cookie, args, NopOverride, None)
-            .await
+        governance_program_cookie: &GovernanceProgramCookie,
+        args: Option<ConfigureGovernanceProgramArgs>,
+    ) -> Result<GovernanceProgramConfigCookie, TransportError> {
+        self.with_governance_program_config_using_ix(
+            registrar_cookie,
+            governance_program_cookie,
+            args,
+            NopOverride,
+            None,
+        )
+        .await
     }
 
     #[allow(dead_code)]
-    pub async fn with_squad_config_using_ix<F: Fn(&mut Instruction)>(
+    pub async fn with_governance_program_config_using_ix<F: Fn(&mut Instruction)>(
         &mut self,
         registrar_cookie: &RegistrarCookie,
-        squad_cookie: &SquadCookie,
-        args: Option<ConfigureSquadArgs>,
+        governance_program_cookie: &GovernanceProgramCookie,
+        args: Option<ConfigureGovernanceProgramArgs>,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<SquadConfigCookie, TransportError> {
+    ) -> Result<GovernanceProgramConfigCookie, TransportError> {
         let args = args.unwrap_or_default();
 
-        let data =
-            anchor_lang::InstructionData::data(&gpl_realm_voter::instruction::ConfigureSquad {});
+        let data = anchor_lang::InstructionData::data(
+            &gpl_realm_voter::instruction::ConfigureGovernanceProgram {
+                weight: args.weight,
+            },
+        );
 
-        let accounts = gpl_realm_voter::accounts::ConfigureSquad {
+        let accounts = gpl_realm_voter::accounts::ConfigureGovernanceProgram {
             registrar: registrar_cookie.address,
             realm: registrar_cookie.account.realm,
             realm_authority: registrar_cookie.realm_authority.pubkey(),
-            squad: squad_cookie.address,
+            governance_program_id: governance_program_cookie.program_id.clone(),
         };
 
         let mut configure_squad_ix = Instruction {
@@ -410,12 +434,15 @@ impl RealmVoterTest {
             .await?;
 
         let squad_config = GovernanceProgramConfig {
-            program_id: squad_cookie.address,
+            program_id: governance_program_cookie.program_id.clone(),
 
             reserved: [0; 8],
+            weight: args.weight,
         };
 
-        Ok(SquadConfigCookie { squad_config })
+        Ok(GovernanceProgramConfigCookie {
+            program_config: squad_config,
+        })
     }
 
     #[allow(dead_code)]
