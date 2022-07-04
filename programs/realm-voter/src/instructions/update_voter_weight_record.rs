@@ -3,10 +3,11 @@ use crate::state::*;
 use anchor_lang::prelude::*;
 use spl_governance::state::token_owner_record;
 
-/// Updates VoterWeightRecord to evaluate governance power for users and the Realm DAO they belong to
-/// Realm DAO membership is evaluated via a valid TokenOwnerRecord which must belong to one of the configured spl-governance instances
-/// This instruction updates VoterWeightRecord which is valid for the current Slot only
-/// The instruction must be executed inside the same transaction as the corresponding spl-gov instruction
+/// Updates VoterWeightRecord based on Realm DAO membership
+/// The membership is evaluated via a valid TokenOwnerRecord which must belong to one of the configured spl-governance instances
+///
+/// This instruction sets VoterWeightRecord.voter_weight which is valid for the current slot only
+/// and must be executed inside the same transaction as the corresponding spl-gov instruction
 #[derive(Accounts)]
 pub struct UpdateVoterWeightRecord<'info> {
     /// The RealmVoter voting Registrar
@@ -48,7 +49,7 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
         &ctx.accounts.token_owner_record,
     )?;
 
-    // Membership from the Realm the plugin is configured for is not allowed
+    // Membership of the Realm the plugin is configured for is not allowed as a valid membership
     require_neq!(
         token_owner_record.realm,
         registrar.realm,

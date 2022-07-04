@@ -72,8 +72,9 @@ pub fn create_registrar(ctx: Context<CreateRegistrar>, _max_governance_programs:
         &registrar.governing_token_mint,
     )?;
 
-    require!(
-        realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
+    require_eq!(
+        realm.authority.unwrap(),
+        ctx.accounts.realm_authority.key(),
         RealmVoterError::InvalidRealmAuthority
     );
 

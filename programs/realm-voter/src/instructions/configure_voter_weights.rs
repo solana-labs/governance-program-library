@@ -41,7 +41,7 @@ pub fn configure_voter_weights(
     max_voter_weight: u64,
 ) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
-    // max_voter_weight on Registrar is redundant and it's only stored for reference and consistency only
+    // Note: max_voter_weight on Registrar is redundant and it's only stored for reference and consistency only
     // It's not needed in the current version of the program because it's always set in this instruction together with MaxVoterWeightRecord.max_voter_weight
     registrar.realm_member_voter_weight = realm_member_voter_weight;
     registrar.max_voter_weight = max_voter_weight;
@@ -52,8 +52,9 @@ pub fn configure_voter_weights(
         &registrar.governing_token_mint,
     )?;
 
-    require!(
-        realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
+    require_eq!(
+        realm.authority.unwrap(),
+        ctx.accounts.realm_authority.key(),
         RealmVoterError::InvalidRealmAuthority
     );
 

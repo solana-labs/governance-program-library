@@ -1,7 +1,7 @@
 [package]
 name = "gpl-realm-voter"
 version = "0.0.1"
-description = "SPL Governance addin implementing governance power through Realms membership"
+description = "SPL Governance plugin granting governance power through Realms membership"
 license = "Apache-2.0"
 edition = "2018"
 

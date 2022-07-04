@@ -10,7 +10,7 @@ use spl_governance::state::realm;
 use crate::error::RealmVoterError;
 use crate::state::{GovernanceProgramConfig, Registrar};
 
-/// Creates or updates governance program configuration which defines which spl-governance instances can be used for governance
+/// Creates or updates configuration for spl-governance program instances to define which spl-governance instances can be used to grant governance power
 #[derive(Accounts)]
 pub struct ConfigureGovernanceProgram<'info> {
     /// Registrar which we configure the provided spl-governance instance for
@@ -42,8 +42,9 @@ pub fn configure_governance_program(ctx: Context<ConfigureGovernanceProgram>) ->
         &registrar.governing_token_mint,
     )?;
 
-    require!(
-        realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
+    require_eq!(
+        realm.authority.unwrap(),
+        ctx.accounts.realm_authority.key(),
         RealmVoterError::InvalidRealmAuthority
     );
 
@@ -60,6 +61,7 @@ pub fn configure_governance_program(ctx: Context<ConfigureGovernanceProgram>) ->
         .position(|cc| cc.program_id == governance_program_id.key());
 
     if let Some(config_idx) = governance_program_config_idx {
+        // Note: Update in this version is nop because we only store governance_program_id
         registrar.governance_program_configs[config_idx] = governance_program_config;
     } else {
         // Note: In the current version push() would throw an error if we exceed
