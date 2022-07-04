@@ -13,5 +13,5 @@ mod create_max_voter_weight_record;
 pub use update_voter_weight_record::*;
 mod update_voter_weight_record;
 
-pub use update_max_voter_weight_record::*;
-mod update_max_voter_weight_record;
+pub use configure_max_voter_weight::*;
+mod configure_max_voter_weight;

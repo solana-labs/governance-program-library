@@ -351,22 +351,20 @@ impl RealmVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         max_voter_weight_record_cookie: &mut MaxVoterWeightRecordCookie,
-        squads_cookies: &[&SquadCookie],
+        max_voter_weight: u64,
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_realm_voter::instruction::UpdateMaxVoterWeightRecord {},
+            &gpl_realm_voter::instruction::UpdateMaxVoterWeightRecord { max_voter_weight },
         );
 
-        let accounts = gpl_realm_voter::accounts::UpdateMaxVoterWeightRecord {
+        let accounts = gpl_realm_voter::accounts::ConfigureMaxVoterWeight {
             registrar: registrar_cookie.address,
             max_voter_weight_record: max_voter_weight_record_cookie.address,
+            realm: registrar_cookie.account.realm,
+            realm_authority: registrar_cookie.realm_authority.pubkey(),
         };
 
         let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
-
-        for squad_cookie in squads_cookies {
-            account_metas.push(AccountMeta::new_readonly(squad_cookie.address, false));
-        }
 
         let instructions = vec![Instruction {
             program_id: gpl_realm_voter::id(),
@@ -374,7 +372,11 @@ impl RealmVoterTest {
             data,
         }];
 
-        self.bench.process_transaction(&instructions, None).await
+        let default_signers = &[&registrar_cookie.realm_authority];
+
+        self.bench
+            .process_transaction(&instructions, Some(default_signers))
+            .await
     }
 
     #[allow(dead_code)]
