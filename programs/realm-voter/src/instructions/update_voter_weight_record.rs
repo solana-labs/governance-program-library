@@ -42,10 +42,6 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
         // TODO: Validate Squad membership for governing_token_owner and squad_info
 
         let squad_config = registrar.get_squad_config(squad_info.key)?;
-
-        voter_weight = voter_weight
-            .checked_add(squad_config.weight as u64)
-            .unwrap();
     }
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;

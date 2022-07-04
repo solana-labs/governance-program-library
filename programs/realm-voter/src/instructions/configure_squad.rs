@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 use spl_governance::state::realm;
 
 use crate::error::SquadsVoterError;
-use crate::state::{Registrar, SquadConfig};
+use crate::state::{GovernanceProgramConfig, Registrar};
 
 /// Creates or updates Squad configuration which defines what Squads can be used for governances
 /// and what weight they have
@@ -33,7 +33,7 @@ pub struct ConfigureSquad<'info> {
     pub squad: UncheckedAccount<'info>,
 }
 
-pub fn configure_squad(ctx: Context<ConfigureSquad>, weight: u64) -> Result<()> {
+pub fn configure_squad(ctx: Context<ConfigureSquad>) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
 
     let realm = realm::get_realm_data_for_governing_token_mint(
@@ -51,23 +51,22 @@ pub fn configure_squad(ctx: Context<ConfigureSquad>, weight: u64) -> Result<()> 
 
     // TODO: Assert Squad owned by squads-protocol
 
-    let squad_config = SquadConfig {
-        squad: squad.key(),
-        weight,
+    let squad_config = GovernanceProgramConfig {
+        program_id: squad.key(),
         reserved: [0; 8],
     };
 
     let squad_idx = registrar
-        .squads_configs
+        .governance_program_configs
         .iter()
-        .position(|cc| cc.squad == squad.key());
+        .position(|cc| cc.program_id == squad.key());
 
     if let Some(squad_idx) = squad_idx {
-        registrar.squads_configs[squad_idx] = squad_config;
+        registrar.governance_program_configs[squad_idx] = squad_config;
     } else {
         // Note: In the current runtime version push() would throw an error if we exceed
         // max_squads specified when the Registrar was created
-        registrar.squads_configs.push(squad_config);
+        registrar.governance_program_configs.push(squad_config);
     }
 
     // TODO: if weight == 0 then remove the Squad from config

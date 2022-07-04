@@ -27,26 +27,18 @@ pub struct UpdateMaxVoterWeightRecord<'info> {
 pub fn update_max_voter_weight_record(ctx: Context<UpdateMaxVoterWeightRecord>) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
 
-    let mut max_voter_weight = 0u64;
-
-    for squad_config in registrar.squads_configs.iter() {
+    for squad_config in registrar.governance_program_configs.iter() {
         let _squad_info = ctx
             .remaining_accounts
             .iter()
-            .find(|ai| ai.key() == squad_config.squad)
-            .unwrap();
-
-        // TODO: Assert squad_info is owned by squads-protocol program
-        // TODO: Get the Squad size from squad_info
-        let squad_size = 10;
-
-        max_voter_weight = max_voter_weight
-            .checked_add(squad_config.weight.checked_mul(squad_size).unwrap())
+            .find(|ai| ai.key() == squad_config.program_id)
             .unwrap();
     }
 
     let voter_weight_record = &mut ctx.accounts.max_voter_weight_record;
-    voter_weight_record.max_voter_weight = max_voter_weight;
+
+    // TODO: Remove hardcoded value
+    voter_weight_record.max_voter_weight = 100;
 
     // Record is only valid as of the current slot
     voter_weight_record.max_voter_weight_expiry = Some(Clock::get()?.slot);

@@ -15,9 +15,12 @@ declare_id!("GSqds6KYQf5tXEHwrDszu6AqkVXinFCKDwUfTLzp1jEH");
 pub mod squads_voter {
 
     use super::*;
-    pub fn create_registrar(ctx: Context<CreateRegistrar>, max_squads: u8) -> Result<()> {
+    pub fn create_registrar(
+        ctx: Context<CreateRegistrar>,
+        max_governance_programs: u8,
+    ) -> Result<()> {
         log_version();
-        instructions::create_registrar(ctx, max_squads)
+        instructions::create_registrar(ctx, max_governance_programs)
     }
     pub fn create_voter_weight_record(
         ctx: Context<CreateVoterWeightRecord>,
@@ -39,9 +42,9 @@ pub mod squads_voter {
         instructions::update_max_voter_weight_record(ctx)
     }
 
-    pub fn configure_squad(ctx: Context<ConfigureSquad>, weight: u64) -> Result<()> {
+    pub fn configure_squad(ctx: Context<ConfigureSquad>) -> Result<()> {
         log_version();
-        instructions::configure_squad(ctx, weight)
+        instructions::configure_squad(ctx)
     }
 }
 

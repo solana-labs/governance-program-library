@@ -1,12 +1,12 @@
 use crate::{
     error::SquadsVoterError,
     id,
-    state::SquadConfig,
+    state::GovernanceProgramConfig,
     tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
 };
 use anchor_lang::prelude::*;
 
-/// Registrar which stores Squads voting configuration for the given Realm
+/// Registrar which stores spl-governance configurations for the given Realm
 #[account]
 #[derive(Debug, PartialEq)]
 pub struct Registrar {
@@ -18,20 +18,33 @@ pub struct Registrar {
 
     /// Governing token mint the Registrar is for
     /// It can either be the Community or the Council mint of the Realm
-    /// When the plugin is used the mint is only used as identity of the governing power (voting population)
+    /// When the plugin is enabled the mint is only used as the identity of the governing power (voting population)
     /// and the actual token of the mint is not used
     pub governing_token_mint: Pubkey,
 
-    /// Squads used for governance
-    pub squads_configs: Vec<SquadConfig>,
+    /// spl-governance instances used for governance power
+    /// Any DAO member of any DAO created using the configured spl-governances would be given 1 vote
+    /// TODO: Once we have on-chain spl-governance registry this configuration won't be needed any longer
+    pub governance_program_configs: Vec<GovernanceProgramConfig>,
+
+    /// Max voter weight (expressed in governing_token_mint decimal units) is used to establish the theoretical Max Attendance Quorum which is then used to calculate Approval Quorum
+    /// This manual configuration is a rough estimate because it's not practical to calculate on-chain the number of all DAO members for the given spl-governance instances
+    ///
+    /// Note: This is not a security vulnerability because the plugin is inherently not secure and used only to encourage DAO usage and registration of spl-governance instances
+    pub max_voter_weight: u64,
 
     /// Reserved for future upgrades
     pub reserved: [u8; 128],
 }
 
 impl Registrar {
-    pub fn get_space(max_squads: u8) -> usize {
-        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 3 + 4 + max_squads as usize * (PUBKEY_SIZE + 8 + 8) + 128
+    pub fn get_space(max_governance_programs: u8) -> usize {
+        DISCRIMINATOR_SIZE
+            + PUBKEY_SIZE * 3
+            + 4
+            + max_governance_programs as usize * (PUBKEY_SIZE + 8)
+            + 8
+            + 128
     }
 }
 
@@ -49,11 +62,11 @@ pub fn get_registrar_address(realm: &Pubkey, governing_token_mint: &Pubkey) -> P
 }
 
 impl Registrar {
-    pub fn get_squad_config(&self, squad: &Pubkey) -> Result<&SquadConfig> {
+    pub fn get_squad_config(&self, squad: &Pubkey) -> Result<&GovernanceProgramConfig> {
         return self
-            .squads_configs
+            .governance_program_configs
             .iter()
-            .find(|sc| sc.squad == *squad)
+            .find(|sc| sc.program_id == *squad)
             .ok_or_else(|| SquadsVoterError::SquadNotFound.into());
     }
 }
@@ -72,12 +85,13 @@ mod test {
             governance_program_id: Pubkey::default(),
             realm: Pubkey::default(),
             governing_token_mint: Pubkey::default(),
-            squads_configs: vec![
-                SquadConfig::default(),
-                SquadConfig::default(),
-                SquadConfig::default(),
+            governance_program_configs: vec![
+                GovernanceProgramConfig::default(),
+                GovernanceProgramConfig::default(),
+                GovernanceProgramConfig::default(),
             ],
             reserved: [0; 128],
+            max_voter_weight: 100,
         };
 
         // Act

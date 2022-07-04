@@ -26,10 +26,10 @@ async fn test_configure_squad() -> Result<(), TransportError> {
         .get_registrar_account(&registrar_cookie.address)
         .await;
 
-    assert_eq!(registrar.squads_configs.len(), 1);
+    assert_eq!(registrar.governance_program_configs.len(), 1);
 
     assert_eq!(
-        registrar.squads_configs[0],
+        registrar.governance_program_configs[0],
         squad_config_cookie.squad_config
     );
 
@@ -70,7 +70,7 @@ async fn test_configure_multiple_squads() -> Result<(), TransportError> {
         .get_registrar_account(&registrar_cookie.address)
         .await;
 
-    assert_eq!(registrar.squads_configs.len(), 2);
+    assert_eq!(registrar.governance_program_configs.len(), 2);
 
     Ok(())
 }

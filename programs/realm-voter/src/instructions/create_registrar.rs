@@ -4,19 +4,19 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 
-/// Creates Registrar storing Squads governance configuration for spl-gov Realm
+/// Creates Registrar storing Realm Voter configuration for spl-gov Realm
 /// This instruction should only be executed once per realm/governing_token_mint to create the account
 #[derive(Accounts)]
-#[instruction(max_squads: u8)]
+#[instruction(max_governance_programs: u8)]
 pub struct CreateRegistrar<'info> {
-    /// The Squads voting Registrar
+    /// The Realm Voter Registrar
     /// There can only be a single registrar per governance Realm and governing mint of the Realm
     #[account(
         init,
         seeds = [b"registrar".as_ref(),realm.key().as_ref(), governing_token_mint.key().as_ref()],
         bump,
         payer = payer,
-        space = Registrar::get_space(max_squads)
+        space = Registrar::get_space(max_governance_programs)
     )]
     pub registrar: Account<'info, Registrar>,
 

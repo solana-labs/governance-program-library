@@ -29,7 +29,7 @@ pub struct RegistrarCookie {
     pub account: Registrar,
 
     pub realm_authority: Keypair,
-    pub max_squads: u8,
+    pub max_governance_programs: u8,
 }
 
 pub struct VoterWeightRecordCookie {
@@ -43,7 +43,7 @@ pub struct MaxVoterWeightRecordCookie {
 }
 
 pub struct SquadConfigCookie {
-    pub squad_config: SquadConfig,
+    pub squad_config: GovernanceProgramConfig,
 }
 
 pub struct ConfigureSquadArgs {
@@ -113,11 +113,11 @@ impl RealmVoterTest {
         let registrar_key =
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
-        let max_squads = 10;
+        let max_governance_programs = 10;
 
         let data =
             anchor_lang::InstructionData::data(&gpl_realm_voter::instruction::CreateRegistrar {
-                max_squads,
+                max_governance_programs,
             });
 
         let accounts = anchor_lang::ToAccountMetas::to_account_metas(
@@ -152,15 +152,16 @@ impl RealmVoterTest {
             governance_program_id: self.governance.program_id,
             realm: realm_cookie.address,
             governing_token_mint: realm_cookie.account.community_mint,
-            squads_configs: vec![],
+            governance_program_configs: vec![],
             reserved: [0; 128],
+            max_voter_weight: 0,
         };
 
         Ok(RegistrarCookie {
             address: registrar_key,
             account,
             realm_authority: realm_cookie.get_realm_authority(),
-            max_squads,
+            max_governance_programs,
         })
     }
 
@@ -384,9 +385,7 @@ impl RealmVoterTest {
         let args = args.unwrap_or_default();
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_realm_voter::instruction::ConfigureSquad {
-                weight: args.weight,
-            });
+            anchor_lang::InstructionData::data(&gpl_realm_voter::instruction::ConfigureSquad {});
 
         let accounts = gpl_realm_voter::accounts::ConfigureSquad {
             registrar: registrar_cookie.address,
@@ -410,9 +409,9 @@ impl RealmVoterTest {
             .process_transaction(&[configure_squad_ix], Some(signers))
             .await?;
 
-        let squad_config = SquadConfig {
-            squad: squad_cookie.address,
-            weight: args.weight,
+        let squad_config = GovernanceProgramConfig {
+            program_id: squad_cookie.address,
+
             reserved: [0; 8],
         };
 
