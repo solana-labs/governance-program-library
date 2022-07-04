@@ -335,6 +335,27 @@ impl RealmVoterTest {
         realm_member_voter_weight: u64,
         max_voter_weight: u64,
     ) -> Result<(), TransportError> {
+        self.configure_voter_weights_using_ix(
+            registrar_cookie,
+            max_voter_weight_record_cookie,
+            realm_member_voter_weight,
+            max_voter_weight,
+            NopOverride,
+            None,
+        )
+        .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn configure_voter_weights_using_ix<F: Fn(&mut Instruction)>(
+        &self,
+        registrar_cookie: &RegistrarCookie,
+        max_voter_weight_record_cookie: &mut MaxVoterWeightRecordCookie,
+        realm_member_voter_weight: u64,
+        max_voter_weight: u64,
+        instruction_override: F,
+        signers_override: Option<&[&Keypair]>,
+    ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_realm_voter::instruction::ConfigureVoterWeights {
                 max_voter_weight,
@@ -351,16 +372,18 @@ impl RealmVoterTest {
 
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
-        let instructions = vec![Instruction {
+        let mut configure_voter_weights_ix = Instruction {
             program_id: gpl_realm_voter::id(),
             accounts: account_metas,
             data,
-        }];
+        };
+        instruction_override(&mut configure_voter_weights_ix);
 
         let default_signers = &[&registrar_cookie.realm_authority];
+        let signers = signers_override.unwrap_or(default_signers);
 
         self.bench
-            .process_transaction(&instructions, Some(default_signers))
+            .process_transaction(&[configure_voter_weights_ix], Some(signers))
             .await
     }
 
