@@ -32,12 +32,12 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
 
     let governance_program_id = ctx.accounts.token_owner_record.owner;
 
-    let voter_weight_factor = if registrar
+    let voter_weight = if registrar
         .governance_program_configs
         .iter()
         .any(|cc| cc.program_id == governance_program_id.key())
     {
-        1u64
+        registrar.realm_member_vote_weight
     } else {
         0u64
     };
@@ -48,10 +48,9 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
         &ctx.accounts.token_owner_record,
     )?;
 
-    // Set voter_weight to 1
-    // TODO: Get weight from registrar
+    // Set voter_weight
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
-    voter_weight_record.voter_weight = 1u64.checked_mul(voter_weight_factor).unwrap();
+    voter_weight_record.voter_weight = voter_weight;
 
     // Record is only valid as of the current slot
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);

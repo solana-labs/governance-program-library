@@ -35,8 +35,20 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
-    let clock = realm_voter_test.bench.get_clock().await;
+    let mut max_voter_weight_record_cookie = realm_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
 
+    realm_voter_test
+        .update_max_voter_weight_record(
+            &registrar_cookie,
+            &mut max_voter_weight_record_cookie,
+            10,
+            110,
+        )
+        .await?;
+
+    let clock = realm_voter_test.bench.get_clock().await;
     // Act
     realm_voter_test
         .update_voter_weight_record(
@@ -52,7 +64,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
         .get_voter_weight_record(&voter_weight_record_cookie.address)
         .await;
 
-    assert_eq!(voter_weight_record.voter_weight, 1);
+    assert_eq!(voter_weight_record.voter_weight, 10);
     assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
     assert_eq!(voter_weight_record.weight_action, None);
     assert_eq!(voter_weight_record.weight_action_target, None);

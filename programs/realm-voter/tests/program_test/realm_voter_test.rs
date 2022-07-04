@@ -166,6 +166,7 @@ impl RealmVoterTest {
             governance_program_configs: vec![],
             reserved: [0; 128],
             max_voter_weight: 0,
+            realm_member_vote_weight: 0,
         };
 
         Ok(RegistrarCookie {
@@ -341,10 +342,14 @@ impl RealmVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         max_voter_weight_record_cookie: &mut MaxVoterWeightRecordCookie,
+        realm_member_vote_weight: u64,
         max_voter_weight: u64,
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_realm_voter::instruction::UpdateMaxVoterWeightRecord { max_voter_weight },
+            &gpl_realm_voter::instruction::UpdateMaxVoterWeightRecord {
+                max_voter_weight,
+                realm_member_vote_weight,
+            },
         );
 
         let accounts = gpl_realm_voter::accounts::ConfigureMaxVoterWeight {

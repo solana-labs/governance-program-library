@@ -39,10 +39,11 @@ pub mod realm_voter {
     }
     pub fn update_max_voter_weight_record(
         ctx: Context<ConfigureMaxVoterWeight>,
+        realm_member_vote_weight: u64,
         max_voter_weight: u64,
     ) -> Result<()> {
         log_version();
-        instructions::configure_max_voter_weight(ctx, max_voter_weight)
+        instructions::configure_max_voter_weight(ctx, realm_member_vote_weight, max_voter_weight)
     }
 
     pub fn configure_governance_program(

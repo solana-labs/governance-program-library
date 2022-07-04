@@ -25,7 +25,12 @@ async fn test_configure_max_voter_weight() -> Result<(), TransportError> {
 
     // Act
     realm_voter_test
-        .update_max_voter_weight_record(&registrar_cookie, &mut max_voter_weight_record_cookie, 110)
+        .update_max_voter_weight_record(
+            &registrar_cookie,
+            &mut max_voter_weight_record_cookie,
+            10,
+            110,
+        )
         .await?;
 
     // Assert
@@ -35,12 +40,14 @@ async fn test_configure_max_voter_weight() -> Result<(), TransportError> {
         .await;
 
     assert_eq!(registrar.max_voter_weight, 110);
+    assert_eq!(registrar.realm_member_vote_weight, 10);
 
     let max_voter_weight_record = realm_voter_test
         .get_max_voter_weight_record(&max_voter_weight_record_cookie.address)
         .await;
 
     assert_eq!(max_voter_weight_record.max_voter_weight, 110);
+
     assert_eq!(max_voter_weight_record.max_voter_weight_expiry, None);
     assert_eq!(max_voter_weight_record.realm, realm_cookie.address);
     assert_eq!(

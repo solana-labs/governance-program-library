@@ -36,11 +36,13 @@ pub struct ConfigureMaxVoterWeight<'info> {
 
 pub fn configure_max_voter_weight(
     ctx: Context<ConfigureMaxVoterWeight>,
+    realm_member_vote_weight: u64,
     max_voter_weight: u64,
 ) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
     // max_voter_weight on Registrar is redundant and it's only stored for reference and consistency only
     // It's not needed in the current version of the program because it's always set in this instruction together with MaxVoterWeightRecord
+    registrar.realm_member_vote_weight = realm_member_vote_weight;
     registrar.max_voter_weight = max_voter_weight;
 
     let realm = realm::get_realm_data_for_governing_token_mint(
