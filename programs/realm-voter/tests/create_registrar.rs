@@ -151,3 +151,30 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_create_registrar_with_registrar_already_exists_error() -> Result<(), TransportError> {
+    // Arrange
+    let mut realm_voter_test = RealmVoterTest::start_new().await;
+
+    let realm_cookie = realm_voter_test.governance.with_realm().await?;
+
+    realm_voter_test.with_registrar(&realm_cookie).await?;
+
+    realm_voter_test.bench.advance_clock().await;
+
+    // Act
+
+    let err = realm_voter_test
+        .with_registrar(&realm_cookie)
+        .await
+        .err()
+        .unwrap();
+
+    // Assert
+
+    // Registrar already exists and it throws Custom(0) error
+    assert_ix_err(err, InstructionError::Custom(0));
+
+    Ok(())
+}
