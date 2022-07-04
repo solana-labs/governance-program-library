@@ -39,14 +39,21 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
     {
         registrar.realm_member_voter_weight
     } else {
-        0u64
+        0
     };
 
     // Deserialize TokenOwnerRecord to ensure it's a valid account
-    let _ = token_owner_record::get_token_owner_record_data(
+    let token_owner_record = token_owner_record::get_token_owner_record_data(
         governance_program_id,
         &ctx.accounts.token_owner_record,
     )?;
+
+    // Membership from the Realm the plugin is configured for is not allowed
+    require_neq!(
+        token_owner_record.realm,
+        registrar.realm,
+        RealmVoterError::TokenOwnerRecordFromOwnRealmNotAllowed
+    );
 
     // Set voter_weight
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;

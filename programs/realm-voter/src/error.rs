@@ -13,4 +13,7 @@ pub enum RealmVoterError {
 
     #[msg("Invalid VoterWeightRecord Mint")]
     InvalidVoterWeightRecordMint,
+
+    #[msg("TokenOwnerRecord from own realm is not allowed")]
+    TokenOwnerRecordFromOwnRealmNotAllowed,
 }
