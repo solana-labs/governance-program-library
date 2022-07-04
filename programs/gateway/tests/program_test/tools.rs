@@ -1,8 +1,8 @@
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
+use gpl_gateway::error::GatewayError;
 use solana_program::instruction::InstructionError;
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
 use spl_governance_tools::error::GovernanceToolsError;
-use gpl_gateway::error::GatewayError;
 
 pub fn clone_keypair(source: &Keypair) -> Keypair {
     Keypair::from_bytes(&source.to_bytes()).unwrap()

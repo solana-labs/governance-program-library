@@ -13,7 +13,7 @@ pub enum GatewayError {
 
     #[msg("Invalid MaxVoterWeightRecord Mint")]
     InvalidMaxVoterWeightRecordMint,
-    
+
     #[msg("CastVote Is Not Allowed")]
     CastVoteIsNotAllowed,
 

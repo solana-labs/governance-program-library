@@ -1,8 +1,6 @@
 use crate::{
     id,
-    tools::{
-        anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
-    },
+    tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
 };
 use anchor_lang::prelude::*;
 
@@ -22,7 +20,7 @@ pub struct Registrar {
     /// and the actual token of the mint is not used
     pub governing_token_mint: Pubkey,
 
-    /// The Gatekeeper Network represents the "Pass Type" that a 
+    /// The Gatekeeper Network represents the "Pass Type" that a
     /// user must present.
     pub gatekeeper_network: Pubkey,
 
@@ -32,9 +30,7 @@ pub struct Registrar {
 
 impl Registrar {
     pub fn get_space() -> usize {
-        DISCRIMINATOR_SIZE
-            + PUBKEY_SIZE * 4
-            + 128
+        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 4 + 128
     }
 }
 

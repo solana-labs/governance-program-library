@@ -1,18 +1,18 @@
 use std::str::FromStr;
 use std::sync::Arc;
 
-use anchor_lang::prelude::{Pubkey};
+use anchor_lang::prelude::Pubkey;
 use solana_gateway::instruction::{add_gatekeeper, issue_vanilla};
-use solana_gateway::state::{get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed};
+use solana_gateway::state::{
+    get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
+};
 
 use gpl_gateway::state::*;
 use solana_sdk::transport::TransportError;
 use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{Vote, VoteChoice};
 
-use gpl_gateway::state::{
-    get_registrar_address, Registrar,
-};
+use gpl_gateway::state::{get_registrar_address, Registrar};
 
 use solana_program_test::ProgramTest;
 use solana_sdk::instruction::Instruction;
@@ -48,7 +48,7 @@ impl GatewayCookie {
     pub fn get_gatekeeper_account(&self) -> Pubkey {
         let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
             &self.gatekeeper.pubkey(),
-                &self.gatekeeper_network.pubkey()
+            &self.gatekeeper_network.pubkey(),
         );
         gatekeeper_account
     }
@@ -60,10 +60,10 @@ pub struct GatewayTokenCookie {
 
 impl GatewayTokenCookie {
     pub fn new(owner: &Pubkey, gateway_cookie: &GatewayCookie) -> Self {
-        let ( address, _) = get_gateway_token_address_with_seed(
-            owner, 
+        let (address, _) = get_gateway_token_address_with_seed(
+            owner,
             &None,
-            &gateway_cookie.gatekeeper_network.pubkey()
+            &gateway_cookie.gatekeeper_network.pubkey(),
         );
         Self { address }
     }
@@ -91,7 +91,11 @@ impl GatewayVoterTest {
     #[allow(dead_code)]
     pub fn add_programs(program_test: &mut ProgramTest) {
         program_test.add_program("gpl_gateway", gpl_gateway::id(), None);
-        program_test.add_program("solana_gateway_program", Pubkey::from_str("gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs").unwrap(), None);
+        program_test.add_program(
+            "solana_gateway_program",
+            Pubkey::from_str("gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs").unwrap(),
+            None,
+        );
     }
 
     #[allow(dead_code)]
@@ -184,11 +188,8 @@ impl GatewayVoterTest {
         })
     }
 
-    pub async fn with_gateway(
-        &mut self,
-    ) -> Result<GatewayCookie, TransportError> {
-        self.with_gateway_using_ix( NopOverride, None)
-            .await
+    pub async fn with_gateway(&mut self) -> Result<GatewayCookie, TransportError> {
+        self.with_gateway_using_ix(NopOverride, None).await
     }
 
     pub async fn with_gateway_using_ix<F: Fn(&mut Instruction)>(
@@ -202,7 +203,7 @@ impl GatewayVoterTest {
         let mut add_gatekeeper_ix = add_gatekeeper(
             &self.bench.payer.pubkey(),
             &gatekeeper.pubkey(),
-            &gatekeeper_network.pubkey()
+            &gatekeeper_network.pubkey(),
         );
 
         instruction_override(&mut add_gatekeeper_ix);
@@ -237,10 +238,7 @@ impl GatewayVoterTest {
         signers_override: Option<&[&Keypair]>,
     ) -> Result<GatewayTokenCookie, TransportError> {
         let gatekeeper_account = gateway_cookie.get_gatekeeper_account();
-        let gateway_token_cookie = GatewayTokenCookie::new(
-            &wallet_cookie.address,
-            gateway_cookie,
-        );
+        let gateway_token_cookie = GatewayTokenCookie::new(&wallet_cookie.address, gateway_cookie);
 
         let mut issue_ix = issue_vanilla(
             &self.bench.payer.pubkey(),
@@ -348,7 +346,7 @@ impl GatewayVoterTest {
         let data = anchor_lang::InstructionData::data(
             &gpl_gateway::instruction::UpdateVoterWeightRecord {
                 voter_weight_action,
-                target: None
+                target: None,
             },
         );
 
@@ -383,10 +381,12 @@ impl GatewayVoterTest {
     ) -> Result<(), TransportError> {
         let args = args.unwrap_or_default();
 
-        let data = anchor_lang::InstructionData::data(&gpl_gateway::instruction::UpdateVoterWeightRecord {
-            voter_weight_action: VoterWeightAction::CastVote,
-            target: Some(proposal_cookie.address)
-        });
+        let data = anchor_lang::InstructionData::data(
+            &gpl_gateway::instruction::UpdateVoterWeightRecord {
+                voter_weight_action: VoterWeightAction::CastVote,
+                target: Some(proposal_cookie.address),
+            },
+        );
 
         let accounts = gpl_gateway::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
@@ -395,7 +395,7 @@ impl GatewayVoterTest {
         };
 
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
-        
+
         let update_voter_weight_ix = Instruction {
             program_id: gpl_gateway::id(),
             accounts: account_metas,

@@ -2,9 +2,8 @@ use anchor_lang::prelude::*;
 
 use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
 
-
 /// The default vote weight matches the default decimal places of a governance token
-/// so that a single vote using this plugin matches a single vote with a governance token 
+/// so that a single vote using this plugin matches a single vote with a governance token
 pub const DEFAULT_VOTE_WEIGHT: u64 = 1000000;
 
 /// VoterWeightAction enum as defined in spl-governance-addin-api
@@ -74,7 +73,9 @@ pub struct VoterWeightRecord {
 }
 
 impl VoterWeightRecord {
-    pub fn get_space() -> usize { DISCRIMINATOR_SIZE + PUBKEY_SIZE * 4 + 8 + 1 + 8 + 1 + 1 + 1 + 8 }
+    pub fn get_space() -> usize {
+        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 4 + 8 + 1 + 8 + 1 + 1 + 1 + 8
+    }
 }
 
 impl Default for VoterWeightRecord {

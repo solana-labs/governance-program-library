@@ -14,10 +14,14 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 
     let realm_cookie = gateway_voter_test.governance.with_realm().await?;
     let gateway_cookie = gateway_voter_test.with_gateway().await?;
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie).await?;
+    let registrar_cookie = gateway_voter_test
+        .with_registrar(&realm_cookie, &gateway_cookie)
+        .await?;
 
     let voter_cookie = gateway_voter_test.bench.with_wallet().await;
-    let gateway_token_cookie = gateway_voter_test.with_gateway_token(&gateway_cookie, &voter_cookie).await?;
+    let gateway_token_cookie = gateway_voter_test
+        .with_gateway_token(&gateway_cookie, &voter_cookie)
+        .await?;
 
     let mut voter_weight_record_cookie = gateway_voter_test
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
@@ -54,17 +58,22 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_update_voter_weight_record_with_invalid_gateway_token_error() -> Result<(), TransportError> {
+async fn test_update_voter_weight_record_with_invalid_gateway_token_error(
+) -> Result<(), TransportError> {
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
     let realm_cookie = gateway_voter_test.governance.with_realm().await?;
     let gateway_cookie = gateway_voter_test.with_gateway().await?;
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie).await?;
+    let registrar_cookie = gateway_voter_test
+        .with_registrar(&realm_cookie, &gateway_cookie)
+        .await?;
 
     let different_gateway_cookie = gateway_voter_test.with_gateway().await?;
     let voter_cookie = gateway_voter_test.bench.with_wallet().await;
-    let invalid_gateway_token_cookie = gateway_voter_test.with_gateway_token(&different_gateway_cookie, &voter_cookie).await?;
+    let invalid_gateway_token_cookie = gateway_voter_test
+        .with_gateway_token(&different_gateway_cookie, &voter_cookie)
+        .await?;
 
     let mut voter_weight_record_cookie = gateway_voter_test
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
@@ -99,10 +108,14 @@ async fn test_cast_vote_with_update_voter_weight_record() -> Result<(), Transpor
     let realm_cookie = gateway_voter_test.governance.with_realm().await?;
     let gateway_cookie = gateway_voter_test.with_gateway().await?;
 
-    let registrar_cookie = gateway_voter_test.with_registrar(&realm_cookie, &gateway_cookie).await?;
+    let registrar_cookie = gateway_voter_test
+        .with_registrar(&realm_cookie, &gateway_cookie)
+        .await?;
 
     let voter_cookie = gateway_voter_test.bench.with_wallet().await;
-    let gateway_token_cookie = gateway_voter_test.with_gateway_token(&gateway_cookie, &voter_cookie).await?;
+    let gateway_token_cookie = gateway_voter_test
+        .with_gateway_token(&gateway_cookie, &voter_cookie)
+        .await?;
 
     let voter_token_owner_record_cookie = gateway_voter_test
         .governance

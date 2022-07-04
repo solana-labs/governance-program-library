@@ -32,15 +32,16 @@ pub struct UpdateVoterWeightRecord<'info> {
 pub fn update_voter_weight_record(
     ctx: Context<UpdateVoterWeightRecord>,
     voter_weight_action: VoterWeightAction,
-    target: Option<Pubkey>
+    target: Option<Pubkey>,
 ) -> Result<()> {
     // Gateway: Check if the voter has a valid gateway token and fail if not
     Gateway::verify_gateway_token_account_info(
         &ctx.accounts.gateway_token.to_account_info(),
         &ctx.accounts.voter_weight_record.governing_token_owner,
         &ctx.accounts.registrar.gatekeeper_network,
-        None
-    ).or(Err(error!(GatewayError::InvalidGatewayToken)))?;
+        None,
+    )
+    .or(Err(error!(GatewayError::InvalidGatewayToken)))?;
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
