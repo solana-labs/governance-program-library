@@ -4,7 +4,7 @@ use spl_governance::state::realm;
 
 use crate::state::max_voter_weight_record::MaxVoterWeightRecord;
 
-/// Creates MaxVoterWeightRecord used by spl-gov
+/// Creates MaxVoterWeightRecord used by spl-governance
 /// This instruction should only be executed once per realm/governing_token_mint to create the account
 #[derive(Accounts)]
 pub struct CreateMaxVoterWeightRecord<'info> {

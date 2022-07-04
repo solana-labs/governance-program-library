@@ -10,7 +10,7 @@ use spl_governance::state::realm;
 use crate::error::RealmVoterError;
 use crate::state::{GovernanceProgramConfig, Registrar};
 
-/// Creates or updates spl-governance configuration which defines which spl-governance instances can be used for governance
+/// Creates or updates governance program configuration which defines which spl-governance instances can be used for governance
 #[derive(Accounts)]
 pub struct ConfigureGovernanceProgram<'info> {
     /// Registrar which we configure the provided spl-governance instance for

@@ -39,11 +39,11 @@ pub mod realm_voter {
     }
     pub fn configure_voter_weights(
         ctx: Context<ConfigureVoterWeights>,
-        realm_member_vote_weight: u64,
+        realm_member_voter_weight: u64,
         max_voter_weight: u64,
     ) -> Result<()> {
         log_version();
-        instructions::configure_voter_weights(ctx, realm_member_vote_weight, max_voter_weight)
+        instructions::configure_voter_weights(ctx, realm_member_voter_weight, max_voter_weight)
     }
 
     pub fn configure_governance_program(ctx: Context<ConfigureGovernanceProgram>) -> Result<()> {

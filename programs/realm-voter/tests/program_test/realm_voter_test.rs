@@ -21,7 +21,7 @@ use crate::program_test::program_test_bench::WalletCookie;
 
 use crate::program_test::tools::NopOverride;
 
-use super::governance_test::TokenOwnerRecordCookie;
+use crate::program_test::governance_test::TokenOwnerRecordCookie;
 
 #[derive(Debug, PartialEq)]
 pub struct RegistrarCookie {
@@ -332,13 +332,13 @@ impl RealmVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         max_voter_weight_record_cookie: &mut MaxVoterWeightRecordCookie,
-        realm_member_vote_weight: u64,
+        realm_member_voter_weight: u64,
         max_voter_weight: u64,
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_realm_voter::instruction::ConfigureVoterWeights {
                 max_voter_weight,
-                realm_member_vote_weight,
+                realm_member_voter_weight,
             },
         );
 

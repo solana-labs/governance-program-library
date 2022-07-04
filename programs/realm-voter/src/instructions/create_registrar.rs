@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
 
-/// Creates Registrar storing Realm Voter configuration for spl-gov Realm
+/// Creates Registrar storing Realm Voter configuration for spl-governance Realm
 /// This instruction should only be executed once per realm/governing_token_mint to create the account
 #[derive(Accounts)]
 #[instruction(max_governance_programs: u8)]

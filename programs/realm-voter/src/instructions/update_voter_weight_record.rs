@@ -44,7 +44,7 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
 
     // Deserialize TokenOwnerRecord to ensure it's a valid account
     let _ = token_owner_record::get_token_owner_record_data(
-        &governance_program_id,
+        governance_program_id,
         &ctx.accounts.token_owner_record,
     )?;
 
