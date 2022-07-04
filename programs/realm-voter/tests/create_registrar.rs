@@ -56,8 +56,7 @@ async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<
     // Arrange
     let mut realm_voter_test = RealmVoterTest::start_new().await;
 
-    let mut realm_cookie = realm_voter_test.governance.with_realm().await?;
-    realm_cookie.realm_authority = Keypair::new();
+    let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
     // Act
     let err = realm_voter_test
@@ -81,8 +80,7 @@ async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result
     // Arrange
     let mut realm_voter_test = RealmVoterTest::start_new().await;
 
-    let mut realm_cookie = realm_voter_test.governance.with_realm().await?;
-    realm_cookie.realm_authority = Keypair::new();
+    let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
     // Try to use a different program id
     let governance_program_id = realm_voter_test.program_id;
@@ -108,8 +106,7 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), Transpor
     // Arrange
     let mut realm_voter_test = RealmVoterTest::start_new().await;
 
-    let mut realm_cookie = realm_voter_test.governance.with_realm().await?;
-    realm_cookie.realm_authority = Keypair::new();
+    let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
     // Act
     let err = realm_voter_test
@@ -134,8 +131,7 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
     // Arrange
     let mut realm_voter_test = RealmVoterTest::start_new().await;
 
-    let mut realm_cookie = realm_voter_test.governance.with_realm().await?;
-    realm_cookie.realm_authority = Keypair::new();
+    let realm_cookie = realm_voter_test.governance.with_realm().await?;
 
     let mint_cookie = realm_voter_test.bench.with_mint().await?;
 
