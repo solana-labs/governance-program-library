@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use anchor_lang::prelude::{AccountMeta, Pubkey};
+use anchor_lang::prelude::Pubkey;
 
 use gpl_realm_voter::state::max_voter_weight_record::{
     get_max_voter_weight_record_address, MaxVoterWeightRecord,
@@ -22,6 +22,8 @@ use crate::program_test::program_test_bench::WalletCookie;
 use crate::program_test::tools::NopOverride;
 
 use crate::program_test::squads_test::{SquadMemberCookie, SquadsTest};
+
+use super::governance_test::TokenOwnerRecordCookie;
 
 #[derive(Debug, PartialEq)]
 pub struct RegistrarCookie {
@@ -317,7 +319,7 @@ impl RealmVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &mut VoterWeightRecordCookie,
-        squads_member_cookies: &[&SquadMemberCookie],
+        token_owner_record_cookie: &TokenOwnerRecordCookie,
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_realm_voter::instruction::UpdateVoterWeightRecord {},
@@ -326,16 +328,10 @@ impl RealmVoterTest {
         let accounts = gpl_realm_voter::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
+            token_owner_record: token_owner_record_cookie.address,
         };
 
-        let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
-
-        for squad_member_cookie in squads_member_cookies {
-            account_metas.push(AccountMeta::new_readonly(
-                squad_member_cookie.squad_address,
-                false,
-            ));
-        }
+        let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
         let instructions = vec![Instruction {
             program_id: gpl_realm_voter::id(),
