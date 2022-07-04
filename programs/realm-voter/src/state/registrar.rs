@@ -27,7 +27,7 @@ pub struct Registrar {
     pub governance_program_configs: Vec<GovernanceProgramConfig>,
 
     /// Vote weight assigned to a member of any of the Realms from the configured spl-governances
-    pub realm_member_vote_weight: u64,
+    pub realm_member_voter_weight: u64,
 
     /// Max voter weight (expressed in governing_token_mint decimal units) is used to establish the theoretical Max Attendance Quorum which is then used to calculate Approval Quorum
     /// This manual configuration is a rough estimate because it's not practical to calculate on-chain the number of all DAO members for the given spl-governance instances
@@ -44,7 +44,7 @@ impl Registrar {
         DISCRIMINATOR_SIZE
             + PUBKEY_SIZE * 3
             + 4
-            + max_governance_programs as usize * (PUBKEY_SIZE + 8 + 8)
+            + max_governance_programs as usize * (PUBKEY_SIZE + 8)
             + 8
             + 8
             + 128
@@ -85,7 +85,7 @@ mod test {
             ],
             reserved: [0; 128],
             max_voter_weight: 100,
-            realm_member_vote_weight: 10,
+            realm_member_voter_weight: 10,
         };
 
         // Act

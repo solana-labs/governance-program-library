@@ -37,7 +37,7 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
         .iter()
         .any(|cc| cc.program_id == governance_program_id.key())
     {
-        registrar.realm_member_vote_weight
+        registrar.realm_member_voter_weight
     } else {
         0u64
     };

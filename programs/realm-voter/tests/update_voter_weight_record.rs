@@ -1,4 +1,4 @@
-use crate::program_test::realm_voter_test::{ConfigureGovernanceProgramArgs, RealmVoterTest};
+use crate::program_test::realm_voter_test::RealmVoterTest;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
 
@@ -22,11 +22,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
     let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
 
     realm_voter_test
-        .with_governance_program_config(
-            &registrar_cookie,
-            &governance_program_cookie,
-            Some(ConfigureGovernanceProgramArgs { weight: 10 }),
-        )
+        .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
         .await?;
 
     let voter_cookie = realm_voter_test.bench.with_wallet().await;
@@ -40,7 +36,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
         .await?;
 
     realm_voter_test
-        .update_max_voter_weight_record(
+        .configure_voter_weights(
             &registrar_cookie,
             &mut max_voter_weight_record_cookie,
             10,

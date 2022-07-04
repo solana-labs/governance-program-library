@@ -1,5 +1,5 @@
 use gpl_realm_voter::error::RealmVoterError;
-use program_test::realm_voter_test::{ConfigureGovernanceProgramArgs, RealmVoterTest};
+use program_test::realm_voter_test::RealmVoterTest;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 mod program_test;
@@ -18,7 +18,7 @@ async fn test_configure_governance_program() -> Result<(), TransportError> {
 
     // Act
     let governance_program_config_cookie = realm_voter_test
-        .with_governance_program_config(&registrar_cookie, &governance_program_cookie, None)
+        .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
         .await?;
 
     // // Assert
@@ -54,19 +54,11 @@ async fn test_configure_governance_program_with_multiple_programs() -> Result<()
 
     // Act
     realm_voter_test
-        .with_governance_program_config(
-            &registrar_cookie,
-            &governance_program_cookie1,
-            Some(ConfigureGovernanceProgramArgs { weight: 1 }),
-        )
+        .with_governance_program_config(&registrar_cookie, &governance_program_cookie1)
         .await?;
 
     realm_voter_test
-        .with_governance_program_config(
-            &registrar_cookie,
-            &governance_program_cookie2,
-            Some(ConfigureGovernanceProgramArgs { weight: 2 }),
-        )
+        .with_governance_program_config(&registrar_cookie, &governance_program_cookie2)
         .await?;
 
     // Assert
@@ -91,21 +83,13 @@ async fn test_configure_governance_program_for_existing_program() -> Result<(), 
     let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
 
     realm_voter_test
-        .with_governance_program_config(
-            &registrar_cookie,
-            &governance_program_cookie,
-            Some(ConfigureGovernanceProgramArgs { weight: 2 }),
-        )
+        .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
         .await?;
 
     // Act
 
     realm_voter_test
-        .with_governance_program_config(
-            &registrar_cookie,
-            &governance_program_cookie,
-            Some(ConfigureGovernanceProgramArgs { weight: 5 }),
-        )
+        .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
         .await?;
 
     // Assert
@@ -114,76 +98,10 @@ async fn test_configure_governance_program_for_existing_program() -> Result<(), 
         .await;
 
     assert_eq!(registrar.governance_program_configs.len(), 1);
-
-    assert_eq!(registrar.governance_program_configs[0].weight, 5);
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_remove_governance_program_configuration() -> Result<(), TransportError> {
-    // Arrange
-    let mut realm_voter_test = RealmVoterTest::start_new().await;
-
-    let realm_cookie = realm_voter_test.governance.with_realm().await?;
-
-    let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
-
-    let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
-
-    realm_voter_test
-        .with_governance_program_config(
-            &registrar_cookie,
-            &governance_program_cookie,
-            Some(ConfigureGovernanceProgramArgs { weight: 2 }),
-        )
-        .await?;
-
-    // Act
-
-    realm_voter_test
-        .with_governance_program_config(
-            &registrar_cookie,
-            &governance_program_cookie,
-            Some(ConfigureGovernanceProgramArgs { weight: 0 }),
-        )
-        .await?;
-
-    // Assert
-    let registrar = realm_voter_test
-        .get_registrar_account(&registrar_cookie.address)
-        .await;
-
-    assert_eq!(registrar.governance_program_configs.len(), 0);
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_configure_governance_program_with_0_weight_error() -> Result<(), TransportError> {
-    // Arrange
-    let mut realm_voter_test = RealmVoterTest::start_new().await;
-
-    let realm_cookie = realm_voter_test.governance.with_realm().await?;
-
-    let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
-
-    let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
-
-    // Act
-
-    let err = realm_voter_test
-        .with_governance_program_config(
-            &registrar_cookie,
-            &governance_program_cookie,
-            Some(ConfigureGovernanceProgramArgs { weight: 0 }),
-        )
-        .await
-        .err()
-        .unwrap();
-
-    // Assert
-    assert_realm_voter_err(err, RealmVoterError::InvalidGovernanceProgramWeight);
+    assert_eq!(
+        registrar.governance_program_configs[0].program_id,
+        governance_program_cookie.program_id
+    );
 
     Ok(())
 }
@@ -208,7 +126,6 @@ async fn test_configure_governance_program_with_invalid_realm_error() -> Result<
         .with_governance_program_config_using_ix(
             &registrar_cookie,
             &governance_program_cookie,
-            None,
             |i| i.accounts[1].pubkey = realm_cookie2.address, // realm
             None,
         )
@@ -240,7 +157,6 @@ async fn test_configure_governance_program_with_realm_authority_must_sign_error(
         .with_governance_program_config_using_ix(
             &registrar_cookie,
             &governance_program_cookie,
-            None,
             |i| i.accounts[2].is_signer = false, // realm_authority
             Some(&[]),
         )
@@ -274,7 +190,6 @@ async fn test_configure_governance_program_with_invalid_realm_authority_error(
         .with_governance_program_config_using_ix(
             &registrar_cookie,
             &governance_program_cookie,
-            None,
             |i| i.accounts[2].pubkey = realm_authority.pubkey(), // realm_authority
             Some(&[&realm_authority]),
         )

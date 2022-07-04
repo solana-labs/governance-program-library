@@ -22,7 +22,4 @@ pub enum RealmVoterError {
 
     #[msg("Invalid TokenOwner for VoterWeightRecord")]
     InvalidTokenOwnerForVoterWeightRecord,
-
-    #[msg("Invalid GovernanceProgram weight")]
-    InvalidGovernanceProgramWeight,
 }

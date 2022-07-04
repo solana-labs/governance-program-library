@@ -50,16 +50,6 @@ pub struct GovernanceProgramCookie {
     pub program_id: Pubkey,
 }
 
-pub struct ConfigureGovernanceProgramArgs {
-    pub weight: u64,
-}
-
-impl Default for ConfigureGovernanceProgramArgs {
-    fn default() -> Self {
-        Self { weight: 1 }
-    }
-}
-
 pub struct RealmVoterTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
@@ -166,7 +156,7 @@ impl RealmVoterTest {
             governance_program_configs: vec![],
             reserved: [0; 128],
             max_voter_weight: 0,
-            realm_member_vote_weight: 0,
+            realm_member_voter_weight: 0,
         };
 
         Ok(RegistrarCookie {
@@ -338,7 +328,7 @@ impl RealmVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn update_max_voter_weight_record(
+    pub async fn configure_voter_weights(
         &self,
         registrar_cookie: &RegistrarCookie,
         max_voter_weight_record_cookie: &mut MaxVoterWeightRecordCookie,
@@ -346,13 +336,13 @@ impl RealmVoterTest {
         max_voter_weight: u64,
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_realm_voter::instruction::UpdateMaxVoterWeightRecord {
+            &gpl_realm_voter::instruction::ConfigureVoterWeights {
                 max_voter_weight,
                 realm_member_vote_weight,
             },
         );
 
-        let accounts = gpl_realm_voter::accounts::ConfigureMaxVoterWeight {
+        let accounts = gpl_realm_voter::accounts::ConfigureVoterWeights {
             registrar: registrar_cookie.address,
             max_voter_weight_record: max_voter_weight_record_cookie.address,
             realm: registrar_cookie.account.realm,
@@ -379,12 +369,10 @@ impl RealmVoterTest {
         &mut self,
         registrar_cookie: &RegistrarCookie,
         governance_program_cookie: &GovernanceProgramCookie,
-        args: Option<ConfigureGovernanceProgramArgs>,
     ) -> Result<GovernanceProgramConfigCookie, TransportError> {
         self.with_governance_program_config_using_ix(
             registrar_cookie,
             governance_program_cookie,
-            args,
             NopOverride,
             None,
         )
@@ -396,16 +384,12 @@ impl RealmVoterTest {
         &mut self,
         registrar_cookie: &RegistrarCookie,
         governance_program_cookie: &GovernanceProgramCookie,
-        args: Option<ConfigureGovernanceProgramArgs>,
+
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
     ) -> Result<GovernanceProgramConfigCookie, TransportError> {
-        let args = args.unwrap_or_default();
-
         let data = anchor_lang::InstructionData::data(
-            &gpl_realm_voter::instruction::ConfigureGovernanceProgram {
-                weight: args.weight,
-            },
+            &gpl_realm_voter::instruction::ConfigureGovernanceProgram {},
         );
 
         let accounts = gpl_realm_voter::accounts::ConfigureGovernanceProgram {
@@ -432,9 +416,7 @@ impl RealmVoterTest {
 
         let governance_program_config = GovernanceProgramConfig {
             program_id: governance_program_cookie.program_id.clone(),
-
             reserved: [0; 8],
-            weight: args.weight,
         };
 
         Ok(GovernanceProgramConfigCookie {

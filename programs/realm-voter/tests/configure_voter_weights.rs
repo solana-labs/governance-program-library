@@ -5,7 +5,7 @@ use solana_sdk::transport::TransportError;
 mod program_test;
 
 #[tokio::test]
-async fn test_configure_max_voter_weight() -> Result<(), TransportError> {
+async fn test_configure_voter_weights() -> Result<(), TransportError> {
     // Arrange
     let mut realm_voter_test = RealmVoterTest::start_new().await;
 
@@ -16,7 +16,7 @@ async fn test_configure_max_voter_weight() -> Result<(), TransportError> {
     let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
 
     realm_voter_test
-        .with_governance_program_config(&registrar_cookie, &governance_program_cookie, None)
+        .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
         .await?;
 
     let mut max_voter_weight_record_cookie = realm_voter_test
@@ -25,7 +25,7 @@ async fn test_configure_max_voter_weight() -> Result<(), TransportError> {
 
     // Act
     realm_voter_test
-        .update_max_voter_weight_record(
+        .configure_voter_weights(
             &registrar_cookie,
             &mut max_voter_weight_record_cookie,
             10,
@@ -40,7 +40,7 @@ async fn test_configure_max_voter_weight() -> Result<(), TransportError> {
         .await;
 
     assert_eq!(registrar.max_voter_weight, 110);
-    assert_eq!(registrar.realm_member_vote_weight, 10);
+    assert_eq!(registrar.realm_member_voter_weight, 10);
 
     let max_voter_weight_record = realm_voter_test
         .get_max_voter_weight_record(&max_voter_weight_record_cookie.address)

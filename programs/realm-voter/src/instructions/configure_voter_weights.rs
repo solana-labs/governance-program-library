@@ -7,7 +7,7 @@ use spl_governance::state::realm;
 /// Sets MaxVoterWeightRecord and Registrar max_voter_weight to the provided value
 /// MaxVoterWeightRecord.max_voter_weight is static and can only be set using this instruction and hence it never expires
 #[derive(Accounts)]
-pub struct ConfigureMaxVoterWeight<'info> {
+pub struct ConfigureVoterWeights<'info> {
     /// The Registrar for the given realm and governing_token_mint
     #[account(mut)]
     pub registrar: Account<'info, Registrar>,
@@ -34,15 +34,15 @@ pub struct ConfigureMaxVoterWeight<'info> {
     pub max_voter_weight_record: Account<'info, MaxVoterWeightRecord>,
 }
 
-pub fn configure_max_voter_weight(
-    ctx: Context<ConfigureMaxVoterWeight>,
+pub fn configure_voter_weights(
+    ctx: Context<ConfigureVoterWeights>,
     realm_member_vote_weight: u64,
     max_voter_weight: u64,
 ) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
     // max_voter_weight on Registrar is redundant and it's only stored for reference and consistency only
     // It's not needed in the current version of the program because it's always set in this instruction together with MaxVoterWeightRecord
-    registrar.realm_member_vote_weight = realm_member_vote_weight;
+    registrar.realm_member_voter_weight = realm_member_vote_weight;
     registrar.max_voter_weight = max_voter_weight;
 
     let realm = realm::get_realm_data_for_governing_token_mint(
