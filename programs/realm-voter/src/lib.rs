@@ -42,7 +42,7 @@ pub mod squads_voter {
         max_voter_weight: u64,
     ) -> Result<()> {
         log_version();
-        instructions::update_max_voter_weight_record(ctx, max_voter_weight)
+        instructions::configure_max_voter_weight(ctx, max_voter_weight)
     }
 
     pub fn configure_governance_program(

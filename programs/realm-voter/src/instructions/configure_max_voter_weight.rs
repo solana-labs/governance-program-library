@@ -4,12 +4,11 @@ use crate::state::*;
 use anchor_lang::prelude::*;
 use spl_governance::state::realm;
 
-/// Updates MaxVoterWeightRecord to evaluate max governance power for the configured Squads
-/// This instruction updates MaxVoterWeightRecord which is valid for the current Slot only
-/// The instruction must be executed inside the same transaction as the corresponding spl-gov instruction
+/// Sets MaxVoterWeightRecord and Registrar max_voter_weight to the provided value
+/// MaxVoterWeightRecord.max_voter_weight is static and can only be set using this instruction and hence it never expires
 #[derive(Accounts)]
 pub struct ConfigureMaxVoterWeight<'info> {
-    /// The Squads voting Registrar
+    /// The Registrar for the given realm and governing_token_mint
     #[account(mut)]
     pub registrar: Account<'info, Registrar>,
 
@@ -35,11 +34,14 @@ pub struct ConfigureMaxVoterWeight<'info> {
     pub max_voter_weight_record: Account<'info, MaxVoterWeightRecord>,
 }
 
-pub fn update_max_voter_weight_record(
+pub fn configure_max_voter_weight(
     ctx: Context<ConfigureMaxVoterWeight>,
     max_voter_weight: u64,
 ) -> Result<()> {
-    let registrar = &ctx.accounts.registrar;
+    let registrar = &mut ctx.accounts.registrar;
+    // max_voter_weight on Registrar is redundant and it's only stored for reference and consistency only
+    // It's not needed in the current version of the program because it's always set in this instruction together with MaxVoterWeightRecord
+    registrar.max_voter_weight = max_voter_weight;
 
     let realm = realm::get_realm_data_for_governing_token_mint(
         &registrar.governance_program_id,

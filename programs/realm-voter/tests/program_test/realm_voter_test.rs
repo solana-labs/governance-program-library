@@ -21,7 +21,7 @@ use crate::program_test::program_test_bench::WalletCookie;
 
 use crate::program_test::tools::NopOverride;
 
-use crate::program_test::squads_test::{SquadCookie, SquadMemberCookie, SquadsTest};
+use crate::program_test::squads_test::{SquadMemberCookie, SquadsTest};
 
 #[derive(Debug, PartialEq)]
 pub struct RegistrarCookie {
@@ -364,7 +364,7 @@ impl RealmVoterTest {
             realm_authority: registrar_cookie.realm_authority.pubkey(),
         };
 
-        let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
+        let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
         let instructions = vec![Instruction {
             program_id: gpl_realm_voter::id(),
