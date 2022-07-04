@@ -70,4 +70,10 @@ pub enum NftVoterError {
 
     #[msg("Invalid VoteRecord for NftVoteRecord")]
     InvalidVoteRecordForNftVoteRecord,
+
+    #[msg("VoterWeightRecord must be expired")]
+    VoterWeightRecordMustBeExpired,
+
+    #[msg("Cannot configure collection with voting proposals")]
+    CannotConfigureCollectionWithVotingProposals,
 }

@@ -35,11 +35,14 @@ pub fn update_voter_weight_record(
     let registrar = &ctx.accounts.registrar;
     let governing_token_owner = &ctx.accounts.voter_weight_record.governing_token_owner;
 
-    // CastVote can't be evaluated using this instruction
-    require!(
-        voter_weight_action != VoterWeightAction::CastVote,
-        NftVoterError::CastVoteIsNotAllowed
-    );
+    match voter_weight_action {
+        // voter_weight for CastVote action can't be evaluated using this instruction
+        VoterWeightAction::CastVote => return err!(NftVoterError::CastVoteIsNotAllowed),
+        VoterWeightAction::CommentProposal
+        | VoterWeightAction::CreateGovernance
+        | VoterWeightAction::CreateProposal
+        | VoterWeightAction::SignOffProposal => {}
+    }
 
     let mut voter_weight = 0u64;
 
