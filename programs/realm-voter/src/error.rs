@@ -16,4 +16,10 @@ pub enum RealmVoterError {
 
     #[msg("TokenOwnerRecord from own realm is not allowed")]
     TokenOwnerRecordFromOwnRealmNotAllowed,
+
+    #[msg("Governance program not configured")]
+    GovernanceProgramNotConfigured,
+
+    #[msg("Governing TokenOwner must match")]
+    GoverningTokenOwnerMustMatch,
 }

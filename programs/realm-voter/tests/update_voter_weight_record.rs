@@ -28,10 +28,8 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
         .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
         .await?;
 
-    let voter_cookie = realm_voter_test.bench.with_wallet().await;
-
     let mut voter_weight_record_cookie = realm_voter_test
-        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
+        .with_voter_weight_record(&registrar_cookie, &token_owner_cookie)
         .await?;
 
     let mut max_voter_weight_record_cookie = realm_voter_test
@@ -94,23 +92,8 @@ async fn test_update_voter_weight_record_with_token_owner_record_from_own_realm_
         .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
         .await?;
 
-    let voter_cookie = realm_voter_test.bench.with_wallet().await;
-
     let mut voter_weight_record_cookie = realm_voter_test
-        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
-        .await?;
-
-    let mut max_voter_weight_record_cookie = realm_voter_test
-        .with_max_voter_weight_record(&registrar_cookie)
-        .await?;
-
-    realm_voter_test
-        .configure_voter_weights(
-            &registrar_cookie,
-            &mut max_voter_weight_record_cookie,
-            10,
-            110,
-        )
+        .with_voter_weight_record(&registrar_cookie, &token_owner_cookie)
         .await?;
 
     // Act
@@ -126,6 +109,94 @@ async fn test_update_voter_weight_record_with_token_owner_record_from_own_realm_
 
     // Assert
     assert_realm_voter_err(err, RealmVoterError::TokenOwnerRecordFromOwnRealmNotAllowed);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_update_voter_weight_record_for_member_from_not_configured_governance_program_error(
+) -> Result<(), TransportError> {
+    // Arrange
+    let mut realm_voter_test = RealmVoterTest::start_new().await;
+
+    let realm_cookie = realm_voter_test.governance.with_realm().await?;
+
+    let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
+
+    // Create TokenOwnerRecord for other Realm
+    let realm_cookie2 = realm_voter_test.governance.with_realm().await?;
+    let token_owner_cookie = realm_voter_test.bench.with_wallet().await;
+    let token_owner_record_cookie = realm_voter_test
+        .governance
+        .with_token_owner_record(&realm_cookie2, &token_owner_cookie)
+        .await?;
+
+    let mut voter_weight_record_cookie = realm_voter_test
+        .with_voter_weight_record(&registrar_cookie, &token_owner_cookie)
+        .await?;
+
+    // Act
+    let err = realm_voter_test
+        .update_voter_weight_record(
+            &registrar_cookie,
+            &mut voter_weight_record_cookie,
+            &token_owner_record_cookie,
+        )
+        .await
+        .err()
+        .unwrap();
+
+    // Assert
+
+    assert_realm_voter_err(err, RealmVoterError::GovernanceProgramNotConfigured);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_update_voter_weight_record_with_token_owner_record_must_match_error(
+) -> Result<(), TransportError> {
+    // Arrange
+    let mut realm_voter_test = RealmVoterTest::start_new().await;
+
+    let realm_cookie = realm_voter_test.governance.with_realm().await?;
+
+    let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
+
+    let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
+
+    realm_voter_test
+        .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
+        .await?;
+
+    // Create TokenOwnerRecord for other Realm
+    let realm_cookie2 = realm_voter_test.governance.with_realm().await?;
+    let token_owner_cookie = realm_voter_test.bench.with_wallet().await;
+    let token_owner_record_cookie = realm_voter_test
+        .governance
+        .with_token_owner_record(&realm_cookie2, &token_owner_cookie)
+        .await?;
+
+    let token_owner_cookie2 = realm_voter_test.bench.with_wallet().await;
+
+    let mut voter_weight_record_cookie = realm_voter_test
+        .with_voter_weight_record(&registrar_cookie, &token_owner_cookie2)
+        .await?;
+
+    // Act
+    let err = realm_voter_test
+        .update_voter_weight_record(
+            &registrar_cookie,
+            &mut voter_weight_record_cookie,
+            &token_owner_record_cookie,
+        )
+        .await
+        .err()
+        .unwrap();
+
+    // Assert
+
+    assert_realm_voter_err(err, RealmVoterError::GoverningTokenOwnerMustMatch);
 
     Ok(())
 }
