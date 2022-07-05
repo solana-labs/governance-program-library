@@ -1,5 +1,5 @@
 export type Gateway = {
-  "version": "0.1.1",
+  "version": "0.0.0",
   "name": "gateway",
   "instructions": [
     {
@@ -214,6 +214,26 @@ export type Gateway = {
   ],
   "types": [
     {
+      "name": "GatewayError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "InvalidRealmAuthority"
+          },
+          {
+            "name": "InvalidVoterWeightRecordRealm"
+          },
+          {
+            "name": "InvalidVoterWeightRecordMint"
+          },
+          {
+            "name": "InvalidGatewayToken"
+          }
+        ]
+      }
+    },
+    {
       "name": "VoterWeightAction",
       "type": {
         "kind": "enum",
@@ -236,63 +256,11 @@ export type Gateway = {
         ]
       }
     }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "InvalidRealmAuthority",
-      "msg": "Invalid Realm Authority"
-    },
-    {
-      "code": 6001,
-      "name": "InvalidRealmForRegistrar",
-      "msg": "Invalid Realm for Registrar"
-    },
-    {
-      "code": 6002,
-      "name": "InvalidMaxVoterWeightRecordRealm",
-      "msg": "Invalid MaxVoterWeightRecord Realm"
-    },
-    {
-      "code": 6003,
-      "name": "InvalidMaxVoterWeightRecordMint",
-      "msg": "Invalid MaxVoterWeightRecord Mint"
-    },
-    {
-      "code": 6004,
-      "name": "CastVoteIsNotAllowed",
-      "msg": "CastVote Is Not Allowed"
-    },
-    {
-      "code": 6005,
-      "name": "InvalidVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord Realm"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidVoterWeightRecordMint",
-      "msg": "Invalid VoterWeightRecord Mint"
-    },
-    {
-      "code": 6007,
-      "name": "InvalidTokenOwnerForVoterWeightRecord",
-      "msg": "Invalid TokenOwner for VoterWeightRecord"
-    },
-    {
-      "code": 6008,
-      "name": "InvalidAccountOwner",
-      "msg": "Invalid account owner"
-    },
-    {
-      "code": 6009,
-      "name": "InvalidGatewayToken",
-      "msg": "Invalid gateway token"
-    }
   ]
-}
+};
 
 export const IDL: Gateway = {
-  "version": "0.1.1",
+  "version": "0.0.0",
   "name": "gateway",
   "instructions": [
     {
@@ -507,6 +475,26 @@ export const IDL: Gateway = {
   ],
   "types": [
     {
+      "name": "GatewayError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "InvalidRealmAuthority"
+          },
+          {
+            "name": "InvalidVoterWeightRecordRealm"
+          },
+          {
+            "name": "InvalidVoterWeightRecordMint"
+          },
+          {
+            "name": "InvalidGatewayToken"
+          }
+        ]
+      }
+    },
+    {
       "name": "VoterWeightAction",
       "type": {
         "kind": "enum",
@@ -529,57 +517,5 @@ export const IDL: Gateway = {
         ]
       }
     }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "InvalidRealmAuthority",
-      "msg": "Invalid Realm Authority"
-    },
-    {
-      "code": 6001,
-      "name": "InvalidRealmForRegistrar",
-      "msg": "Invalid Realm for Registrar"
-    },
-    {
-      "code": 6002,
-      "name": "InvalidMaxVoterWeightRecordRealm",
-      "msg": "Invalid MaxVoterWeightRecord Realm"
-    },
-    {
-      "code": 6003,
-      "name": "InvalidMaxVoterWeightRecordMint",
-      "msg": "Invalid MaxVoterWeightRecord Mint"
-    },
-    {
-      "code": 6004,
-      "name": "CastVoteIsNotAllowed",
-      "msg": "CastVote Is Not Allowed"
-    },
-    {
-      "code": 6005,
-      "name": "InvalidVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord Realm"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidVoterWeightRecordMint",
-      "msg": "Invalid VoterWeightRecord Mint"
-    },
-    {
-      "code": 6007,
-      "name": "InvalidTokenOwnerForVoterWeightRecord",
-      "msg": "Invalid TokenOwner for VoterWeightRecord"
-    },
-    {
-      "code": 6008,
-      "name": "InvalidAccountOwner",
-      "msg": "Invalid account owner"
-    },
-    {
-      "code": 6009,
-      "name": "InvalidGatewayToken",
-      "msg": "Invalid gateway token"
-    }
   ]
-}
+};
