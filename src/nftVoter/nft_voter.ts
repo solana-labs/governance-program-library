@@ -582,6 +582,16 @@ export type NftVoter = {
       "code": 6022,
       "name": "InvalidVoteRecordForNftVoteRecord",
       "msg": "Invalid VoteRecord for NftVoteRecord"
+    },
+    {
+      "code": 6023,
+      "name": "VoterWeightRecordMustBeExpired",
+      "msg": "VoterWeightRecord must be expired"
+    },
+    {
+      "code": 6024,
+      "name": "CannotConfigureCollectionWithVotingProposals",
+      "msg": "Cannot configure collection with voting proposals"
     }
   ]
 };
@@ -1170,6 +1180,16 @@ export const IDL: NftVoter = {
       "code": 6022,
       "name": "InvalidVoteRecordForNftVoteRecord",
       "msg": "Invalid VoteRecord for NftVoteRecord"
+    },
+    {
+      "code": 6023,
+      "name": "VoterWeightRecordMustBeExpired",
+      "msg": "VoterWeightRecord must be expired"
+    },
+    {
+      "code": 6024,
+      "name": "CannotConfigureCollectionWithVotingProposals",
+      "msg": "Cannot configure collection with voting proposals"
     }
   ]
 };

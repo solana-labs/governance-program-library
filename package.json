@@ -1,6 +1,6 @@
 {
     "name": "@solana/governance-program-library",
-    "version": "0.15.2",
+    "version": "0.16.3",
     "description": "Client for Governance Program Library which is a set of extensions for Solana's spl-governance program.",
     "author": "Solana Maintainers <maintainers@solana.foundation>",
     "license": "MIT",
