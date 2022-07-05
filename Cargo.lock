@@ -1059,7 +1059,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "gpl-gateway"
+name = "gpl-civic-gateway"
 version = "0.1.1"
 dependencies = [
  "anchor-lang",

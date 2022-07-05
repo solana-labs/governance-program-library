@@ -4,7 +4,7 @@ use crate::{
 };
 use anchor_lang::prelude::*;
 
-/// Registrar which stores NFT voting configuration for the given Realm
+/// Registrar which stores Civic Pass voting configuration for the given Realm
 #[account]
 #[derive(Debug, PartialEq)]
 pub struct Registrar {

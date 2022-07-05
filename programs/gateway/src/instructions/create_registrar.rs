@@ -37,7 +37,7 @@ pub struct CreateRegistrar<'info> {
     /// Either the realm community mint or the council mint.
     /// It must match Realm.community_mint or Realm.config.council_mint
     ///
-    /// Note: Once the NFT plugin is enabled the governing_token_mint is used only as identity
+    /// Note: Once the Civic Pass plugin is enabled the governing_token_mint is used only as identity
     /// for the voting population and the tokens of that are no longer used
     pub governing_token_mint: Account<'info, Mint>,
 

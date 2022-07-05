@@ -3,7 +3,7 @@ mod program_test;
 use anchor_lang::prelude::Pubkey;
 use program_test::gateway_voter_test::GatewayVoterTest;
 
-use gpl_gateway::error::GatewayError;
+use gpl_civic_gateway::error::GatewayError;
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, transport::TransportError};

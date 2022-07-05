@@ -1,5 +1,5 @@
-use gpl_gateway::error::GatewayError;
-use gpl_gateway::state::*;
+use gpl_civic_gateway::error::GatewayError;
+use gpl_civic_gateway::state::*;
 use program_test::gateway_voter_test::GatewayVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
@@ -80,7 +80,6 @@ async fn test_update_voter_weight_record_with_invalid_gateway_token_error(
         .await?;
 
     gateway_voter_test.bench.advance_clock().await;
-    let clock = gateway_voter_test.bench.get_clock().await;
 
     // Act
     let err = gateway_voter_test

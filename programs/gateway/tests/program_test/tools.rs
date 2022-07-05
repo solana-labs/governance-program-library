@@ -1,5 +1,5 @@
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
-use gpl_gateway::error::GatewayError;
+use gpl_civic_gateway::error::GatewayError;
 use solana_program::instruction::InstructionError;
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
 use spl_governance_tools::error::GovernanceToolsError;

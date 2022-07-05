@@ -3,6 +3,12 @@ use crate::state::*;
 use anchor_lang::prelude::*;
 use solana_gateway::Gateway;
 
+/// The default vote weight matches the default decimal places of a governance token
+/// so that a single vote using this plugin matches a single vote with a governance token
+/// This is a temporary solution, until SPL-Governance supports plugin-composition,
+/// at which point, the deposited tokens will be passed in as an input vote weight.
+pub const DEFAULT_VOTE_WEIGHT: u64 = 1000000;
+
 /// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the given target action only
 /// and hence the instruction has to be executed inside the same transaction as the corresponding spl-gov instruction
@@ -29,6 +35,11 @@ pub struct UpdateVoterWeightRecord<'info> {
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 }
 
+/// Sets the voter weight record value to the default voter weight, if the voter has a valid
+/// Civic Pass, or throws an error if not.
+/// Note: Once SPL-Governance supports plugin-composition, this will be changed to accept an
+/// input vote weight, and will set the output vote weight to the input vote weight.
+/// The action and target are not used in this case.
 pub fn update_voter_weight_record(
     ctx: Context<UpdateVoterWeightRecord>,
     voter_weight_action: VoterWeightAction,
@@ -41,7 +52,7 @@ pub fn update_voter_weight_record(
         &ctx.accounts.registrar.gatekeeper_network,
         None,
     )
-    .or(Err(error!(GatewayError::InvalidGatewayToken)))?;
+    .map_err(|_| error!(GatewayError::InvalidGatewayToken))?;
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 

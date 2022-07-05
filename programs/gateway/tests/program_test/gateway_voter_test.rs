@@ -7,12 +7,12 @@ use solana_gateway::state::{
     get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
 };
 
-use gpl_gateway::state::*;
+use gpl_civic_gateway::state::*;
 use solana_sdk::transport::TransportError;
 use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{Vote, VoteChoice};
 
-use gpl_gateway::state::{get_registrar_address, Registrar};
+use gpl_civic_gateway::state::{get_registrar_address, Registrar};
 
 use solana_program_test::ProgramTest;
 use solana_sdk::instruction::Instruction;
@@ -90,7 +90,7 @@ pub struct GatewayVoterTest {
 impl GatewayVoterTest {
     #[allow(dead_code)]
     pub fn add_programs(program_test: &mut ProgramTest) {
-        program_test.add_program("gpl_gateway", gpl_gateway::id(), None);
+        program_test.add_program("gpl_civic_gateway", gpl_civic_gateway::id(), None);
         program_test.add_program(
             "solana_gateway_program",
             Pubkey::from_str("gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs").unwrap(),
@@ -105,7 +105,7 @@ impl GatewayVoterTest {
         GatewayVoterTest::add_programs(&mut program_test);
         GovernanceTest::add_program(&mut program_test);
 
-        let program_id = gpl_gateway::id();
+        let program_id = gpl_civic_gateway::id();
 
         let bench = ProgramTestBench::start_new(program_test).await;
         let bench_rc = Arc::new(bench);
@@ -142,10 +142,10 @@ impl GatewayVoterTest {
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_gateway::instruction::CreateRegistrar {});
+            anchor_lang::InstructionData::data(&gpl_civic_gateway::instruction::CreateRegistrar {});
 
         let accounts = anchor_lang::ToAccountMetas::to_account_metas(
-            &gpl_gateway::accounts::CreateRegistrar {
+            &gpl_civic_gateway::accounts::CreateRegistrar {
                 registrar: registrar_key,
                 realm: realm_cookie.address,
                 governance_program_id: self.governance.program_id,
@@ -159,7 +159,7 @@ impl GatewayVoterTest {
         );
 
         let mut create_registrar_ix = Instruction {
-            program_id: gpl_gateway::id(),
+            program_id: gpl_civic_gateway::id(),
             accounts,
             data,
         };
@@ -221,6 +221,7 @@ impl GatewayVoterTest {
         })
     }
 
+    #[allow(dead_code)]
     pub async fn with_gateway_token(
         &mut self,
         gateway_cookie: &GatewayCookie,
@@ -230,6 +231,7 @@ impl GatewayVoterTest {
             .await
     }
 
+    #[allow(dead_code)]
     pub async fn with_gateway_token_using_ix<F: Fn(&mut Instruction)>(
         &mut self,
         gateway_cookie: &GatewayCookie,
@@ -288,16 +290,16 @@ impl GatewayVoterTest {
                 registrar_cookie.account.governing_token_mint.as_ref(),
                 governing_token_owner.as_ref(),
             ],
-            &gpl_gateway::id(),
+            &gpl_civic_gateway::id(),
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_gateway::instruction::CreateVoterWeightRecord {
+            &gpl_civic_gateway::instruction::CreateVoterWeightRecord {
                 governing_token_owner,
             },
         );
 
-        let accounts = gpl_gateway::accounts::CreateVoterWeightRecord {
+        let accounts = gpl_civic_gateway::accounts::CreateVoterWeightRecord {
             governance_program_id: self.governance.program_id,
             realm: registrar_cookie.account.realm,
             realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
@@ -307,7 +309,7 @@ impl GatewayVoterTest {
         };
 
         let mut create_voter_weight_record_ix = Instruction {
-            program_id: gpl_gateway::id(),
+            program_id: gpl_civic_gateway::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
@@ -344,13 +346,13 @@ impl GatewayVoterTest {
         voter_weight_action: VoterWeightAction,
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_gateway::instruction::UpdateVoterWeightRecord {
+            &gpl_civic_gateway::instruction::UpdateVoterWeightRecord {
                 voter_weight_action,
                 target: None,
             },
         );
 
-        let accounts = gpl_gateway::accounts::UpdateVoterWeightRecord {
+        let accounts = gpl_civic_gateway::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             gateway_token: gateway_token_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
@@ -359,7 +361,7 @@ impl GatewayVoterTest {
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
         let instructions = vec![Instruction {
-            program_id: gpl_gateway::id(),
+            program_id: gpl_civic_gateway::id(),
             accounts: account_metas,
             data,
         }];
@@ -382,13 +384,13 @@ impl GatewayVoterTest {
         let args = args.unwrap_or_default();
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_gateway::instruction::UpdateVoterWeightRecord {
+            &gpl_civic_gateway::instruction::UpdateVoterWeightRecord {
                 voter_weight_action: VoterWeightAction::CastVote,
                 target: Some(proposal_cookie.address),
             },
         );
 
-        let accounts = gpl_gateway::accounts::UpdateVoterWeightRecord {
+        let accounts = gpl_civic_gateway::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
             gateway_token: gateway_token_cookie.address,
@@ -397,7 +399,7 @@ impl GatewayVoterTest {
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
         let update_voter_weight_ix = Instruction {
-            program_id: gpl_gateway::id(),
+            program_id: gpl_civic_gateway::id(),
             accounts: account_metas,
             data,
         };
