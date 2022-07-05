@@ -1,5 +1,5 @@
 export type Gateway = {
-  "version": "0.0.0",
+  "version": "0.1.1",
   "name": "gateway",
   "instructions": [
     {
@@ -214,26 +214,6 @@ export type Gateway = {
   ],
   "types": [
     {
-      "name": "GatewayError",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "InvalidRealmAuthority"
-          },
-          {
-            "name": "InvalidVoterWeightRecordRealm"
-          },
-          {
-            "name": "InvalidVoterWeightRecordMint"
-          },
-          {
-            "name": "InvalidGatewayToken"
-          }
-        ]
-      }
-    },
-    {
       "name": "VoterWeightAction",
       "type": {
         "kind": "enum",
@@ -255,12 +235,34 @@ export type Gateway = {
           }
         ]
       }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidRealmAuthority",
+      "msg": "Invalid Realm Authority"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidVoterWeightRecordRealm",
+      "msg": "Invalid VoterWeightRecord Realm"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidVoterWeightRecordMint",
+      "msg": "Invalid VoterWeightRecord Mint"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidGatewayToken",
+      "msg": "Invalid gateway token"
     }
   ]
 };
 
 export const IDL: Gateway = {
-  "version": "0.0.0",
+  "version": "0.1.1",
   "name": "gateway",
   "instructions": [
     {
@@ -475,26 +477,6 @@ export const IDL: Gateway = {
   ],
   "types": [
     {
-      "name": "GatewayError",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "InvalidRealmAuthority"
-          },
-          {
-            "name": "InvalidVoterWeightRecordRealm"
-          },
-          {
-            "name": "InvalidVoterWeightRecordMint"
-          },
-          {
-            "name": "InvalidGatewayToken"
-          }
-        ]
-      }
-    },
-    {
       "name": "VoterWeightAction",
       "type": {
         "kind": "enum",
@@ -516,6 +498,28 @@ export const IDL: Gateway = {
           }
         ]
       }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidRealmAuthority",
+      "msg": "Invalid Realm Authority"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidVoterWeightRecordRealm",
+      "msg": "Invalid VoterWeightRecord Realm"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidVoterWeightRecordMint",
+      "msg": "Invalid VoterWeightRecord Mint"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidGatewayToken",
+      "msg": "Invalid gateway token"
     }
   ]
 };
