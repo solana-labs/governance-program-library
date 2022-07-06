@@ -6,6 +6,8 @@ seeds = false
 
 [programs.localnet]
 nft_voter = "GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw"
+gateway = "Ggatr3wgDLySEwA2qEjt1oiw4BUzp5yMLJyz21919dq6"
+solana-gateway-program = "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
 
 [registry]
 url = "https://anchor.projectserum.com"

@@ -1,1 +1,2 @@
-export * from './client';
+export * from './nftVoter/client';
+export * from './gateway/client';

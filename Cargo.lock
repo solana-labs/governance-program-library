@@ -1329,6 +1329,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "gpl-civic-gateway"
+version = "0.1.1"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "arrayref",
+ "borsh",
+ "itertools",
+ "solana-gateway",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "spl-governance",
+ "spl-governance-tools",
+ "spl-token",
+]
+
+[[package]]
 name = "gpl-nft-voter"
 version = "0.1.1"
 dependencies = [
@@ -3069,6 +3087,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "sol-did"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2546d424d6898908c205d99d3af07ad42e2e8aec8f0d459235dc0bd4e9866fe"
+dependencies = [
+ "borsh",
+ "num-derive",
+ "num-traits",
+ "solana-program",
+ "thiserror",
+]
+
+[[package]]
 name = "solana-account-decoder"
 version = "1.10.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3364,6 +3395,21 @@ dependencies = [
  "quote 1.0.20",
  "rustc_version",
  "syn 1.0.98",
+]
+
+[[package]]
+name = "solana-gateway"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "243daaf437dff89891d520c3e9be7b4a6940c30a1bda2ac094e621046f303eda"
+dependencies = [
+ "bitflags",
+ "borsh",
+ "num-derive",
+ "num-traits",
+ "sol-did",
+ "solana-program",
+ "thiserror",
 ]
 
 [[package]]
