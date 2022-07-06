@@ -1,14 +1,7 @@
-use crate::state::generic_voter_weight::GenericVoterWeight;
 use anchor_lang::prelude::*;
 use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
-use solana_program::program_pack::IsInitialized;
 
 use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
-
-/// The default vote weight matches the default decimal places of a governance token
-/// so that a single vote using this plugin matches a single vote with a governance token
-pub const DEFAULT_VOTE_WEIGHT: u64 = 1000000;
 
 /// VoterWeightAction enum as defined in spl-governance-addin-api
 /// It's redefined here for Anchor to export it to IDL
@@ -66,7 +59,7 @@ pub struct VoterWeightRecord {
     /// When the action is provided then the governance program asserts the executing action is the same as specified by the addin
     pub weight_action: Option<VoterWeightAction>,
 
-    /// The target the voter's weight action pertains to
+    /// The target the voter's weight  action pertains to
     /// It allows to provided voter's weight specific to the target the weight is evaluated for
     /// For example when addin supplies weight to vote on a particular proposal then it must specify the proposal as the action target
     /// When the target is provided then the governance program asserts the target is the same as specified by the addin
@@ -94,85 +87,6 @@ impl Default for VoterWeightRecord {
             weight_action_target: Some(Default::default()),
             reserved: Default::default(),
         }
-    }
-}
-
-impl IsInitialized for VoterWeightRecord {
-    fn is_initialized(&self) -> bool {
-        self.realm != Default::default()
-            && self.governing_token_mint != Default::default()
-            && self.governing_token_owner != Default::default()
-    }
-}
-
-impl GenericVoterWeight for VoterWeightRecord {
-    fn get_governing_token_mint(&self) -> Pubkey {
-        self.governing_token_mint
-    }
-
-    fn get_governing_token_owner(&self) -> Pubkey {
-        self.governing_token_owner
-    }
-
-    fn get_realm(&self) -> Pubkey {
-        self.realm
-    }
-
-    fn get_voter_weight(&self) -> u64 {
-        self.voter_weight
-    }
-
-    fn get_weight_action(&self) -> Option<VoterWeightAction> {
-        self.weight_action
-    }
-
-    fn get_weight_action_target(&self) -> Option<Pubkey> {
-        self.weight_action_target
-    }
-
-    fn get_vote_expiry(&self) -> Option<u64> {
-        self.voter_weight_expiry
-    }
-}
-
-// the "official" on-chain voter weight record has a discriminator field
-// when a predecessor voter weight is provided, it uses this struct instead of the one defined above.
-// We add the GenericVoterWeight trait here to hide this from the rest of the code.
-impl GenericVoterWeight for spl_governance_addin_api::voter_weight::VoterWeightRecord {
-    fn get_governing_token_mint(&self) -> Pubkey {
-        self.governing_token_mint
-    }
-
-    fn get_governing_token_owner(&self) -> Pubkey {
-        self.governing_token_owner
-    }
-
-    fn get_realm(&self) -> Pubkey {
-        self.realm
-    }
-
-    fn get_voter_weight(&self) -> u64 {
-        self.voter_weight
-    }
-
-    // The GenericVoterWeight interface expects a crate-defined VoterWeightAction.
-    // This is identical to spl_governance_addin_api::voter_weight::VoterWeightAction, but added here
-    // so that Anchor will create the mapping correctly in the IDL.
-    // This function converts the spl_governance_addin_api::voter_weight::VoterWeightAction to the
-    // crate-defined VoterWeightAction by mapping the enum values by integer.
-    // Note - it is imperative that the two enums stay in sync to avoid errors here.
-    fn get_weight_action(&self) -> Option<VoterWeightAction> {
-        self.weight_action
-            .clone()
-            .map(|x| FromPrimitive::from_u32(x as u32).unwrap())
-    }
-
-    fn get_weight_action_target(&self) -> Option<Pubkey> {
-        self.weight_action_target
-    }
-
-    fn get_vote_expiry(&self) -> Option<u64> {
-        self.voter_weight_expiry
     }
 }
 

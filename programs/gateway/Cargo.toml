@@ -1,13 +1,13 @@
 [package]
-name = "gpl-gateway"
+name = "gpl-civic-gateway"
 version = "0.1.1"
-description = "SPL Governance addin gateway"
+description = "SPL Governance addin for Civic Pass (www.civic.com)"
 license = "Apache-2.0"
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "gpl_gateway"
+name = "gpl_civic_gateway"
 
 [features]
 no-entrypoint = []

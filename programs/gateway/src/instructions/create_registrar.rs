@@ -36,7 +36,9 @@ pub struct CreateRegistrar<'info> {
 
     /// Either the realm community mint or the council mint.
     /// It must match Realm.community_mint or Realm.config.council_mint
-    /// This is used hear only to extract the realm struct information
+    ///
+    /// Note: Once the Civic Pass plugin is enabled the governing_token_mint is used only as identity
+    /// for the voting population and the tokens of that are no longer used
     pub governing_token_mint: Account<'info, Mint>,
 
     /// realm_authority must sign and match Realm.authority
@@ -70,7 +72,7 @@ pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
         previous_vote_weight_plugin_program_id.map(|account| account.key());
 
     // Verify that realm_authority is the expected authority of the Realm
-    // and that the mint matches one of the realm mints too.
+    // and that the mint matches one of the realm mints.
     let realm = realm::get_realm_data_for_governing_token_mint(
         &registrar.governance_program_id,
         &ctx.accounts.realm,

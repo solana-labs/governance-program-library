@@ -21,6 +21,7 @@ pub struct UpdateVoterWeightRecord<'info> {
     #[account()]
     pub input_voting_weight: UncheckedAccount<'info>,
 
+    /// A gateway token from the gatekeeper network in the registrar.
     /// Proves that the holder is permitted to take an action.
     /// CHECK: Checked in the gateway library.
     #[account()]
@@ -37,6 +38,8 @@ pub struct UpdateVoterWeightRecord<'info> {
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 }
 
+/// Sets the voter weight record value to the default voter weight, if the voter has a valid
+/// Civic Pass, or throws an error if not.
 pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
     // Gateway: Check if the voter has a valid gateway token and fail if not
     Gateway::verify_gateway_token_account_info(

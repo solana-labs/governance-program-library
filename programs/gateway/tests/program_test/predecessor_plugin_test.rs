@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
 
-use gpl_gateway::state::*;
+use gpl_civic_gateway::state::*;
 use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 use spl_governance_addin_mock::instruction::*;
 
@@ -59,7 +59,7 @@ impl PredecessorPluginTest {
         self.bench
             .process_transaction(
                 &[setup_voter_weight_record_ix],
-                &[&voter_weight_record_account],
+                Some(&[&voter_weight_record_account]),
             )
             .await?;
 

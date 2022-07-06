@@ -111,7 +111,7 @@ impl GovernanceTest {
         );
 
         self.bench
-            .process_transaction(&[create_realm_ix], &[])
+            .process_transaction(&[create_realm_ix], None)
             .await?;
 
         let account = RealmV2 {
@@ -177,7 +177,7 @@ impl GovernanceTest {
         );
 
         self.bench
-            .process_transaction(&[create_tor_ix], &[])
+            .process_transaction(&[create_tor_ix], None)
             .await?;
 
         let deposit_ix = deposit_governing_tokens(
@@ -191,7 +191,7 @@ impl GovernanceTest {
             &governing_token_mint,
         );
 
-        self.bench.process_transaction(&[deposit_ix], &[]).await?;
+        self.bench.process_transaction(&[deposit_ix], None).await?;
 
         let governance_key = get_governance_address(
             &self.program_id,
@@ -219,7 +219,10 @@ impl GovernanceTest {
         );
 
         self.bench
-            .process_transaction(&[create_governance_ix], &[&realm_cookie.realm_authority])
+            .process_transaction(
+                &[create_governance_ix],
+                Some(&[&realm_cookie.realm_authority]),
+            )
             .await?;
 
         let proposal_index: u32 = 0;
@@ -259,7 +262,7 @@ impl GovernanceTest {
         );
 
         self.bench
-            .process_transaction(&[create_proposal_ix, sign_off_proposal_ix], &[])
+            .process_transaction(&[create_proposal_ix, sign_off_proposal_ix], None)
             .await?;
 
         let account = ProposalV2 {
@@ -349,7 +352,7 @@ impl GovernanceTest {
         }
 
         self.bench
-            .process_transaction(instructions.as_slice(), signers.as_slice())
+            .process_transaction(instructions.as_slice(), Some(signers.as_slice()))
             .await?;
 
         let account = TokenOwnerRecordV2 {
@@ -390,7 +393,7 @@ impl GovernanceTest {
         );
 
         self.bench
-            .process_transaction(&[relinquish_vote_ix], &[&token_owner_cookie.signer])
+            .process_transaction(&[relinquish_vote_ix], Some(&[&token_owner_cookie.signer]))
             .await?;
 
         Ok(())

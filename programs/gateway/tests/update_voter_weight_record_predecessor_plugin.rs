@@ -99,7 +99,7 @@ async fn test_update_fails_with_predecessor_from_different_realm() -> Result<(),
         .unwrap();
 
     // Assert
-    assert_ix_err(err, InstructionError::Custom(6007));
+    assert_ix_err(err, InstructionError::Custom(6003));
 
     Ok(())
 }
@@ -150,7 +150,7 @@ async fn test_update_fails_with_predecessor_for_different_governance() -> Result
         .unwrap();
 
     // Assert
-    assert_ix_err(err, InstructionError::Custom(6008));
+    assert_ix_err(err, InstructionError::Custom(6004));
 
     Ok(())
 }
@@ -191,7 +191,7 @@ async fn test_update_fails_with_predecessor_with_a_different_owner() -> Result<(
         .unwrap();
 
     // Assert
-    assert_ix_err(err, InstructionError::Custom(6009));
+    assert_ix_err(err, InstructionError::Custom(6005));
 
     Ok(())
 }

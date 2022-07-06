@@ -1,7 +1,7 @@
 use crate::program_test::gateway_voter_test::VoterWeightRecordCookie;
 use crate::program_test::governance_test::TokenOwnerRecordCookie;
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
-use gpl_gateway::error::GatewayError;
+use gpl_civic_gateway::error::GatewayError;
 use itertools::Either;
 use solana_program::instruction::InstructionError;
 use solana_program::pubkey::Pubkey;

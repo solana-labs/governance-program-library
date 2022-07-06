@@ -1172,6 +1172,8 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_attempted_sandwiche
         )
         .await?;
 
+    nft_voter_test.bench.advance_clock().await;
+
     // Try relinquish NftVoteRecords to accumulate vote
     nft_voter_test
         .relinquish_nft_vote(

@@ -1,4 +1,4 @@
-use gpl_gateway::error::GatewayError;
+use gpl_civic_gateway::error::GatewayError;
 use itertools::Either;
 use program_test::gateway_voter_test::GatewayVoterTest;
 use program_test::tools::*;
