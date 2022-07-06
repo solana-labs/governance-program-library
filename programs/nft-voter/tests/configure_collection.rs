@@ -75,6 +75,8 @@ async fn test_configure_collection_sized_with_two_nft_mints() -> Result<(), Bank
 
     let minter_cookie = nft_voter_test.bench.with_wallet().await;
 
+//  Program metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s failed: Failed to serialize or deserialize account data: Unknown
+//  Error: TransactionError(InstructionError(0, BorshIoError("Unknown")))
     let nft_cookie = nft_voter_test
         .token_metadata
         .with_nft_v3(
@@ -87,19 +89,6 @@ async fn test_configure_collection_sized_with_two_nft_mints() -> Result<(), Bank
         )
         .await?;
 
-        
-    let nft_cookie_2 = nft_voter_test
-        .token_metadata
-        .with_nft_v3(
-            &nft_collection_cookie,
-            &minter_cookie,
-            Some(CreateNftArgs {
-                verify_collection: true,
-                ..Default::default()
-            }),
-        )
-        .await?;
-        
     let max_voter_weight_record_cookie = nft_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
@@ -110,10 +99,7 @@ async fn test_configure_collection_sized_with_two_nft_mints() -> Result<(), Bank
             &registrar_cookie,
             &nft_collection_cookie,
             &max_voter_weight_record_cookie,
-            Some(ConfigureCollectionArgs {
-                weight: 10,
-                size: 20,
-            }),,
+            None,
         )
         .await?;
 
@@ -122,24 +108,24 @@ async fn test_configure_collection_sized_with_two_nft_mints() -> Result<(), Bank
         .get_registrar_account(&registrar_cookie.address)
         .await;
 
-    // assert_eq!(registrar.collection_configs.len(), 1);
+    assert_eq!(registrar.collection_configs.len(), 1);
 
-    assert_eq!(registrar.collection_configs[0].size, 2);
+    assert_eq!(registrar.collection_configs[0].size, 1);
 
-    // assert_eq!(
-    //     registrar.collection_configs[0],
-    //     collection_config_cookie.collection_config
-    // );
+    assert_eq!(
+        registrar.collection_configs[0],
+        collection_config_cookie.collection_config
+    );
 
     let max_voter_weight_record = nft_voter_test
         .get_max_voter_weight_record(&max_voter_weight_record_cookie.address)
         .await;
 
-    // assert_eq!(max_voter_weight_record.max_voter_weight_expiry, None);
-    // assert_eq!(
-    //     max_voter_weight_record.max_voter_weight,
-    //     (registrar.collection_configs[0].weight * registrar.collection_configs[0].size)
-    // );
+    assert_eq!(max_voter_weight_record.max_voter_weight_expiry, None);
+    assert_eq!(
+        max_voter_weight_record.max_voter_weight,
+        (registrar.collection_configs[0].weight * registrar.collection_configs[0].size)
+    );
 
     Ok(())
 }
