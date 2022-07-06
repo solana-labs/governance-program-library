@@ -1,8 +1,8 @@
 use std::{str::FromStr, sync::Arc};
 
 use anchor_lang::prelude::Pubkey;
-use solana_program_test::ProgramTest;
-use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
+use solana_program_test::{ProgramTest, BanksClientError};
+use solana_sdk::{signature::Keypair, signer::Signer};
 use spl_governance::{
     instruction::{
         create_governance, create_proposal, create_realm, create_token_owner_record,
@@ -83,7 +83,7 @@ impl GovernanceTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_realm(&mut self) -> Result<RealmCookie, TransportError> {
+    pub async fn with_realm(&mut self) -> Result<RealmCookie, BanksClientError> {
         let realm_authority = Keypair::new();
 
         let community_mint_cookie = self.bench.with_mint().await?;
@@ -146,7 +146,7 @@ impl GovernanceTest {
     pub async fn with_proposal(
         &mut self,
         realm_cookie: &RealmCookie,
-    ) -> Result<ProposalCookie, TransportError> {
+    ) -> Result<ProposalCookie, BanksClientError> {
         let token_account_cookie = self
             .bench
             .with_token_account(&realm_cookie.account.community_mint)
@@ -306,7 +306,7 @@ impl GovernanceTest {
         &mut self,
         realm_cookie: &RealmCookie,
         token_owner_cookie: &WalletCookie,
-    ) -> Result<TokenOwnerRecordCookie, TransportError> {
+    ) -> Result<TokenOwnerRecordCookie, BanksClientError> {
         let token_owner_record_key = get_token_owner_record_address(
             &self.program_id,
             &realm_cookie.address,
@@ -352,7 +352,7 @@ impl GovernanceTest {
         proposal_cookie: &ProposalCookie,
         token_owner_cookie: &WalletCookie,
         token_owner_record_cookie: &TokenOwnerRecordCookie,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let relinquish_vote_ix = relinquish_vote(
             &self.program_id,
             &proposal_cookie.account.governance,

@@ -5,12 +5,12 @@ use program_test::nft_voter_test::NftVoterTest;
 use program_test::token_metadata_test::CreateNftArgs;
 use program_test::tools::*;
 use solana_program_test::*;
-use solana_sdk::transport::TransportError;
+
 
 mod program_test;
 
 #[tokio::test]
-async fn test_update_voter_weight_record() -> Result<(), TransportError> {
+async fn test_update_voter_weight_record() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -78,7 +78,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_update_voter_weight_with_multiple_nfts() -> Result<(), TransportError> {
+async fn test_update_voter_weight_with_multiple_nfts() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -151,7 +151,7 @@ async fn test_update_voter_weight_with_multiple_nfts() -> Result<(), TransportEr
 }
 
 #[tokio::test]
-async fn test_update_voter_weight_with_cast_vote_not_allowed_error() -> Result<(), TransportError> {
+async fn test_update_voter_weight_with_cast_vote_not_allowed_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -207,7 +207,7 @@ async fn test_update_voter_weight_with_cast_vote_not_allowed_error() -> Result<(
 }
 
 #[tokio::test]
-async fn test_update_voter_weight_with_unverified_collection_error() -> Result<(), TransportError> {
+async fn test_update_voter_weight_with_unverified_collection_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -271,7 +271,7 @@ async fn test_update_voter_weight_with_unverified_collection_error() -> Result<(
 }
 
 #[tokio::test]
-async fn test_update_voter_weight_with_invalid_owner_error() -> Result<(), TransportError> {
+async fn test_update_voter_weight_with_invalid_owner_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -329,7 +329,7 @@ async fn test_update_voter_weight_with_invalid_owner_error() -> Result<(), Trans
 }
 
 #[tokio::test]
-async fn test_update_voter_weight_with_invalid_collection_error() -> Result<(), TransportError> {
+async fn test_update_voter_weight_with_invalid_collection_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -387,7 +387,7 @@ async fn test_update_voter_weight_with_invalid_collection_error() -> Result<(), 
 }
 
 #[tokio::test]
-async fn test_update_voter_weight_with_invalid_metadata_error() -> Result<(), TransportError> {
+async fn test_update_voter_weight_with_invalid_metadata_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -458,7 +458,7 @@ async fn test_update_voter_weight_with_invalid_metadata_error() -> Result<(), Tr
 }
 
 #[tokio::test]
-async fn test_update_voter_weight_with_same_nft_error() -> Result<(), TransportError> {
+async fn test_update_voter_weight_with_same_nft_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -512,7 +512,7 @@ async fn test_update_voter_weight_with_same_nft_error() -> Result<(), TransportE
 }
 
 #[tokio::test]
-async fn test_update_voter_weight_record_with_no_nft_error() -> Result<(), TransportError> {
+async fn test_update_voter_weight_record_with_no_nft_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 

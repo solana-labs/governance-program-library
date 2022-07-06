@@ -8,13 +8,13 @@ use solana_gateway::state::{
 };
 
 use gpl_civic_gateway::state::*;
-use solana_sdk::transport::TransportError;
+
 use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{Vote, VoteChoice};
 
 use gpl_civic_gateway::state::{get_registrar_address, Registrar};
 
-use solana_program_test::ProgramTest;
+use solana_program_test::{ProgramTest, BanksClientError};
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
@@ -125,7 +125,7 @@ impl GatewayVoterTest {
         &mut self,
         realm_cookie: &RealmCookie,
         gateway_cookie: &GatewayCookie,
-    ) -> Result<RegistrarCookie, TransportError> {
+    ) -> Result<RegistrarCookie, BanksClientError> {
         self.with_registrar_using_ix(realm_cookie, gateway_cookie, NopOverride, None)
             .await
     }
@@ -137,7 +137,7 @@ impl GatewayVoterTest {
         gateway_cookie: &GatewayCookie,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<RegistrarCookie, TransportError> {
+    ) -> Result<RegistrarCookie, BanksClientError> {
         let registrar_key =
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
@@ -188,7 +188,7 @@ impl GatewayVoterTest {
         })
     }
 
-    pub async fn with_gateway(&mut self) -> Result<GatewayCookie, TransportError> {
+    pub async fn with_gateway(&mut self) -> Result<GatewayCookie, BanksClientError> {
         self.with_gateway_using_ix(NopOverride, None).await
     }
 
@@ -196,7 +196,7 @@ impl GatewayVoterTest {
         &mut self,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<GatewayCookie, TransportError> {
+    ) -> Result<GatewayCookie, BanksClientError> {
         let gatekeeper_network = Keypair::new();
         let gatekeeper = Keypair::new();
 
@@ -226,7 +226,7 @@ impl GatewayVoterTest {
         &mut self,
         gateway_cookie: &GatewayCookie,
         wallet_cookie: &WalletCookie,
-    ) -> Result<GatewayTokenCookie, TransportError> {
+    ) -> Result<GatewayTokenCookie, BanksClientError> {
         self.with_gateway_token_using_ix(gateway_cookie, wallet_cookie, NopOverride, None)
             .await
     }
@@ -238,7 +238,7 @@ impl GatewayVoterTest {
         wallet_cookie: &WalletCookie,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<GatewayTokenCookie, TransportError> {
+    ) -> Result<GatewayTokenCookie, BanksClientError> {
         let gatekeeper_account = gateway_cookie.get_gatekeeper_account();
         let gateway_token_cookie = GatewayTokenCookie::new(&wallet_cookie.address, gateway_cookie);
 
@@ -269,7 +269,7 @@ impl GatewayVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         self.with_voter_weight_record_using_ix(registrar_cookie, voter_cookie, NopOverride)
             .await
     }
@@ -280,7 +280,7 @@ impl GatewayVoterTest {
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
         instruction_override: F,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         let governing_token_owner = voter_cookie.address;
 
         let (voter_weight_record_key, _) = Pubkey::find_program_address(
@@ -344,7 +344,7 @@ impl GatewayVoterTest {
         voter_weight_record_cookie: &mut VoterWeightRecordCookie,
         gateway_token_cookie: &GatewayTokenCookie,
         voter_weight_action: VoterWeightAction,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_civic_gateway::instruction::UpdateVoterWeightRecord {
                 voter_weight_action,
@@ -380,7 +380,7 @@ impl GatewayVoterTest {
         gateway_token_cookie: &GatewayTokenCookie,
         voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
         args: Option<CastVoteArgs>,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let args = args.unwrap_or_default();
 
         let data = anchor_lang::InstructionData::data(

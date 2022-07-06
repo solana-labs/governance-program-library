@@ -2,17 +2,18 @@ use gpl_nft_voter::error::NftVoterError;
 use program_test::{
     nft_voter_test::NftVoterTest,
     tools::{assert_anchor_err, assert_nft_voter_err},
+    token_metadata_test::CreateNftArgs,
 };
 
 use solana_program_test::*;
-use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
+use solana_sdk::{signature::Keypair, signer::Signer};
 
 use crate::program_test::nft_voter_test::ConfigureCollectionArgs;
 
 mod program_test;
 
 #[tokio::test]
-async fn test_configure_collection() -> Result<(), TransportError> {
+async fn test_configure_collection() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -55,15 +56,96 @@ async fn test_configure_collection() -> Result<(), TransportError> {
     assert_eq!(max_voter_weight_record.max_voter_weight_expiry, None);
     assert_eq!(
         max_voter_weight_record.max_voter_weight,
-        (registrar.collection_configs[0].weight as u32 * registrar.collection_configs[0].size)
-            as u64
+        (registrar.collection_configs[0].weight * registrar.collection_configs[0].size)
     );
 
     Ok(())
 }
 
 #[tokio::test]
-async fn test_configure_multiple_collections() -> Result<(), TransportError> {
+async fn test_configure_collection_sized_with_two_nft_mints() -> Result<(), BanksClientError> {
+    // Arrange
+    let mut nft_voter_test = NftVoterTest::start_new().await;
+
+    let realm_cookie = nft_voter_test.governance.with_realm().await?;
+
+    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+
+    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection_v3().await?;
+
+    let minter_cookie = nft_voter_test.bench.with_wallet().await;
+
+    let nft_cookie = nft_voter_test
+        .token_metadata
+        .with_nft_v3(
+            &nft_collection_cookie,
+            &minter_cookie,
+            Some(CreateNftArgs {
+                verify_collection: true,
+                ..Default::default()
+            }),
+        )
+        .await?;
+
+        
+    let nft_cookie_2 = nft_voter_test
+        .token_metadata
+        .with_nft_v3(
+            &nft_collection_cookie,
+            &minter_cookie,
+            Some(CreateNftArgs {
+                verify_collection: true,
+                ..Default::default()
+            }),
+        )
+        .await?;
+        
+    let max_voter_weight_record_cookie = nft_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
+
+    // Act
+    let collection_config_cookie = nft_voter_test
+        .with_collection(
+            &registrar_cookie,
+            &nft_collection_cookie,
+            &max_voter_weight_record_cookie,
+            Some(ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            }),,
+        )
+        .await?;
+
+    // Assert
+    let registrar = nft_voter_test
+        .get_registrar_account(&registrar_cookie.address)
+        .await;
+
+    // assert_eq!(registrar.collection_configs.len(), 1);
+
+    assert_eq!(registrar.collection_configs[0].size, 2);
+
+    // assert_eq!(
+    //     registrar.collection_configs[0],
+    //     collection_config_cookie.collection_config
+    // );
+
+    let max_voter_weight_record = nft_voter_test
+        .get_max_voter_weight_record(&max_voter_weight_record_cookie.address)
+        .await;
+
+    // assert_eq!(max_voter_weight_record.max_voter_weight_expiry, None);
+    // assert_eq!(
+    //     max_voter_weight_record.max_voter_weight,
+    //     (registrar.collection_configs[0].weight * registrar.collection_configs[0].size)
+    // );
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_configure_multiple_collections() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -118,7 +200,7 @@ async fn test_configure_multiple_collections() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_configure_max_collections() -> Result<(), TransportError> {
+async fn test_configure_max_collections() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -166,7 +248,7 @@ async fn test_configure_max_collections() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_configure_existing_collection() -> Result<(), TransportError> {
+async fn test_configure_existing_collection() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -223,7 +305,7 @@ async fn test_configure_existing_collection() -> Result<(), TransportError> {
 // TODO: Remove collection test
 
 #[tokio::test]
-async fn test_configure_collection_with_invalid_realm_error() -> Result<(), TransportError> {
+async fn test_configure_collection_with_invalid_realm_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -263,7 +345,7 @@ async fn test_configure_collection_with_invalid_realm_error() -> Result<(), Tran
 
 #[tokio::test]
 async fn test_configure_collection_with_realm_authority_must_sign_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -299,7 +381,7 @@ async fn test_configure_collection_with_realm_authority_must_sign_error(
 }
 
 #[tokio::test]
-async fn test_configure_collection_with_invalid_realm_authority_error() -> Result<(), TransportError>
+async fn test_configure_collection_with_invalid_realm_authority_error() -> Result<(), BanksClientError>
 {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
@@ -339,7 +421,7 @@ async fn test_configure_collection_with_invalid_realm_authority_error() -> Resul
 
 #[tokio::test]
 async fn test_configure_collection_with_invalid_max_voter_weight_realm_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -376,7 +458,7 @@ async fn test_configure_collection_with_invalid_max_voter_weight_realm_error(
 
 #[tokio::test]
 async fn test_configure_collection_with_invalid_max_voter_weight_mint_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -413,7 +495,7 @@ async fn test_configure_collection_with_invalid_max_voter_weight_mint_error(
 }
 
 #[tokio::test]
-async fn test_configure_collection_with_voting_proposal_error() -> Result<(), TransportError> {
+async fn test_configure_collection_with_voting_proposal_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 

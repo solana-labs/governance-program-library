@@ -2,12 +2,12 @@ use program_test::nft_voter_test::NftVoterTest;
 use program_test::tools::assert_ix_err;
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
-use solana_sdk::transport::TransportError;
+
 
 mod program_test;
 
 #[tokio::test]
-async fn test_create_voter_weight_record() -> Result<(), TransportError> {
+async fn test_create_voter_weight_record() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -34,7 +34,7 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_create_voter_weight_record_with_invalid_realm_error() -> Result<(), TransportError> {
+async fn test_create_voter_weight_record_with_invalid_realm_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -64,7 +64,7 @@ async fn test_create_voter_weight_record_with_invalid_realm_error() -> Result<()
 }
 
 #[tokio::test]
-async fn test_create_voter_weight_record_with_invalid_mint_error() -> Result<(), TransportError> {
+async fn test_create_voter_weight_record_with_invalid_mint_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -94,7 +94,7 @@ async fn test_create_voter_weight_record_with_invalid_mint_error() -> Result<(),
 }
 
 #[tokio::test]
-async fn test_create_voter_weight_record_with_already_exists_error() -> Result<(), TransportError> {
+async fn test_create_voter_weight_record_with_already_exists_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
