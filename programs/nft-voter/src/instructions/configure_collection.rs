@@ -3,13 +3,15 @@ use anchor_lang::{
     prelude::{Context, Signer},
     Accounts,
 };
-
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
+use mpl_token_metadata::state::{CollectionDetails};
+
 
 use crate::error::NftVoterError;
 use crate::state::{max_voter_weight_record::MaxVoterWeightRecord, CollectionConfig, Registrar};
+use crate::tools::token_metadata::get_token_metadata_for_mint;
 
 /// Configures NFT voting collection which defines what NFTs can be used for governances
 /// and what weight they have
@@ -48,10 +50,25 @@ pub struct ConfigureCollection<'info> {
 pub fn configure_collection(
     ctx: Context<ConfigureCollection>,
     weight: u64,
-    size: u32,
+    mut size: u64,
 ) -> Result<()> {
-    require!(size > 0, NftVoterError::InvalidCollectionSize);
+    let collection = &ctx.accounts.collection;
 
+    let collection_metadata = get_token_metadata_for_mint(&collection.to_account_info(), &collection.key());
+    
+    // Set size to the collection details config if available
+    let retrieved_size = if let Some(details) = collection_metadata.unwrap().collection_details {
+        match details {
+            CollectionDetails::V1 { size } => size,
+        }
+    } else {
+        size
+    };
+
+    size = retrieved_size;
+    
+    require!(size > 0, NftVoterError::InvalidCollectionSize);
+    
     let registrar = &mut ctx.accounts.registrar;
 
     let realm = realm::get_realm_data_for_governing_token_mint(
@@ -70,7 +87,6 @@ pub fn configure_collection(
         return err!(NftVoterError::CannotConfigureCollectionWithVotingProposals);
     }
 
-    let collection = &ctx.accounts.collection;
 
     let collection_config = CollectionConfig {
         collection: collection.key(),
