@@ -5,12 +5,12 @@ use program_test::token_metadata_test::CreateNftArgs;
 use program_test::{nft_voter_test::*, tools::assert_nft_voter_err};
 
 use solana_program_test::*;
-use solana_sdk::transport::TransportError;
+
 
 mod program_test;
 
 #[tokio::test]
-async fn test_cast_nft_vote() -> Result<(), TransportError> {
+async fn test_cast_nft_vote() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -100,7 +100,7 @@ async fn test_cast_nft_vote() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_multiple_nfts() -> Result<(), TransportError> {
+async fn test_cast_nft_vote_with_multiple_nfts() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -201,7 +201,7 @@ async fn test_cast_nft_vote_with_multiple_nfts() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), TransportError> {
+async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -284,7 +284,7 @@ async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), Transpo
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_invalid_voter_error() -> Result<(), TransportError> {
+async fn test_cast_nft_vote_invalid_voter_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -354,7 +354,7 @@ async fn test_cast_nft_vote_invalid_voter_error() -> Result<(), TransportError> 
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_unverified_collection_error() -> Result<(), TransportError> {
+async fn test_cast_nft_vote_with_unverified_collection_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -432,7 +432,7 @@ async fn test_cast_nft_vote_with_unverified_collection_error() -> Result<(), Tra
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_invalid_owner_error() -> Result<(), TransportError> {
+async fn test_cast_nft_vote_with_invalid_owner_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -504,7 +504,7 @@ async fn test_cast_nft_vote_with_invalid_owner_error() -> Result<(), TransportEr
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_invalid_collection_error() -> Result<(), TransportError> {
+async fn test_cast_nft_vote_with_invalid_collection_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -576,7 +576,7 @@ async fn test_cast_nft_vote_with_invalid_collection_error() -> Result<(), Transp
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_invalid_metadata_error() -> Result<(), TransportError> {
+async fn test_cast_nft_vote_with_invalid_metadata_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -661,7 +661,7 @@ async fn test_cast_nft_vote_with_invalid_metadata_error() -> Result<(), Transpor
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_same_nft_error() -> Result<(), TransportError> {
+async fn test_cast_nft_vote_with_same_nft_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -729,7 +729,7 @@ async fn test_cast_nft_vote_with_same_nft_error() -> Result<(), TransportError> 
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_no_nft_error() -> Result<(), TransportError> {
+async fn test_cast_nft_vote_with_no_nft_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -806,7 +806,7 @@ async fn test_cast_nft_vote_with_no_nft_error() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_max_5_nfts() -> Result<(), TransportError> {
+async fn test_cast_nft_vote_with_max_5_nfts() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -909,7 +909,7 @@ async fn test_cast_nft_vote_with_max_5_nfts() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_using_multiple_instructions() -> Result<(), TransportError> {
+async fn test_cast_nft_vote_using_multiple_instructions() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -1018,7 +1018,7 @@ async fn test_cast_nft_vote_using_multiple_instructions() -> Result<(), Transpor
 
 #[tokio::test]
 async fn test_cast_nft_vote_using_multiple_instructions_with_nft_already_voted_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -1107,7 +1107,7 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_nft_already_voted_e
 
 #[tokio::test]
 async fn test_cast_nft_vote_using_multiple_instructions_with_attempted_sandwiched_relinquish(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
