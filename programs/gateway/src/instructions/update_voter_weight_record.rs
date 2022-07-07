@@ -19,7 +19,7 @@ pub struct UpdateVoterWeightRecord<'info> {
     /// depending on whether the registrar includes a predecessor or not
     /// CHECK: Checked in the code depending on the registrar
     #[account()]
-    pub input_voting_weight: UncheckedAccount<'info>,
+    pub input_voter_weight: UncheckedAccount<'info>,
 
     /// A gateway token from the gatekeeper network in the registrar.
     /// Proves that the holder is permitted to take an action.
@@ -52,11 +52,11 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
-    let input_voting_weight_account = ctx.accounts.input_voting_weight.to_account_info();
+    let input_voter_weight_account = ctx.accounts.input_voter_weight.to_account_info();
 
     let clone_record = voter_weight_record.clone();
-    let input_voter_weight_record = parse_input_voter_weight_record(
-        &input_voting_weight_account,
+    let input_voter_weight_record = resolve_input_voter_weight(
+        &input_voter_weight_account,
         &clone_record,
         &ctx.accounts.registrar,
     )?;
@@ -81,42 +81,43 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
 }
 
 /// Attempt to parse the input account as a VoterWeightRecord or a TokenOwnerRecordV2
-fn parse_input_voter_weight_record<'a>(
+fn resolve_input_voter_weight<'a>(
     input_account: &'a AccountInfo,
     voter_weight_record_to_update: &'a VoterWeightRecord,
     registrar: &'a Registrar,
 ) -> Result<Box<dyn GenericVoterWeight + 'a>> {
     let predecessor_generic_voter_weight_record =
-        parse_input_voter_weight_record_unchecked(input_account, registrar)?;
+        get_generic_voter_weight_record_data(input_account, registrar)?;
 
     // ensure that the correct governance token is used
-    require!(
-        voter_weight_record_to_update.governing_token_mint
-            == predecessor_generic_voter_weight_record.get_governing_token_mint(),
+    require_eq!(
+        voter_weight_record_to_update.governing_token_mint,
+        predecessor_generic_voter_weight_record.get_governing_token_mint(),
         GatewayError::InvalidPredecessorVoterWeightRecordGovTokenMint
     );
 
     // Ensure that the correct governance token is used
-    require!(
-        voter_weight_record_to_update.governing_token_owner
-            == predecessor_generic_voter_weight_record.get_governing_token_owner(),
+    require_eq!(
+        voter_weight_record_to_update.governing_token_owner,
+        predecessor_generic_voter_weight_record.get_governing_token_owner(),
         GatewayError::InvalidPredecessorVoterWeightRecordGovTokenOwner
     );
 
     // Ensure that the realm matches the current realm
-    require!(
-        registrar.realm == predecessor_generic_voter_weight_record.get_realm(),
+    require_eq!(
+        registrar.realm,
+        predecessor_generic_voter_weight_record.get_realm(),
         GatewayError::InvalidPredecessorVoterWeightRecordRealm
     );
 
     Ok(predecessor_generic_voter_weight_record)
 }
 
-fn parse_input_voter_weight_record_unchecked<'a>(
+fn get_generic_voter_weight_record_data<'a>(
     input_account: &'a AccountInfo,
     registrar: &'a Registrar,
 ) -> Result<Box<dyn GenericVoterWeight + 'a>> {
-    match registrar.previous_voting_weight_plugin_program_id {
+    match registrar.previous_voter_weight_plugin_program_id {
         None => {
             msg!("parse_predecessor_voter_weight_record expects TokenOwnerRecord (V1 or 2)");
             // If there is no predecessor plugin registrar, then the input account must be a TokenOwnerRecordV2

@@ -3,18 +3,14 @@ use crate::state::*;
 use anchor_lang::prelude::*;
 use spl_governance::state::realm;
 
-/// Updates the  Registrar for spl-gov Realm
-/// This instruction should only be executed once per realm/governing_token_mint to create the account
+/// Configures the Gateway Registrar,
+/// allowing the gatekeeper network or previous plugin to be updated
 #[derive(Accounts)]
-pub struct UpdateRegistrar<'info> {
+#[instruction(use_previous_voter_weight_plugin:bool)]
+pub struct ConfigureRegistrar<'info> {
     /// The Gateway Plugin Registrar to be updated
     #[account(mut)]
     pub registrar: Account<'info, Registrar>,
-
-    /// The program id of the spl-governance program the realm belongs to
-    /// CHECK: Can be any instance of spl-governance and it's not known at the compilation time
-    #[account(executable)]
-    pub governance_program_id: UncheckedAccount<'info>,
 
     /// An spl-governance Realm
     ///
@@ -22,7 +18,10 @@ pub struct UpdateRegistrar<'info> {
     /// - Realm is owned by the governance_program_id
     /// - realm_authority is realm.authority
     /// CHECK: Owned by spl-governance instance specified in governance_program_id
-    #[account(owner = governance_program_id.key())]
+    #[account(
+        address = registrar.realm @ GatewayError::InvalidRealmForRegistrar,
+        owner = registrar.governance_program_id.key()
+    )]
     pub realm: UncheckedAccount<'info>,
 
     /// realm_authority must sign and match Realm.authority
@@ -41,16 +40,25 @@ pub struct UpdateRegistrar<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Updates a Registrar gatekeeperNetwork or a previous plugin program ID
-pub fn update_registrar(ctx: Context<UpdateRegistrar>) -> Result<()> {
+/// Configures a Registrar, updating the gatekeeperNetwork or the previous plugin program ID
+pub fn configure_registrar(
+    ctx: Context<ConfigureRegistrar>,
+    use_previous_voter_weight_plugin: bool,
+) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
     registrar.gatekeeper_network = ctx.accounts.gatekeeper_network.key();
 
     // If the plugin has a previous plugin, it "inherits" the vote weight from a vote_weight_account owned
     // by the previous plugin. This chain is registered here.
-    let previous_voting_weight_plugin_program_id = ctx.remaining_accounts.get(0);
-    registrar.previous_voting_weight_plugin_program_id =
-        previous_voting_weight_plugin_program_id.map(|account| account.key());
+    registrar.previous_voter_weight_plugin_program_id = match use_previous_voter_weight_plugin {
+        true => Some(
+            *ctx.remaining_accounts
+                .get(0)
+                .ok_or(GatewayError::MissingPreviousVoterWeightPlugin)?
+                .key,
+        ),
+        false => None,
+    };
 
     // Verify that realm_authority is the expected authority of the Realm
     // and that the mint matches one of the realm mints too.
@@ -59,8 +67,9 @@ pub fn update_registrar(ctx: Context<UpdateRegistrar>) -> Result<()> {
         &ctx.accounts.realm,
         &registrar.governing_token_mint,
     )?;
-    require!(
-        realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
+    require_eq!(
+        realm.authority.unwrap(),
+        ctx.accounts.realm_authority.key(),
         GatewayError::InvalidRealmAuthority
     );
 

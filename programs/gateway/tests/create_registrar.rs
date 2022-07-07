@@ -8,6 +8,8 @@ use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, transport::TransportError};
 
+use crate::program_test::predecessor_plugin_test::PredecessorPluginTest;
+use crate::program_test::tools::NopOverride;
 use program_test::tools::{assert_anchor_err, assert_gateway_err, assert_ix_err};
 
 #[tokio::test]
@@ -29,6 +31,59 @@ async fn test_create_registrar() -> Result<(), TransportError> {
         .await;
 
     assert_eq!(registrar, registrar_cookie.account);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_configure_registrar_new_previous_plugin() -> Result<(), TransportError> {
+    // Arrange
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
+
+    let realm_cookie = gateway_voter_test.governance.with_realm().await?;
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
+
+    // Act
+    let predecessor_program_id = PredecessorPluginTest::program_id();
+    let registrar_cookie = gateway_voter_test
+        .with_registrar(&realm_cookie, &gateway_cookie, Some(predecessor_program_id))
+        .await?;
+
+    // Assert
+    let registrar = gateway_voter_test
+        .get_registrar_account(&registrar_cookie.address)
+        .await;
+
+    assert_eq!(registrar, registrar_cookie.account);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_configure_registrar_missing_previous_plugin_error() -> Result<(), TransportError> {
+    // Arrange
+    let mut gateway_voter_test = GatewayVoterTest::start_new().await;
+
+    let realm_cookie = gateway_voter_test.governance.with_realm().await?;
+    let gateway_cookie = gateway_voter_test.with_gateway().await?;
+
+    // Act
+    let err = gateway_voter_test
+        .with_registrar_using_ix(
+            &realm_cookie,
+            &gateway_cookie,
+            None,
+            true, // This causes the error
+            &gpl_civic_gateway::id(),
+            NopOverride,
+            None,
+        )
+        .await
+        .err()
+        .unwrap();
+
+    // Assert
+    assert_gateway_err(err, GatewayError::MissingPreviousVoterWeightPlugin);
 
     Ok(())
 }
@@ -70,6 +125,7 @@ async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<
             &realm_cookie,
             &gateway_cookie,
             None,
+            false,
             &gpl_civic_gateway::id(),
             |i| i.accounts[4].is_signer = false, // realm_authority
             Some(&[]),
@@ -103,6 +159,7 @@ async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result
             &realm_cookie,
             &gateway_cookie,
             None,
+            false,
             &gpl_civic_gateway::id(),
             |i| i.accounts[1].pubkey = governance_program_id, //governance_program_id
             None,
@@ -132,6 +189,7 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), Transpor
             &realm_cookie,
             &gateway_cookie,
             None,
+            false,
             &gpl_civic_gateway::id(),
             |i| i.accounts[2].pubkey = Pubkey::new_unique(), // realm
             None,
@@ -165,6 +223,7 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
             &realm_cookie,
             &gateway_cookie,
             None,
+            false,
             &gpl_civic_gateway::id(),
             |i| i.accounts[3].pubkey = mint_cookie.address, // governing_token_mint
             None,

@@ -7,15 +7,16 @@ use spl_governance::state::realm;
 /// Creates a Plugin Registrar for spl-gov Realm
 /// This instruction should only be executed once per realm/governing_token_mint to create the account
 #[derive(Accounts)]
+#[instruction(use_previous_voter_weight_plugin:bool)]
 pub struct CreateRegistrar<'info> {
     /// The Gateway Registrar
     /// There can only be a single registrar per governance Realm and governing mint of the Realm
     #[account(
-        init,
-        seeds = [b"registrar".as_ref(),realm.key().as_ref(), governing_token_mint.key().as_ref()],
-        bump,
-        payer = payer,
-        space = Registrar::get_space()
+    init,
+    seeds = [b"registrar".as_ref(),realm.key().as_ref(), governing_token_mint.key().as_ref()],
+    bump,
+    payer = payer,
+    space = Registrar::get_space()
     )]
     pub registrar: Account<'info, Registrar>,
 
@@ -58,7 +59,10 @@ pub struct CreateRegistrar<'info> {
 }
 
 /// Creates a new Registrar which stores the gatekeeper network that the realm uses
-pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
+pub fn create_registrar(
+    ctx: Context<CreateRegistrar>,
+    use_previous_voter_weight_plugin: bool,
+) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
     registrar.governance_program_id = ctx.accounts.governance_program_id.key();
     registrar.realm = ctx.accounts.realm.key();
@@ -67,9 +71,15 @@ pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
 
     // If the plugin has a previous voter weight plugin, it "inherits" the vote weight from a vote_weight_account owned
     // by the previous plugin. This chain is registered here.
-    let previous_vote_weight_plugin_program_id = ctx.remaining_accounts.get(0);
-    registrar.previous_voting_weight_plugin_program_id =
-        previous_vote_weight_plugin_program_id.map(|account| account.key());
+    registrar.previous_voter_weight_plugin_program_id = match use_previous_voter_weight_plugin {
+        true => Some(
+            *ctx.remaining_accounts
+                .get(0)
+                .ok_or(GatewayError::MissingPreviousVoterWeightPlugin)?
+                .key,
+        ),
+        false => None,
+    };
 
     // Verify that realm_authority is the expected authority of the Realm
     // and that the mint matches one of the realm mints.
@@ -79,8 +89,9 @@ pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
         &registrar.governing_token_mint,
     )?;
 
-    require!(
-        realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
+    require_eq!(
+        realm.authority.unwrap(),
+        ctx.accounts.realm_authority.key(),
         GatewayError::InvalidRealmAuthority
     );
 

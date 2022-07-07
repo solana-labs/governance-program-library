@@ -1,10 +1,11 @@
-use crate::program_test::gateway_voter_test::VoterWeightRecordCookie;
-use crate::program_test::governance_test::TokenOwnerRecordCookie;
+use crate::{
+    program_test::gateway_voter_test::VoterWeightRecordCookie,
+    program_test::governance_test::TokenOwnerRecordCookie,
+};
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
 use gpl_civic_gateway::error::GatewayError;
 use itertools::Either;
-use solana_program::instruction::InstructionError;
-use solana_program::pubkey::Pubkey;
+use solana_program::{instruction::InstructionError, pubkey::Pubkey};
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
 use spl_governance_tools::error::GovernanceToolsError;
 

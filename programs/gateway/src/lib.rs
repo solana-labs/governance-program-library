@@ -14,13 +14,19 @@ declare_id!("GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk");
 #[program]
 pub mod gateway {
     use super::*;
-    pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
+    pub fn create_registrar(
+        ctx: Context<CreateRegistrar>,
+        use_previous_voter_weight_plugin: bool,
+    ) -> Result<()> {
         log_version();
-        instructions::create_registrar(ctx)
+        instructions::create_registrar(ctx, use_previous_voter_weight_plugin)
     }
-    pub fn update_registrar(ctx: Context<UpdateRegistrar>) -> Result<()> {
+    pub fn configure_registrar(
+        ctx: Context<ConfigureRegistrar>,
+        use_previous_voter_weight_plugin: bool,
+    ) -> Result<()> {
         log_version();
-        instructions::update_registrar(ctx)
+        instructions::configure_registrar(ctx, use_previous_voter_weight_plugin)
     }
     pub fn create_voter_weight_record(
         ctx: Context<CreateVoterWeightRecord>,

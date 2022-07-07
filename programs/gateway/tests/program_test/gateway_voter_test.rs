@@ -131,12 +131,13 @@ impl GatewayVoterTest {
         &mut self,
         realm_cookie: &RealmCookie,
         gateway_cookie: &GatewayCookie,
-        predecessor_program_id: Option<Pubkey>,
+        previous_plugin_program_id: Option<Pubkey>,
     ) -> Result<RegistrarCookie, TransportError> {
         self.with_registrar_using_ix(
             realm_cookie,
             gateway_cookie,
-            predecessor_program_id,
+            previous_plugin_program_id,
+            previous_plugin_program_id.is_some(),
             &gpl_civic_gateway::id(),
             NopOverride,
             None,
@@ -149,7 +150,8 @@ impl GatewayVoterTest {
         &mut self,
         realm_cookie: &RealmCookie,
         gateway_cookie: &GatewayCookie,
-        predecessor_program_id: Option<Pubkey>,
+        previous_plugin_program_id: Option<Pubkey>,
+        use_previous_voter_weight_plugin: bool,
         program_id: &Pubkey,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
@@ -158,7 +160,9 @@ impl GatewayVoterTest {
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_civic_gateway::instruction::CreateRegistrar {});
+            anchor_lang::InstructionData::data(&gpl_civic_gateway::instruction::CreateRegistrar {
+                use_previous_voter_weight_plugin,
+            });
 
         let mut accounts = anchor_lang::ToAccountMetas::to_account_metas(
             &gpl_civic_gateway::accounts::CreateRegistrar {
@@ -174,7 +178,7 @@ impl GatewayVoterTest {
             None,
         );
 
-        if let Some(predecessor_id) = predecessor_program_id {
+        if let Some(predecessor_id) = previous_plugin_program_id {
             accounts.push(AccountMeta::new_readonly(predecessor_id, false));
         }
 
@@ -195,7 +199,7 @@ impl GatewayVoterTest {
 
         let account = Registrar {
             governance_program_id: self.governance.program_id,
-            previous_voting_weight_plugin_program_id: predecessor_program_id,
+            previous_voter_weight_plugin_program_id: previous_plugin_program_id,
             realm: realm_cookie.address,
             governing_token_mint: realm_cookie.account.community_mint,
             gatekeeper_network: gateway_cookie.gatekeeper_network.pubkey(),
@@ -404,7 +408,7 @@ impl GatewayVoterTest {
     pub async fn update_voter_weight_record(
         &self,
         registrar_cookie: &RegistrarCookie,
-        input_voting_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
+        input_voter_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
         output_voter_weight_record_cookie: &mut VoterWeightRecordCookie,
         gateway_token_cookie: &GatewayTokenCookie,
     ) -> Result<(), TransportError> {
@@ -416,7 +420,7 @@ impl GatewayVoterTest {
             registrar: registrar_cookie.address,
             gateway_token: gateway_token_cookie.address,
             voter_weight_record: output_voter_weight_record_cookie.address,
-            input_voting_weight: extract_voting_weight_address(input_voting_weight_cookie),
+            input_voter_weight: extract_voting_weight_address(input_voter_weight_cookie),
         };
 
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
@@ -431,18 +435,19 @@ impl GatewayVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn update_registrar(
+    pub async fn configure_registrar(
         &self,
         realm_cookie: &RealmCookie,
         registrar_cookie: &RegistrarCookie,
         gateway_cookie: &GatewayCookie,
         predecessor_program_id: Option<Pubkey>,
     ) -> Result<(), TransportError> {
-        self.update_registrar_using_ix(
+        self.configure_registrar_using_ix(
             realm_cookie,
             registrar_cookie,
             gateway_cookie,
             predecessor_program_id,
+            predecessor_program_id.is_some(),
             NopOverride,
             None,
         )
@@ -450,23 +455,26 @@ impl GatewayVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn update_registrar_using_ix<F: Fn(&mut Instruction)>(
+    pub async fn configure_registrar_using_ix<F: Fn(&mut Instruction)>(
         &self,
         realm_cookie: &RealmCookie,
         registrar_cookie: &RegistrarCookie,
         gateway_cookie: &GatewayCookie,
         predecessor_program_id: Option<Pubkey>,
+        use_previous_voter_weight_plugin: bool,
         instruction_override: F,
-        signers_override: Option<&[&Keypair]>,
+        signers_override: Option<Option<&[&Keypair]>>,
     ) -> Result<(), TransportError> {
-        let data =
-            anchor_lang::InstructionData::data(&gpl_civic_gateway::instruction::UpdateRegistrar {});
+        let data = anchor_lang::InstructionData::data(
+            &gpl_civic_gateway::instruction::ConfigureRegistrar {
+                use_previous_voter_weight_plugin,
+            },
+        );
 
         let mut accounts = anchor_lang::ToAccountMetas::to_account_metas(
-            &gpl_civic_gateway::accounts::UpdateRegistrar {
+            &gpl_civic_gateway::accounts::ConfigureRegistrar {
                 registrar: registrar_cookie.address,
                 realm: realm_cookie.address,
-                governance_program_id: self.governance.program_id,
                 realm_authority: realm_cookie.get_realm_authority().pubkey(),
                 gatekeeper_network: gateway_cookie.gatekeeper_network.pubkey(),
                 payer: self.bench.payer.pubkey(),
@@ -479,19 +487,19 @@ impl GatewayVoterTest {
             accounts.push(AccountMeta::new_readonly(predecessor_id, false));
         }
 
-        let mut update_registrar_ix = Instruction {
+        let mut configure_registrar_ix = Instruction {
             program_id: gpl_civic_gateway::id(),
             accounts,
             data,
         };
 
-        instruction_override(&mut update_registrar_ix);
+        instruction_override(&mut configure_registrar_ix);
 
-        let default_signers = &[&realm_cookie.realm_authority];
-        let signers = signers_override.unwrap_or(default_signers);
+        let default_signers = [&realm_cookie.realm_authority];
+        let signers = signers_override.unwrap_or(Some(default_signers.as_slice()));
 
         self.bench
-            .process_transaction(&[update_registrar_ix], Some(signers))
+            .process_transaction(&[configure_registrar_ix], signers)
             .await
     }
 
@@ -505,7 +513,7 @@ impl GatewayVoterTest {
         voter_cookie: &WalletCookie,
         gateway_token_cookie: &GatewayTokenCookie,
         voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
-        input_voting_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
+        input_voter_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
         args: Option<CastVoteArgs>,
     ) -> Result<(), TransportError> {
         let args = args.unwrap_or_default();
@@ -518,7 +526,7 @@ impl GatewayVoterTest {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
             gateway_token: gateway_token_cookie.address,
-            input_voting_weight: extract_voting_weight_address(input_voting_weight_cookie),
+            input_voter_weight: extract_voting_weight_address(input_voter_weight_cookie),
         };
 
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);

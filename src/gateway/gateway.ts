@@ -46,19 +46,19 @@ export type Gateway = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "usePreviousVoterWeightPlugin",
+          "type": "bool"
+        }
+      ]
     },
     {
-      "name": "updateRegistrar",
+      "name": "configureRegistrar",
       "accounts": [
         {
           "name": "registrar",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "governanceProgramId",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -87,7 +87,12 @@ export type Gateway = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "usePreviousVoterWeightPlugin",
+          "type": "bool"
+        }
+      ]
     },
     {
       "name": "createVoterWeightRecord",
@@ -139,7 +144,7 @@ export type Gateway = {
           "isSigner": false
         },
         {
-          "name": "inputVotingWeight",
+          "name": "inputVoterWeight",
           "isMut": false,
           "isSigner": false
         },
@@ -180,7 +185,7 @@ export type Gateway = {
             "type": "publicKey"
           },
           {
-            "name": "previousVotingWeightPluginProgramId",
+            "name": "previousVoterWeightPluginProgramId",
             "type": {
               "option": "publicKey"
             }
@@ -280,52 +285,62 @@ export type Gateway = {
     {
       "code": 6000,
       "name": "InvalidRealmAuthority",
-      "msg": "Invalid Realm Authority"
+      "msg": "Invalid realm authority"
     },
     {
       "code": 6001,
+      "name": "InvalidRealmForRegistrar",
+      "msg": "Invalid realm for the provided registrar"
+    },
+    {
+      "code": 6002,
       "name": "InvalidPredecessorTokenOwnerRecord",
       "msg": "Invalid TokenOwnerRecord as input voter weight"
     },
     {
-      "code": 6002,
+      "code": 6003,
       "name": "InvalidPredecessorVoterWeightRecord",
       "msg": "Invalid VoterWeightRecord as input voter weight"
     },
     {
-      "code": 6003,
-      "name": "InvalidPredecessorVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord Realm for input voter weight"
-    },
-    {
       "code": 6004,
-      "name": "InvalidPredecessorVoterWeightRecordGovTokenMint",
-      "msg": "Invalid VoterWeightRecord Governance Token mint for input voter weight"
+      "name": "InvalidPredecessorVoterWeightRecordRealm",
+      "msg": "Invalid VoterWeightRecord realm for input voter weight"
     },
     {
       "code": 6005,
-      "name": "InvalidPredecessorVoterWeightRecordGovTokenOwner",
-      "msg": "Invalid VoterWeightRecord Governance Token owner for input voter weight"
+      "name": "InvalidPredecessorVoterWeightRecordGovTokenMint",
+      "msg": "Invalid VoterWeightRecord governance token mint for input voter weight"
     },
     {
       "code": 6006,
-      "name": "InvalidVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord Realm"
+      "name": "InvalidPredecessorVoterWeightRecordGovTokenOwner",
+      "msg": "Invalid VoterWeightRecord governance token owner for input voter weight"
     },
     {
       "code": 6007,
-      "name": "InvalidVoterWeightRecordMint",
-      "msg": "Invalid VoterWeightRecord Mint"
+      "name": "InvalidVoterWeightRecordRealm",
+      "msg": "Invalid VoterWeightRecord realm"
     },
     {
       "code": 6008,
+      "name": "InvalidVoterWeightRecordMint",
+      "msg": "Invalid VoterWeightRecord mint"
+    },
+    {
+      "code": 6009,
       "name": "InvalidTokenOwnerForVoterWeightRecord",
       "msg": "Invalid TokenOwner for VoterWeightRecord"
     },
     {
-      "code": 6009,
+      "code": 6010,
       "name": "InvalidGatewayToken",
       "msg": "Invalid gateway token"
+    },
+    {
+      "code": 6011,
+      "name": "MissingPreviousVoterWeightPlugin",
+      "msg": "Previous voter weight plugin required but not provided"
     }
   ]
 };
@@ -378,19 +393,19 @@ export const IDL: Gateway = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "usePreviousVoterWeightPlugin",
+          "type": "bool"
+        }
+      ]
     },
     {
-      "name": "updateRegistrar",
+      "name": "configureRegistrar",
       "accounts": [
         {
           "name": "registrar",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "governanceProgramId",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -419,7 +434,12 @@ export const IDL: Gateway = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "usePreviousVoterWeightPlugin",
+          "type": "bool"
+        }
+      ]
     },
     {
       "name": "createVoterWeightRecord",
@@ -471,7 +491,7 @@ export const IDL: Gateway = {
           "isSigner": false
         },
         {
-          "name": "inputVotingWeight",
+          "name": "inputVoterWeight",
           "isMut": false,
           "isSigner": false
         },
@@ -512,7 +532,7 @@ export const IDL: Gateway = {
             "type": "publicKey"
           },
           {
-            "name": "previousVotingWeightPluginProgramId",
+            "name": "previousVoterWeightPluginProgramId",
             "type": {
               "option": "publicKey"
             }
@@ -612,52 +632,62 @@ export const IDL: Gateway = {
     {
       "code": 6000,
       "name": "InvalidRealmAuthority",
-      "msg": "Invalid Realm Authority"
+      "msg": "Invalid realm authority"
     },
     {
       "code": 6001,
+      "name": "InvalidRealmForRegistrar",
+      "msg": "Invalid realm for the provided registrar"
+    },
+    {
+      "code": 6002,
       "name": "InvalidPredecessorTokenOwnerRecord",
       "msg": "Invalid TokenOwnerRecord as input voter weight"
     },
     {
-      "code": 6002,
+      "code": 6003,
       "name": "InvalidPredecessorVoterWeightRecord",
       "msg": "Invalid VoterWeightRecord as input voter weight"
     },
     {
-      "code": 6003,
-      "name": "InvalidPredecessorVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord Realm for input voter weight"
-    },
-    {
       "code": 6004,
-      "name": "InvalidPredecessorVoterWeightRecordGovTokenMint",
-      "msg": "Invalid VoterWeightRecord Governance Token mint for input voter weight"
+      "name": "InvalidPredecessorVoterWeightRecordRealm",
+      "msg": "Invalid VoterWeightRecord realm for input voter weight"
     },
     {
       "code": 6005,
-      "name": "InvalidPredecessorVoterWeightRecordGovTokenOwner",
-      "msg": "Invalid VoterWeightRecord Governance Token owner for input voter weight"
+      "name": "InvalidPredecessorVoterWeightRecordGovTokenMint",
+      "msg": "Invalid VoterWeightRecord governance token mint for input voter weight"
     },
     {
       "code": 6006,
-      "name": "InvalidVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord Realm"
+      "name": "InvalidPredecessorVoterWeightRecordGovTokenOwner",
+      "msg": "Invalid VoterWeightRecord governance token owner for input voter weight"
     },
     {
       "code": 6007,
-      "name": "InvalidVoterWeightRecordMint",
-      "msg": "Invalid VoterWeightRecord Mint"
+      "name": "InvalidVoterWeightRecordRealm",
+      "msg": "Invalid VoterWeightRecord realm"
     },
     {
       "code": 6008,
+      "name": "InvalidVoterWeightRecordMint",
+      "msg": "Invalid VoterWeightRecord mint"
+    },
+    {
+      "code": 6009,
       "name": "InvalidTokenOwnerForVoterWeightRecord",
       "msg": "Invalid TokenOwner for VoterWeightRecord"
     },
     {
-      "code": 6009,
+      "code": 6010,
       "name": "InvalidGatewayToken",
       "msg": "Invalid gateway token"
+    },
+    {
+      "code": 6011,
+      "name": "MissingPreviousVoterWeightPlugin",
+      "msg": "Previous voter weight plugin required but not provided"
     }
   ]
 }
