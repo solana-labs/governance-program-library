@@ -1,6 +1,11 @@
+use crate::{
+    program_test::gateway_voter_test::VoterWeightRecordCookie,
+    program_test::governance_test::TokenOwnerRecordCookie,
+};
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
 use gpl_civic_gateway::error::GatewayError;
-use solana_program::instruction::InstructionError;
+use itertools::Either;
+use solana_program::{instruction::InstructionError, pubkey::Pubkey};
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
 use spl_governance_tools::error::GovernanceToolsError;
 
@@ -73,4 +78,13 @@ pub fn assert_ix_err(banks_client_error: TransportError, ix_error: InstructionEr
         }
         _ => panic!("{:?} Is not InstructionError", tx_error),
     };
+}
+
+pub fn extract_voting_weight_address(
+    account: &Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
+) -> Pubkey {
+    account
+        .map_left(|cookie| cookie.address)
+        .map_right(|cookie| cookie.address)
+        .into_inner()
 }

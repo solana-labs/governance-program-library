@@ -9,19 +9,24 @@ pub mod state;
 
 pub mod tools;
 
-use crate::state::*;
-
-declare_id!("Ggatr3wgDLySEwA2qEjt1oiw4BUzp5yMLJyz21919dq6");
+declare_id!("GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk");
 
 #[program]
 pub mod gateway {
-
-    use crate::state::VoterWeightAction;
-
     use super::*;
-    pub fn create_registrar(ctx: Context<CreateRegistrar>) -> Result<()> {
+    pub fn create_registrar(
+        ctx: Context<CreateRegistrar>,
+        use_previous_voter_weight_plugin: bool,
+    ) -> Result<()> {
         log_version();
-        instructions::create_registrar(ctx)
+        instructions::create_registrar(ctx, use_previous_voter_weight_plugin)
+    }
+    pub fn configure_registrar(
+        ctx: Context<ConfigureRegistrar>,
+        use_previous_voter_weight_plugin: bool,
+    ) -> Result<()> {
+        log_version();
+        instructions::configure_registrar(ctx, use_previous_voter_weight_plugin)
     }
     pub fn create_voter_weight_record(
         ctx: Context<CreateVoterWeightRecord>,
@@ -30,13 +35,9 @@ pub mod gateway {
         log_version();
         instructions::create_voter_weight_record(ctx, governing_token_owner)
     }
-    pub fn update_voter_weight_record(
-        ctx: Context<UpdateVoterWeightRecord>,
-        voter_weight_action: VoterWeightAction,
-        target: Option<Pubkey>,
-    ) -> Result<()> {
+    pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
         log_version();
-        instructions::update_voter_weight_record(ctx, voter_weight_action, target)
+        instructions::update_voter_weight_record(ctx)
     }
 }
 

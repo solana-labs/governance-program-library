@@ -2,21 +2,24 @@ use crate::error::GatewayError;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use solana_gateway::Gateway;
-
-/// The default vote weight matches the default decimal places of a governance token
-/// so that a single vote using this plugin matches a single vote with a governance token
-/// This is a temporary solution, until SPL-Governance supports plugin-composition,
-/// at which point, the deposited tokens will be passed in as an input vote weight.
-pub const DEFAULT_VOTE_WEIGHT: u64 = 1000000;
+use spl_governance::state::token_owner_record::get_token_owner_record_data_for_realm_and_governing_mint;
+use spl_governance_tools::account::get_account_data;
+use std::cmp::max;
 
 /// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the given target action only
 /// and hence the instruction has to be executed inside the same transaction as the corresponding spl-gov instruction
 #[derive(Accounts)]
-#[instruction(voter_weight_action: VoterWeightAction, target: Option<Pubkey>)]
+#[instruction()]
 pub struct UpdateVoterWeightRecord<'info> {
     /// The Gateway Registrar
     pub registrar: Account<'info, Registrar>,
+
+    /// An account that is either of type TokenOwnerRecordV2 or VoterWeightRecord
+    /// depending on whether the registrar includes a predecessor or not
+    /// CHECK: Checked in the code depending on the registrar
+    #[account()]
+    pub input_voter_weight: UncheckedAccount<'info>,
 
     /// A gateway token from the gatekeeper network in the registrar.
     /// Proves that the holder is permitted to take an action.
@@ -25,26 +28,19 @@ pub struct UpdateVoterWeightRecord<'info> {
     pub gateway_token: UncheckedAccount<'info>,
 
     #[account(
-        mut,
-        constraint = voter_weight_record.realm == registrar.realm
-        @ GatewayError::InvalidVoterWeightRecordRealm,
+    mut,
+    constraint = voter_weight_record.realm == registrar.realm
+    @ GatewayError::InvalidVoterWeightRecordRealm,
 
-        constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
-        @ GatewayError::InvalidVoterWeightRecordMint,
+    constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
+    @ GatewayError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 }
 
 /// Sets the voter weight record value to the default voter weight, if the voter has a valid
 /// Civic Pass, or throws an error if not.
-/// Note: Once SPL-Governance supports plugin-composition, this will be changed to accept an
-/// input vote weight, and will set the output vote weight to the input vote weight.
-/// The action and target are not used in this case.
-pub fn update_voter_weight_record(
-    ctx: Context<UpdateVoterWeightRecord>,
-    voter_weight_action: VoterWeightAction,
-    target: Option<Pubkey>,
-) -> Result<()> {
+pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
     // Gateway: Check if the voter has a valid gateway token and fail if not
     Gateway::verify_gateway_token_account_info(
         &ctx.accounts.gateway_token.to_account_info(),
@@ -56,14 +52,93 @@ pub fn update_voter_weight_record(
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
-    voter_weight_record.voter_weight = DEFAULT_VOTE_WEIGHT;
+    let input_voter_weight_account = ctx.accounts.input_voter_weight.to_account_info();
 
-    // Record is only valid as of the current slot
-    voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
+    let clone_record = voter_weight_record.clone();
+    let input_voter_weight_record = resolve_input_voter_weight(
+        &input_voter_weight_account,
+        &clone_record,
+        &ctx.accounts.registrar,
+    )?;
 
-    // Set the action to make it specific and prevent being used for voting
-    voter_weight_record.weight_action = Some(voter_weight_action);
-    voter_weight_record.weight_action_target = target;
+    msg!(
+        "input_voter_weight_record.voter_weight: {}",
+        input_voter_weight_record.get_voter_weight()
+    );
+    voter_weight_record.voter_weight = input_voter_weight_record.get_voter_weight();
+    voter_weight_record.weight_action = input_voter_weight_record.get_weight_action();
+    voter_weight_record.weight_action_target = input_voter_weight_record.get_weight_action_target();
+
+    // If the input voter weight record has an expiry, use the max between that and the current slot
+    // Otherwise use the current slot
+    let current_slot = Clock::get()?.slot;
+    voter_weight_record.voter_weight_expiry = input_voter_weight_record.get_vote_expiry().map_or(
+        Some(current_slot), // no previous expiry, use current slot
+        |previous_expiry| Some(max(previous_expiry, current_slot)),
+    );
 
     Ok(())
+}
+
+/// Attempt to parse the input account as a VoterWeightRecord or a TokenOwnerRecordV2
+fn resolve_input_voter_weight<'a>(
+    input_account: &'a AccountInfo,
+    voter_weight_record_to_update: &'a VoterWeightRecord,
+    registrar: &'a Registrar,
+) -> Result<Box<dyn GenericVoterWeight + 'a>> {
+    let predecessor_generic_voter_weight_record =
+        get_generic_voter_weight_record_data(input_account, registrar)?;
+
+    // ensure that the correct governance token is used
+    require_eq!(
+        voter_weight_record_to_update.governing_token_mint,
+        predecessor_generic_voter_weight_record.get_governing_token_mint(),
+        GatewayError::InvalidPredecessorVoterWeightRecordGovTokenMint
+    );
+
+    // Ensure that the correct governance token is used
+    require_eq!(
+        voter_weight_record_to_update.governing_token_owner,
+        predecessor_generic_voter_weight_record.get_governing_token_owner(),
+        GatewayError::InvalidPredecessorVoterWeightRecordGovTokenOwner
+    );
+
+    // Ensure that the realm matches the current realm
+    require_eq!(
+        registrar.realm,
+        predecessor_generic_voter_weight_record.get_realm(),
+        GatewayError::InvalidPredecessorVoterWeightRecordRealm
+    );
+
+    Ok(predecessor_generic_voter_weight_record)
+}
+
+fn get_generic_voter_weight_record_data<'a>(
+    input_account: &'a AccountInfo,
+    registrar: &'a Registrar,
+) -> Result<Box<dyn GenericVoterWeight + 'a>> {
+    match registrar.previous_voter_weight_plugin_program_id {
+        None => {
+            msg!("parse_predecessor_voter_weight_record expects TokenOwnerRecord (V1 or 2)");
+            // If there is no predecessor plugin registrar, then the input account must be a TokenOwnerRecordV2
+            let record = get_token_owner_record_data_for_realm_and_governing_mint(
+                &registrar.governance_program_id,
+                input_account,
+                &registrar.realm,
+                &registrar.governing_token_mint,
+            )
+            .map_err(|_| error!(GatewayError::InvalidPredecessorTokenOwnerRecord))?;
+
+            Ok(Box::new(record))
+        }
+        Some(predecessor) => {
+            msg!("parse_predecessor_voter_weight_record expects VoterWeightRecord");
+            // If there is a predecessor plugin registrar, then the input account must be a VoterWeightRecord
+            let record: spl_governance_addin_api::voter_weight::VoterWeightRecord =
+                get_account_data(&predecessor, input_account)
+                    .map_err(|_| error!(GatewayError::InvalidPredecessorVoterWeightRecord))?;
+
+            Ok(Box::new(record))
+        }
+    }
 }

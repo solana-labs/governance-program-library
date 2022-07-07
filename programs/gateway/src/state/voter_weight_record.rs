@@ -1,10 +1,11 @@
 use anchor_lang::prelude::*;
+use num_derive::FromPrimitive;
 
 use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
 
 /// VoterWeightAction enum as defined in spl-governance-addin-api
 /// It's redefined here for Anchor to export it to IDL
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq, FromPrimitive)]
 pub enum VoterWeightAction {
     /// Cast vote for a proposal. Target: Proposal
     CastVote,
