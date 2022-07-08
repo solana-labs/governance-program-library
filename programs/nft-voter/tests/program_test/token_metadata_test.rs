@@ -137,7 +137,8 @@ impl TokenMetadataTest {
             master_edition: master_edition_key,
         })
     }
-
+    
+    #[allow(dead_code)]
     pub async fn with_nft_collection_v3(&self) -> Result<NftCollectionCookie, BanksClientError> {
         let update_authority = self.bench.context.borrow().payer.pubkey();
         let payer = self.bench.context.borrow().payer.pubkey();

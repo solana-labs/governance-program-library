@@ -63,7 +63,7 @@ async fn test_configure_collection() -> Result<(), BanksClientError> {
 }
 
 #[tokio::test]
-async fn test_configure_collection_sized_with_two_nft_mints() -> Result<(), BanksClientError> {
+async fn test_configure_collection_sized_with_five_nft_mints() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -75,9 +75,55 @@ async fn test_configure_collection_sized_with_two_nft_mints() -> Result<(), Bank
 
     let minter_cookie = nft_voter_test.bench.with_wallet().await;
 
-//  Program metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s failed: Failed to serialize or deserialize account data: Unknown
-//  Error: TransactionError(InstructionError(0, BorshIoError("Unknown")))
-    let nft_cookie = nft_voter_test
+    let _nft_cookie = nft_voter_test
+        .token_metadata
+        .with_nft_v3(
+            &nft_collection_cookie,
+            &minter_cookie,
+            Some(CreateNftArgs {
+                verify_collection: true,
+                ..Default::default()
+            }),
+        )
+        .await?;
+
+    let _nft_cookie2 = nft_voter_test
+        .token_metadata
+        .with_nft_v3(
+            &nft_collection_cookie,
+            &minter_cookie,
+            Some(CreateNftArgs {
+                verify_collection: true,
+                ..Default::default()
+            }),
+        )
+        .await?;
+
+    let _nft_cookie3 = nft_voter_test
+        .token_metadata
+        .with_nft_v3(
+            &nft_collection_cookie,
+            &minter_cookie,
+            Some(CreateNftArgs {
+                verify_collection: true,
+                ..Default::default()
+            }),
+        )
+        .await?;
+
+    let _nft_cookie4 = nft_voter_test
+        .token_metadata
+        .with_nft_v3(
+            &nft_collection_cookie,
+            &minter_cookie,
+            Some(CreateNftArgs {
+                verify_collection: true,
+                ..Default::default()
+            }),
+        )
+        .await?;
+
+    let _nft_cookie5 = nft_voter_test
         .token_metadata
         .with_nft_v3(
             &nft_collection_cookie,
@@ -94,7 +140,7 @@ async fn test_configure_collection_sized_with_two_nft_mints() -> Result<(), Bank
         .await?;
 
     // Act
-    let collection_config_cookie = nft_voter_test
+    let _collection_config_cookie = nft_voter_test
         .with_collection(
             &registrar_cookie,
             &nft_collection_cookie,
@@ -110,12 +156,9 @@ async fn test_configure_collection_sized_with_two_nft_mints() -> Result<(), Bank
 
     assert_eq!(registrar.collection_configs.len(), 1);
 
-    assert_eq!(registrar.collection_configs[0].size, 1);
+    assert_eq!(registrar.collection_configs[0].size, 5);
 
-    assert_eq!(
-        registrar.collection_configs[0],
-        collection_config_cookie.collection_config
-    );
+    assert!(registrar.collection_configs[0].size != ConfigureCollectionArgs::default().size);
 
     let max_voter_weight_record = nft_voter_test
         .get_max_voter_weight_record(&max_voter_weight_record_cookie.address)

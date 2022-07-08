@@ -6,12 +6,11 @@ use anchor_lang::{
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 use spl_governance::state::realm;
-use mpl_token_metadata::state::{CollectionDetails};
+use mpl_token_metadata::state::{CollectionDetails,Metadata};
 
 
 use crate::error::NftVoterError;
 use crate::state::{max_voter_weight_record::MaxVoterWeightRecord, CollectionConfig, Registrar};
-use crate::tools::token_metadata::get_token_metadata_for_mint;
 
 /// Configures NFT voting collection which defines what NFTs can be used for governances
 /// and what weight they have
@@ -36,6 +35,9 @@ pub struct ConfigureCollection<'info> {
     // Collection which is going to be used for voting
     pub collection: Account<'info, Mint>,
 
+    #[account(seeds = [b"metadata".as_ref(), mpl_token_metadata::ID.as_ref(), collection.key().as_ref()], bump, seeds::program = mpl_token_metadata::ID, owner = mpl_token_metadata::ID)]
+    pub metadata: AccountInfo<'info>,
+
     #[account(
         mut,
         constraint = max_voter_weight_record.realm == registrar.realm
@@ -54,7 +56,7 @@ pub fn configure_collection(
 ) -> Result<()> {
     let collection = &ctx.accounts.collection;
 
-    let collection_metadata = get_token_metadata_for_mint(&collection.to_account_info(), &collection.key());
+    let collection_metadata = Metadata::from_account_info(&ctx.accounts.metadata);
     
     // Set size to the collection details config if available
     let retrieved_size = if let Some(details) = collection_metadata.unwrap().collection_details {

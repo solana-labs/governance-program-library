@@ -1,5 +1,5 @@
 anchor_version = "0.25.0"
-solana_version = "1.10.19"
+solana_version = "1.10.30"
 
 [features]
 seeds = false

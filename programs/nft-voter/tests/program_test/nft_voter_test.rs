@@ -440,10 +440,11 @@ impl NftVoterTest {
             });
 
         let accounts = gpl_nft_voter::accounts::ConfigureCollection {
+            metadata: nft_collection_cookie.metadata,
             registrar: registrar_cookie.address,
             realm: registrar_cookie.account.realm,
             realm_authority: registrar_cookie.realm_authority.pubkey(),
-            collection: nft_collection_cookie.mint,
+            collection: nft_collection_cookie.mint, 
             max_voter_weight_record: max_voter_weight_record_cookie.address,
         };
 
