@@ -477,8 +477,6 @@ impl GatewayVoterTest {
                 realm: realm_cookie.address,
                 realm_authority: realm_cookie.get_realm_authority().pubkey(),
                 gatekeeper_network: gateway_cookie.gatekeeper_network.pubkey(),
-                payer: self.bench.payer.pubkey(),
-                system_program: solana_sdk::system_program::id(),
             },
             None,
         );

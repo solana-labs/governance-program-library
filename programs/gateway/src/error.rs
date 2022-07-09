@@ -8,10 +8,10 @@ pub enum GatewayError {
     #[msg("Invalid realm for the provided registrar")]
     InvalidRealmForRegistrar,
 
-    #[msg("Invalid TokenOwnerRecord as input voter weight")]
+    #[msg("Invalid TokenOwnerRecord as input voter weight (expecting TokenOwnerRecord V1 or V2)")]
     InvalidPredecessorTokenOwnerRecord,
 
-    #[msg("Invalid VoterWeightRecord as input voter weight")]
+    #[msg("Invalid VoterWeightRecord as input voter weight (expecting VoterWeightRecord)")]
     InvalidPredecessorVoterWeightRecord,
 
     #[msg("Invalid VoterWeightRecord realm for input voter weight")]

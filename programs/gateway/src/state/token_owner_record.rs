@@ -30,7 +30,7 @@ impl GenericVoterWeight for TokenOwnerRecordV2 {
         None
     }
 
-    fn get_vote_expiry(&self) -> Option<u64> {
+    fn get_voter_weight_expiry(&self) -> Option<u64> {
         None
     }
 }

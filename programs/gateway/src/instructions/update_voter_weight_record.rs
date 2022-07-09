@@ -72,10 +72,11 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
     // If the input voter weight record has an expiry, use the max between that and the current slot
     // Otherwise use the current slot
     let current_slot = Clock::get()?.slot;
-    voter_weight_record.voter_weight_expiry = input_voter_weight_record.get_vote_expiry().map_or(
-        Some(current_slot), // no previous expiry, use current slot
-        |previous_expiry| Some(max(previous_expiry, current_slot)),
-    );
+    voter_weight_record.voter_weight_expiry =
+        input_voter_weight_record.get_voter_weight_expiry().map_or(
+            Some(current_slot), // no previous expiry, use current slot
+            |previous_expiry| Some(max(previous_expiry, current_slot)),
+        );
 
     Ok(())
 }
@@ -85,7 +86,7 @@ fn resolve_input_voter_weight<'a>(
     input_account: &'a AccountInfo,
     voter_weight_record_to_update: &'a VoterWeightRecord,
     registrar: &'a Registrar,
-) -> Result<Box<dyn GenericVoterWeight + 'a>> {
+) -> Result<GenericVoterWeightEnum> {
     let predecessor_generic_voter_weight_record =
         get_generic_voter_weight_record_data(input_account, registrar)?;
 
@@ -116,10 +117,9 @@ fn resolve_input_voter_weight<'a>(
 fn get_generic_voter_weight_record_data<'a>(
     input_account: &'a AccountInfo,
     registrar: &'a Registrar,
-) -> Result<Box<dyn GenericVoterWeight + 'a>> {
+) -> Result<GenericVoterWeightEnum> {
     match registrar.previous_voter_weight_plugin_program_id {
         None => {
-            msg!("parse_predecessor_voter_weight_record expects TokenOwnerRecord (V1 or 2)");
             // If there is no predecessor plugin registrar, then the input account must be a TokenOwnerRecordV2
             let record = get_token_owner_record_data_for_realm_and_governing_mint(
                 &registrar.governance_program_id,
@@ -129,16 +129,15 @@ fn get_generic_voter_weight_record_data<'a>(
             )
             .map_err(|_| error!(GatewayError::InvalidPredecessorTokenOwnerRecord))?;
 
-            Ok(Box::new(record))
+            Ok(GenericVoterWeightEnum::TokenOwnerRecordV2(record))
         }
         Some(predecessor) => {
-            msg!("parse_predecessor_voter_weight_record expects VoterWeightRecord");
             // If there is a predecessor plugin registrar, then the input account must be a VoterWeightRecord
             let record: spl_governance_addin_api::voter_weight::VoterWeightRecord =
                 get_account_data(&predecessor, input_account)
                     .map_err(|_| error!(GatewayError::InvalidPredecessorVoterWeightRecord))?;
 
-            Ok(Box::new(record))
+            Ok(GenericVoterWeightEnum::VoterWeightRecord(record))
         }
     }
 }
