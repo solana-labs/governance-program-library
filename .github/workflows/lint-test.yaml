@@ -78,4 +78,4 @@ jobs:
         run: cargo +bpf build-bpf
 
       - name: Run bpf tests
-        run: cargo test-bpf
+        run: cargo +bpf test-bpf
