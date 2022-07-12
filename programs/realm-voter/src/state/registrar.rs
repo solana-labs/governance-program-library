@@ -1,9 +1,6 @@
-use crate::{
-    id,
-    state::GovernanceProgramConfig,
-    tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
-};
+use crate::{id, state::GovernanceProgramConfig, tools::anchor::DISCRIMINATOR_SIZE};
 use anchor_lang::prelude::*;
+use solana_program::pubkey::PUBKEY_BYTES;
 
 /// Registrar which stores spl-governance configurations for the given Realm
 #[account]
@@ -42,9 +39,9 @@ pub struct Registrar {
 impl Registrar {
     pub fn get_space(max_governance_programs: u8) -> usize {
         DISCRIMINATOR_SIZE
-            + PUBKEY_SIZE * 3
+            + PUBKEY_BYTES * 3
             + 4
-            + max_governance_programs as usize * (PUBKEY_SIZE + 8)
+            + max_governance_programs as usize * (PUBKEY_BYTES + 8)
             + 8
             + 8
             + 128

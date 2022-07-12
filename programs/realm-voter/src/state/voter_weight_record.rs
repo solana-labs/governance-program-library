@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
+use solana_program::pubkey::PUBKEY_BYTES;
 
-use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
+use crate::tools::anchor::DISCRIMINATOR_SIZE;
 
 /// VoterWeightAction enum as defined in spl-governance-addin-api
 /// It's redefined here for Anchor to export it to IDL
@@ -70,7 +71,7 @@ pub struct VoterWeightRecord {
 
 impl VoterWeightRecord {
     pub fn get_space() -> usize {
-        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 4 + 8 + 1 + 8 + 1 + 1 + 1 + 8
+        DISCRIMINATOR_SIZE + PUBKEY_BYTES * 4 + 8 + 1 + 8 + 1 + 1 + 1 + 8
     }
 }
 

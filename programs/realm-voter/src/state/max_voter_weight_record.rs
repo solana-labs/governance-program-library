@@ -1,7 +1,8 @@
 use crate::id;
-use crate::tools::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
+use crate::tools::anchor::DISCRIMINATOR_SIZE;
 use anchor_lang::prelude::Pubkey;
 use anchor_lang::prelude::*;
+use solana_program::pubkey::PUBKEY_BYTES;
 
 /// MaxVoterWeightRecord account as defined in spl-governance-addin-api
 /// It's redefined here without account_discriminator for Anchor to treat it as native account
@@ -47,7 +48,7 @@ impl Default for MaxVoterWeightRecord {
 
 impl MaxVoterWeightRecord {
     pub fn get_space() -> usize {
-        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 2 + 8 + 1 + 8 + 8
+        DISCRIMINATOR_SIZE + PUBKEY_BYTES * 2 + 8 + 1 + 8 + 8
     }
 }
 
