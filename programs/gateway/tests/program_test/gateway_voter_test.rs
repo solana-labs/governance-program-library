@@ -367,9 +367,7 @@ impl GatewayVoterTest {
         );
 
         let accounts = gpl_civic_gateway::accounts::CreateVoterWeightRecord {
-            governance_program_id: self.governance.program_id,
-            realm: registrar_cookie.account.realm,
-            realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
+            registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_key,
             payer: self.bench.payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
