@@ -35,64 +35,6 @@ async fn test_create_max_voter_weight_record() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_create_max_voter_weight_record_with_invalid_realm_error() -> Result<(), TransportError>
-{
-    // Arrange
-    let mut realm_voter_test = RealmVoterTest::start_new().await;
-
-    let realm_cookie = realm_voter_test.governance.with_realm().await?;
-
-    let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
-
-    let realm_cookie2 = realm_voter_test.governance.with_realm().await?;
-
-    // Act
-    let err = realm_voter_test
-        .with_max_voter_weight_record_using_ix(&registrar_cookie, |i| {
-            i.accounts[2].pubkey = realm_cookie2.address // Realm
-        })
-        .await
-        .err()
-        .unwrap();
-
-    // Assert
-
-    // PDA doesn't match and hence the error is PrivilegeEscalation
-    assert_ix_err(err, InstructionError::PrivilegeEscalation);
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_create_max_voter_weight_record_with_invalid_mint_error() -> Result<(), TransportError>
-{
-    // Arrange
-    let mut realm_voter_test = RealmVoterTest::start_new().await;
-
-    let realm_cookie = realm_voter_test.governance.with_realm().await?;
-
-    let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
-
-    let realm_cookie2 = realm_voter_test.governance.with_realm().await?;
-
-    // Act
-    let err = realm_voter_test
-        .with_max_voter_weight_record_using_ix(&registrar_cookie, |i| {
-            i.accounts[2].pubkey = realm_cookie2.address // Mint
-        })
-        .await
-        .err()
-        .unwrap();
-
-    // Assert
-
-    // PDA doesn't match and hence the error is PrivilegeEscalation
-    assert_ix_err(err, InstructionError::PrivilegeEscalation);
-
-    Ok(())
-}
-
-#[tokio::test]
 async fn test_create_max_voter_weight_record_with_already_exists_error(
 ) -> Result<(), TransportError> {
     // Arrange
