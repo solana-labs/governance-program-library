@@ -129,7 +129,7 @@ fn get_generic_voter_weight_record_data<'a>(
             )
             .map_err(|_| error!(GatewayError::InvalidPredecessorTokenOwnerRecord))?;
 
-            Ok(GenericVoterWeightEnum::TokenOwnerRecordV2(record))
+            Ok(GenericVoterWeightEnum::TokenOwnerRecord(record))
         }
         Some(predecessor) => {
             // If there is a predecessor plugin registrar, then the input account must be a VoterWeightRecord

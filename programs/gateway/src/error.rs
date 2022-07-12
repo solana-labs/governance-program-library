@@ -29,9 +29,6 @@ pub enum GatewayError {
     #[msg("Invalid VoterWeightRecord mint")]
     InvalidVoterWeightRecordMint,
 
-    #[msg("Invalid TokenOwner for VoterWeightRecord")]
-    InvalidTokenOwnerForVoterWeightRecord,
-
     #[msg("Invalid gateway token")]
     InvalidGatewayToken,
 

@@ -1,7 +1,6 @@
-use crate::state::{VoterWeightAction, VoterWeightRecord};
+use crate::state::VoterWeightAction;
 use enum_dispatch::enum_dispatch;
 use num_traits::FromPrimitive;
-use solana_program::program_pack::IsInitialized;
 use solana_program::pubkey::Pubkey;
 use spl_governance::state::token_owner_record::TokenOwnerRecordV2;
 
@@ -21,49 +20,11 @@ pub trait GenericVoterWeight {
 #[enum_dispatch(GenericVoterWeight)]
 pub enum GenericVoterWeightEnum {
     VoterWeightRecord(spl_governance_addin_api::voter_weight::VoterWeightRecord),
-    TokenOwnerRecordV2(TokenOwnerRecordV2),
-}
-
-impl IsInitialized for VoterWeightRecord {
-    fn is_initialized(&self) -> bool {
-        self.realm != Default::default()
-            && self.governing_token_mint != Pubkey::default()
-            && self.governing_token_owner != Pubkey::default()
-    }
-}
-
-impl GenericVoterWeight for VoterWeightRecord {
-    fn get_governing_token_mint(&self) -> Pubkey {
-        self.governing_token_mint
-    }
-
-    fn get_governing_token_owner(&self) -> Pubkey {
-        self.governing_token_owner
-    }
-
-    fn get_realm(&self) -> Pubkey {
-        self.realm
-    }
-
-    fn get_voter_weight(&self) -> u64 {
-        self.voter_weight
-    }
-
-    fn get_weight_action(&self) -> Option<VoterWeightAction> {
-        self.weight_action
-    }
-
-    fn get_weight_action_target(&self) -> Option<Pubkey> {
-        self.weight_action_target
-    }
-
-    fn get_voter_weight_expiry(&self) -> Option<u64> {
-        self.voter_weight_expiry
-    }
+    TokenOwnerRecord(TokenOwnerRecordV2),
 }
 
 // the "official" on-chain voter weight record has a discriminator field
-// when a predecessor voter weight is provided, it uses this struct instead of the one defined above.
+// when a predecessor voter weight is provided, it uses this struct
 // We add the GenericVoterWeight trait here to hide this from the rest of the code.
 impl GenericVoterWeight for spl_governance_addin_api::voter_weight::VoterWeightRecord {
     fn get_governing_token_mint(&self) -> Pubkey {
