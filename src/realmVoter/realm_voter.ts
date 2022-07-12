@@ -1,5 +1,5 @@
 export type RealmVoter = {
-  "version": "0.0.1",
+  "version": "0.0.0",
   "name": "realm_voter",
   "instructions": [
     {
@@ -366,6 +366,35 @@ export type RealmVoter = {
       }
     },
     {
+      "name": "RealmVoterError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "InvalidRealmAuthority"
+          },
+          {
+            "name": "InvalidRealmForRegistrar"
+          },
+          {
+            "name": "InvalidVoterWeightRecordRealm"
+          },
+          {
+            "name": "InvalidVoterWeightRecordMint"
+          },
+          {
+            "name": "TokenOwnerRecordFromOwnRealmNotAllowed"
+          },
+          {
+            "name": "GovernanceProgramNotConfigured"
+          },
+          {
+            "name": "GoverningTokenOwnerMustMatch"
+          }
+        ]
+      }
+    },
+    {
       "name": "VoterWeightAction",
       "type": {
         "kind": "enum",
@@ -387,49 +416,12 @@ export type RealmVoter = {
           }
         ]
       }
-    }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "InvalidRealmAuthority",
-      "msg": "Invalid Realm Authority"
-    },
-    {
-      "code": 6001,
-      "name": "InvalidRealmForRegistrar",
-      "msg": "Invalid Realm for Registrar"
-    },
-    {
-      "code": 6002,
-      "name": "InvalidVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord Realm"
-    },
-    {
-      "code": 6003,
-      "name": "InvalidVoterWeightRecordMint",
-      "msg": "Invalid VoterWeightRecord Mint"
-    },
-    {
-      "code": 6004,
-      "name": "TokenOwnerRecordFromOwnRealmNotAllowed",
-      "msg": "TokenOwnerRecord from own realm is not allowed"
-    },
-    {
-      "code": 6005,
-      "name": "GovernanceProgramNotConfigured",
-      "msg": "Governance program not configured"
-    },
-    {
-      "code": 6006,
-      "name": "GoverningTokenOwnerMustMatch",
-      "msg": "Governing TokenOwner must match"
     }
   ]
 };
 
 export const IDL: RealmVoter = {
-  "version": "0.0.1",
+  "version": "0.0.0",
   "name": "realm_voter",
   "instructions": [
     {
@@ -796,6 +788,35 @@ export const IDL: RealmVoter = {
       }
     },
     {
+      "name": "RealmVoterError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "InvalidRealmAuthority"
+          },
+          {
+            "name": "InvalidRealmForRegistrar"
+          },
+          {
+            "name": "InvalidVoterWeightRecordRealm"
+          },
+          {
+            "name": "InvalidVoterWeightRecordMint"
+          },
+          {
+            "name": "TokenOwnerRecordFromOwnRealmNotAllowed"
+          },
+          {
+            "name": "GovernanceProgramNotConfigured"
+          },
+          {
+            "name": "GoverningTokenOwnerMustMatch"
+          }
+        ]
+      }
+    },
+    {
       "name": "VoterWeightAction",
       "type": {
         "kind": "enum",
@@ -817,43 +838,6 @@ export const IDL: RealmVoter = {
           }
         ]
       }
-    }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "InvalidRealmAuthority",
-      "msg": "Invalid Realm Authority"
-    },
-    {
-      "code": 6001,
-      "name": "InvalidRealmForRegistrar",
-      "msg": "Invalid Realm for Registrar"
-    },
-    {
-      "code": 6002,
-      "name": "InvalidVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord Realm"
-    },
-    {
-      "code": 6003,
-      "name": "InvalidVoterWeightRecordMint",
-      "msg": "Invalid VoterWeightRecord Mint"
-    },
-    {
-      "code": 6004,
-      "name": "TokenOwnerRecordFromOwnRealmNotAllowed",
-      "msg": "TokenOwnerRecord from own realm is not allowed"
-    },
-    {
-      "code": 6005,
-      "name": "GovernanceProgramNotConfigured",
-      "msg": "Governance program not configured"
-    },
-    {
-      "code": 6006,
-      "name": "GoverningTokenOwnerMustMatch",
-      "msg": "Governing TokenOwner must match"
     }
   ]
 };

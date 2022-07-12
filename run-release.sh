@@ -23,7 +23,7 @@ anchor build
 # update types in npm package and publish the npm package
 cp ./target/types/nft_voter.ts src/nftVoter/nft_voter.ts
 cp ./target/types/gateway.ts src/gateway/gateway.ts
-cp ./target/types/realm_voter.ts src/realm_voter.ts
+cp ./target/types/realm_voter.ts src/realmVoter/realm_voter.ts
 yarn clean && yarn build && cp package.json ./dist/ && yarn publish dist
 
 echo
