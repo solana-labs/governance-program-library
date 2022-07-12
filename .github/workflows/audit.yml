@@ -2,15 +2,15 @@ name: Soteria Audit
 
 on:
   push:
-    branches: 
+    branches:
       - master
   pull_request:
-    branches: 
+    branches:
       - master
 
 env:
   CARGO_TERM_COLOR: always
-  SOLANA_VERSION: "1.9.13"
+  SOLANA_VERSION: '1.10.24'
 
 jobs:
   build:
