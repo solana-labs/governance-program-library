@@ -73,8 +73,9 @@ jobs:
 
       - name: Build dependencies
         run: rustup default bpf
+
+      - name: Build dependencies 2
         run: cargo +bpf build-bpf
-        
 
       - name: Run bpf tests
         run: cargo test-bpf
