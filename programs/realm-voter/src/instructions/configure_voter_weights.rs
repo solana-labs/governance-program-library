@@ -41,8 +41,8 @@ pub fn configure_voter_weights(
     max_voter_weight: u64,
 ) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
-    // Note: max_voter_weight on Registrar is redundant and it's only stored for reference and consistency only
-    // It's not needed in the current version of the program because it's always set in this instruction together with MaxVoterWeightRecord.max_voter_weight
+    // Note: max_voter_weight is stored on Registrar for consistency sake to have the registrar as the source of truth for configuration
+    // And MaxVoterWeightRecord.max_voter_weight is used as data exchange account
     registrar.realm_member_voter_weight = realm_member_voter_weight;
     registrar.max_voter_weight = max_voter_weight;
 
