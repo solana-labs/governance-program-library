@@ -69,17 +69,19 @@ pub fn create_registrar(
     registrar.governing_token_mint = ctx.accounts.governing_token_mint.key();
     registrar.gatekeeper_network = ctx.accounts.gatekeeper_network.key();
 
+    let remaining_accounts = &ctx.remaining_accounts;
+
     // If the plugin has a previous voter weight plugin, it "inherits" the vote weight from a vote_weight_account owned
     // by the previous plugin. This chain is registered here.
-    registrar.previous_voter_weight_plugin_program_id = match use_previous_voter_weight_plugin {
-        true => Some(
-            *ctx.remaining_accounts
+    registrar.previous_voter_weight_plugin_program_id = use_previous_voter_weight_plugin
+        .then(|| {
+            remaining_accounts
                 .get(0)
-                .ok_or(GatewayError::MissingPreviousVoterWeightPlugin)?
-                .key,
-        ),
-        false => None,
-    };
+                .ok_or(GatewayError::MissingPreviousVoterWeightPlugin)
+                .map(|account| account.key)
+        })
+        .transpose()?
+        .copied();
 
     // Verify that realm_authority is the expected authority of the Realm
     // and that the mint matches one of the realm mints.

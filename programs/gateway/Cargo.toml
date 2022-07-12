@@ -20,6 +20,7 @@ default = []
 arrayref = "0.3.6"
 anchor-lang = { version = "0.24.2", features = ["init-if-needed"] }
 anchor-spl = "0.24.2"
+enum_dispatch = "0.3.8"
 itertools = "0.10.2"
 num = "0.4"
 num-derive = "0.3"

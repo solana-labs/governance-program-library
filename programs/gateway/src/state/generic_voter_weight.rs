@@ -1,10 +1,13 @@
 use crate::state::{VoterWeightAction, VoterWeightRecord};
+use enum_dispatch::enum_dispatch;
 use num_traits::FromPrimitive;
 use solana_program::program_pack::IsInitialized;
 use solana_program::pubkey::Pubkey;
+use spl_governance::state::token_owner_record::TokenOwnerRecordV2;
 
 /// A generic trait representing a voter weight,
 /// that can be passed as an input into the plugin
+#[enum_dispatch]
 pub trait GenericVoterWeight {
     fn get_governing_token_mint(&self) -> Pubkey;
     fn get_governing_token_owner(&self) -> Pubkey;
@@ -12,14 +15,20 @@ pub trait GenericVoterWeight {
     fn get_voter_weight(&self) -> u64;
     fn get_weight_action(&self) -> Option<VoterWeightAction>;
     fn get_weight_action_target(&self) -> Option<Pubkey>;
-    fn get_vote_expiry(&self) -> Option<u64>;
+    fn get_voter_weight_expiry(&self) -> Option<u64>;
+}
+
+#[enum_dispatch(GenericVoterWeight)]
+pub enum GenericVoterWeightEnum {
+    VoterWeightRecord(spl_governance_addin_api::voter_weight::VoterWeightRecord),
+    TokenOwnerRecordV2(TokenOwnerRecordV2),
 }
 
 impl IsInitialized for VoterWeightRecord {
     fn is_initialized(&self) -> bool {
         self.realm != Default::default()
-            && self.governing_token_mint != Default::default()
-            && self.governing_token_owner != Default::default()
+            && self.governing_token_mint != Pubkey::default()
+            && self.governing_token_owner != Pubkey::default()
     }
 }
 
@@ -48,7 +57,7 @@ impl GenericVoterWeight for VoterWeightRecord {
         self.weight_action_target
     }
 
-    fn get_vote_expiry(&self) -> Option<u64> {
+    fn get_voter_weight_expiry(&self) -> Option<u64> {
         self.voter_weight_expiry
     }
 }
@@ -89,7 +98,7 @@ impl GenericVoterWeight for spl_governance_addin_api::voter_weight::VoterWeightR
         self.weight_action_target
     }
 
-    fn get_vote_expiry(&self) -> Option<u64> {
+    fn get_voter_weight_expiry(&self) -> Option<u64> {
         self.voter_weight_expiry
     }
 }

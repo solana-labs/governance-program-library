@@ -75,16 +75,6 @@ export type Gateway = {
           "name": "gatekeeperNetwork",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": [
@@ -258,6 +248,30 @@ export type Gateway = {
   ],
   "types": [
     {
+      "name": "GenericVoterWeightEnum",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "VoterWeightRecord",
+            "fields": [
+              {
+                "defined": "spl_governance_addin_api::voter_weight::VoterWeightRecord"
+              }
+            ]
+          },
+          {
+            "name": "TokenOwnerRecordV2",
+            "fields": [
+              {
+                "defined": "TokenOwnerRecordV2"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "name": "VoterWeightAction",
       "type": {
         "kind": "enum",
@@ -295,12 +309,12 @@ export type Gateway = {
     {
       "code": 6002,
       "name": "InvalidPredecessorTokenOwnerRecord",
-      "msg": "Invalid TokenOwnerRecord as input voter weight"
+      "msg": "Invalid TokenOwnerRecord as input voter weight (expecting TokenOwnerRecord V1 or V2)"
     },
     {
       "code": 6003,
       "name": "InvalidPredecessorVoterWeightRecord",
-      "msg": "Invalid VoterWeightRecord as input voter weight"
+      "msg": "Invalid VoterWeightRecord as input voter weight (expecting VoterWeightRecord)"
     },
     {
       "code": 6004,
@@ -422,16 +436,6 @@ export const IDL: Gateway = {
           "name": "gatekeeperNetwork",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": [
@@ -605,6 +609,30 @@ export const IDL: Gateway = {
   ],
   "types": [
     {
+      "name": "GenericVoterWeightEnum",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "VoterWeightRecord",
+            "fields": [
+              {
+                "defined": "spl_governance_addin_api::voter_weight::VoterWeightRecord"
+              }
+            ]
+          },
+          {
+            "name": "TokenOwnerRecordV2",
+            "fields": [
+              {
+                "defined": "TokenOwnerRecordV2"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "name": "VoterWeightAction",
       "type": {
         "kind": "enum",
@@ -642,12 +670,12 @@ export const IDL: Gateway = {
     {
       "code": 6002,
       "name": "InvalidPredecessorTokenOwnerRecord",
-      "msg": "Invalid TokenOwnerRecord as input voter weight"
+      "msg": "Invalid TokenOwnerRecord as input voter weight (expecting TokenOwnerRecord V1 or V2)"
     },
     {
       "code": 6003,
       "name": "InvalidPredecessorVoterWeightRecord",
-      "msg": "Invalid VoterWeightRecord as input voter weight"
+      "msg": "Invalid VoterWeightRecord as input voter weight (expecting VoterWeightRecord)"
     },
     {
       "code": 6004,

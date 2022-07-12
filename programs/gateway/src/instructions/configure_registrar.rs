@@ -33,11 +33,6 @@ pub struct ConfigureRegistrar<'info> {
     /// Gateway Token belongs to this gatekeeper network, so passing a particular key here is
     /// essentially saying "We trust this gatekeeper network".
     pub gatekeeper_network: UncheckedAccount<'info>,
-
-    #[account(mut)]
-    pub payer: Signer<'info>,
-
-    pub system_program: Program<'info, System>,
 }
 
 /// Configures a Registrar, updating the gatekeeperNetwork or the previous plugin program ID
@@ -48,17 +43,19 @@ pub fn configure_registrar(
     let registrar = &mut ctx.accounts.registrar;
     registrar.gatekeeper_network = ctx.accounts.gatekeeper_network.key();
 
+    let remaining_accounts = &ctx.remaining_accounts;
+
     // If the plugin has a previous plugin, it "inherits" the vote weight from a vote_weight_account owned
     // by the previous plugin. This chain is registered here.
-    registrar.previous_voter_weight_plugin_program_id = match use_previous_voter_weight_plugin {
-        true => Some(
-            *ctx.remaining_accounts
+    registrar.previous_voter_weight_plugin_program_id = use_previous_voter_weight_plugin
+        .then(|| {
+            remaining_accounts
                 .get(0)
-                .ok_or(GatewayError::MissingPreviousVoterWeightPlugin)?
-                .key,
-        ),
-        false => None,
-    };
+                .ok_or(GatewayError::MissingPreviousVoterWeightPlugin)
+                .map(|account| account.key)
+        })
+        .transpose()?
+        .copied();
 
     // Verify that realm_authority is the expected authority of the Realm
     // and that the mint matches one of the realm mints too.
