@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  SOLANA_VERSION: '1.9.13'
+  SOLANA_VERSION: '1.10.24'
   RUST_TOOLCHAIN: stable
 
 jobs:
@@ -71,8 +71,13 @@ jobs:
           echo Generating keypair...
           solana-keygen new -o "$HOME/.config/solana/id.json" --no-passphrase --silent
 
+      - name: Install BPF tools
+        # Note: as a workaround for cargo build-bpf issue run it and ignore errors to install the BPF tools
+        # https://github.com/solana-labs/solana/issues/26583
+        run: cargo build-bpf || true
+
       - name: Build dependencies
-        run: cargo build-bpf
+        run: cargo +bpf build-bpf
 
       - name: Run bpf tests
-        run: cargo test-bpf
+        run: cargo +bpf test-bpf
