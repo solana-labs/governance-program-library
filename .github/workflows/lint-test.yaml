@@ -72,7 +72,7 @@ jobs:
           solana-keygen new -o "$HOME/.config/solana/id.json" --no-passphrase --silent
 
       - name: Build dependencies
-        run: rustup default bpf
+        run: cargo build-bpf || true
 
       - name: Build dependencies 2
         run: cargo +bpf build-bpf
