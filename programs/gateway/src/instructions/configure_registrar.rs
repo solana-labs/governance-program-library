@@ -55,7 +55,7 @@ pub fn configure_registrar(
                 .map(|account| account.key)
         })
         .transpose()?
-        .copied();
+        .cloned();
 
     // Verify that realm_authority is the expected authority of the Realm
     // and that the mint matches one of the realm mints too.
