@@ -24,7 +24,7 @@ anchor build
 cp ./target/types/nft_voter.ts src/nftVoter/nft_voter.ts
 cp ./target/types/gateway.ts src/gateway/gateway.ts
 cp ./target/types/realm_voter.ts src/realmVoter/realm_voter.ts
-yarn clean && yarn build && cp package.json ./dist/ && yarn publish dist
+yarn clean && yarn build && yarn publish
 
 echo
 echo Remember to commit and push the version update as well as the changes
