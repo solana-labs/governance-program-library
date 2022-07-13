@@ -23,9 +23,10 @@ anchor build
 # update types in npm package and publish the npm package
 cp ./target/types/nft_voter.ts src/nftVoter/nft_voter.ts
 cp ./target/types/gateway.ts src/gateway/gateway.ts
+cp ./target/types/realm_voter.ts src/realmVoter/realm_voter.ts
 yarn clean && yarn build && cp package.json ./dist/ && yarn publish dist
 
 echo
 echo Remember to commit and push the version update as well as the changes
-echo to src/nft_voter.ts .
+echo to src/nft_voter.ts and/or rc/realm_voter.ts
 echo
