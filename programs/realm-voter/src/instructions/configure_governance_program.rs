@@ -28,7 +28,7 @@ pub struct ConfigureGovernanceProgram<'info> {
     /// Authority of the Realm must sign the transaction and must match realm.authority
     pub realm_authority: Signer<'info>,
 
-    // spl-governance instance which will be added to configured instances allowed to participate in governance
+    // spl-governance instance which will be inserted, updated or removed to configured instances allowed to participate in governance
     /// CHECK: It can be any instance of spl-governance and there is no way to validate it's a correct instance
     /// The onus is entirely on the  caller side to ensure the provided instance is correct
     /// In future versions once we have the registry of spl-governance instances it could be validated against the registry

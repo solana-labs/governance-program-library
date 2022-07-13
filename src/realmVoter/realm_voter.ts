@@ -52,23 +52,13 @@ export type RealmVoter = {
       "name": "createVoterWeightRecord",
       "accounts": [
         {
+          "name": "registrar",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "voterWeightRecord",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "governanceProgramId",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realm",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realmGoverningTokenMint",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -93,23 +83,13 @@ export type RealmVoter = {
       "name": "createMaxVoterWeightRecord",
       "accounts": [
         {
+          "name": "registrar",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "maxVoterWeightRecord",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "governanceProgramId",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realm",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realmGoverningTokenMint",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -205,7 +185,14 @@ export type RealmVoter = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "changeType",
+          "type": {
+            "defined": "crate::state::CollectionItemChangeType"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -390,6 +377,20 @@ export type RealmVoter = {
           },
           {
             "name": "GoverningTokenOwnerMustMatch"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CollectionItemChangeType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Upsert"
+          },
+          {
+            "name": "Remove"
           }
         ]
       }
@@ -474,23 +475,13 @@ export const IDL: RealmVoter = {
       "name": "createVoterWeightRecord",
       "accounts": [
         {
+          "name": "registrar",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "voterWeightRecord",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "governanceProgramId",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realm",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realmGoverningTokenMint",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -515,23 +506,13 @@ export const IDL: RealmVoter = {
       "name": "createMaxVoterWeightRecord",
       "accounts": [
         {
+          "name": "registrar",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "maxVoterWeightRecord",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "governanceProgramId",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realm",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "realmGoverningTokenMint",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -627,7 +608,14 @@ export const IDL: RealmVoter = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "changeType",
+          "type": {
+            "defined": "crate::state::CollectionItemChangeType"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -812,6 +800,20 @@ export const IDL: RealmVoter = {
           },
           {
             "name": "GoverningTokenOwnerMustMatch"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CollectionItemChangeType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Upsert"
+          },
+          {
+            "name": "Remove"
           }
         ]
       }
