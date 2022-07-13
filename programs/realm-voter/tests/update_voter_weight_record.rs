@@ -1,5 +1,5 @@
 use crate::program_test::realm_voter_test::RealmVoterTest;
-use gpl_realm_voter::error::RealmVoterError;
+use gpl_realm_voter::{error::RealmVoterError, state::CollectionItemChangeType};
 use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
@@ -25,7 +25,11 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
     let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
 
     realm_voter_test
-        .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
+        .configure_governance_program(
+            &registrar_cookie,
+            &governance_program_cookie,
+            CollectionItemChangeType::Upsert,
+        )
         .await?;
 
     let mut voter_weight_record_cookie = realm_voter_test
@@ -89,7 +93,11 @@ async fn test_update_voter_weight_record_with_token_owner_record_from_own_realm_
     let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
 
     realm_voter_test
-        .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
+        .configure_governance_program(
+            &registrar_cookie,
+            &governance_program_cookie,
+            CollectionItemChangeType::Upsert,
+        )
         .await?;
 
     let mut voter_weight_record_cookie = realm_voter_test
@@ -166,7 +174,11 @@ async fn test_update_voter_weight_record_with_token_owner_record_must_match_erro
     let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
 
     realm_voter_test
-        .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
+        .configure_governance_program(
+            &registrar_cookie,
+            &governance_program_cookie,
+            CollectionItemChangeType::Upsert,
+        )
         .await?;
 
     // Create TokenOwnerRecord for other Realm

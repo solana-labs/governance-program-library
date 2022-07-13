@@ -12,6 +12,7 @@ use crate::state::{GovernanceProgramConfig, Registrar};
 
 /// Creates or updates configuration for spl-governance program instances to define which spl-governance instances can be used to grant governance power
 #[derive(Accounts)]
+#[instruction(change_type: crate::state::CollectionItemChangeType)]
 pub struct ConfigureGovernanceProgram<'info> {
     /// Registrar which we configure the provided spl-governance instance for
     #[account(mut)]
@@ -35,7 +36,10 @@ pub struct ConfigureGovernanceProgram<'info> {
     pub governance_program_id: UncheckedAccount<'info>,
 }
 
-pub fn configure_governance_program(ctx: Context<ConfigureGovernanceProgram>) -> Result<()> {
+pub fn configure_governance_program(
+    ctx: Context<ConfigureGovernanceProgram>,
+    change_type: crate::state::CollectionItemChangeType,
+) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
 
     let realm = realm::get_realm_data_for_governing_token_mint(
@@ -62,15 +66,27 @@ pub fn configure_governance_program(ctx: Context<ConfigureGovernanceProgram>) ->
         .iter()
         .position(|cc| cc.program_id == governance_program_id.key());
 
-    if let Some(config_idx) = governance_program_config_idx {
-        // Note: Update in this version is nop because we only store governance_program_id
-        registrar.governance_program_configs[config_idx] = governance_program_config;
-    } else {
-        // Note: In the current version push() would throw an error if we exceed
-        // max_governance_programs specified when the Registrar was created
-        registrar
-            .governance_program_configs
-            .push(governance_program_config);
+    match (change_type, governance_program_config_idx) {
+        // Update
+        (crate::state::CollectionItemChangeType::Upsert, Some(config_idx)) => {
+            // Note: Update in this version is nop because we only store governance_program_id
+            registrar.governance_program_configs[config_idx] = governance_program_config;
+        }
+        // Insert
+        (crate::state::CollectionItemChangeType::Upsert, None) => {
+            // Note: In the current version push() would throw an error if we exceed
+            // max_governance_programs specified when the Registrar was created
+            registrar
+                .governance_program_configs
+                .push(governance_program_config);
+        }
+        (crate::state::CollectionItemChangeType::Remove, Some(config_idx)) => {
+            registrar.governance_program_configs.remove(config_idx);
+        }
+
+        (crate::state::CollectionItemChangeType::Remove, None) => {
+            return err!(RealmVoterError::GovernanceProgramNotConfigured)
+        }
     }
 
     Ok(())

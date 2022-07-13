@@ -15,6 +15,7 @@ declare_id!("GRmVtfLq2BPeWs5EDoQoZc787VYkhdkA11k63QM1Xemz");
 pub mod realm_voter {
 
     use super::*;
+
     pub fn create_registrar(
         ctx: Context<CreateRegistrar>,
         max_governance_programs: u8,
@@ -46,9 +47,12 @@ pub mod realm_voter {
         instructions::configure_voter_weights(ctx, realm_member_voter_weight, max_voter_weight)
     }
 
-    pub fn configure_governance_program(ctx: Context<ConfigureGovernanceProgram>) -> Result<()> {
+    pub fn configure_governance_program(
+        ctx: Context<ConfigureGovernanceProgram>,
+        change_type: crate::state::CollectionItemChangeType,
+    ) -> Result<()> {
         log_version();
-        instructions::configure_governance_program(ctx)
+        instructions::configure_governance_program(ctx, change_type)
     }
 }
 

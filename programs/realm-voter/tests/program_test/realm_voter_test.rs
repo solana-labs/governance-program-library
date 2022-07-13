@@ -384,14 +384,16 @@ impl RealmVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_governance_program_config(
+    pub async fn configure_governance_program(
         &mut self,
         registrar_cookie: &RegistrarCookie,
         governance_program_cookie: &GovernanceProgramCookie,
+        change_type: CollectionItemChangeType,
     ) -> Result<GovernanceProgramConfigCookie, TransportError> {
-        self.with_governance_program_config_using_ix(
+        self.configure_governance_program_using_ix(
             registrar_cookie,
             governance_program_cookie,
+            change_type,
             NopOverride,
             None,
         )
@@ -399,16 +401,16 @@ impl RealmVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_governance_program_config_using_ix<F: Fn(&mut Instruction)>(
+    pub async fn configure_governance_program_using_ix<F: Fn(&mut Instruction)>(
         &mut self,
         registrar_cookie: &RegistrarCookie,
         governance_program_cookie: &GovernanceProgramCookie,
-
+        change_type: CollectionItemChangeType,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
     ) -> Result<GovernanceProgramConfigCookie, TransportError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_realm_voter::instruction::ConfigureGovernanceProgram {},
+            &gpl_realm_voter::instruction::ConfigureGovernanceProgram { change_type },
         );
 
         let accounts = gpl_realm_voter::accounts::ConfigureGovernanceProgram {

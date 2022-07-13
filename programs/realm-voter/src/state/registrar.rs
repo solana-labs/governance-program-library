@@ -1,6 +1,16 @@
 use crate::{id, state::GovernanceProgramConfig, tools::anchor::DISCRIMINATOR_SIZE};
 use anchor_lang::prelude::*;
+use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use solana_program::pubkey::PUBKEY_BYTES;
+
+/// Enum defining collection item change type
+#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
+pub enum CollectionItemChangeType {
+    /// Update item in the collection if it already exists and Insert the item if it doesn't
+    Upsert,
+    /// Remove item from the collection
+    Remove,
+}
 
 /// Registrar which stores spl-governance configurations for the given Realm
 #[account]

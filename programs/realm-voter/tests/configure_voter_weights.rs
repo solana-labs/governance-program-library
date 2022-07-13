@@ -1,4 +1,5 @@
 use gpl_realm_voter::error::RealmVoterError;
+use gpl_realm_voter::state::CollectionItemChangeType;
 use program_test::realm_voter_test::RealmVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
@@ -20,7 +21,11 @@ async fn test_configure_voter_weights() -> Result<(), TransportError> {
     let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
 
     realm_voter_test
-        .with_governance_program_config(&registrar_cookie, &governance_program_cookie)
+        .configure_governance_program(
+            &registrar_cookie,
+            &governance_program_cookie,
+            CollectionItemChangeType::Upsert,
+        )
         .await?;
 
     let mut max_voter_weight_record_cookie = realm_voter_test
