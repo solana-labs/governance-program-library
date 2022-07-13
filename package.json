@@ -11,6 +11,7 @@
     ],
     "repository": "https://github.com/solana-labs/governance-program-library",
     "scripts": {
+        "prepublish": "yarn build",
         "build": "tsc",
         "clean": "rm -rf dist",
         "type-check": "tsc --pretty --noEmit",
