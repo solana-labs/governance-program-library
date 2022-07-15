@@ -236,6 +236,31 @@ export type Gateway = {
       }
     }
   ],
+  "types": [
+    {
+      "name": "VoterWeightAction",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "CastVote"
+          },
+          {
+            "name": "CommentProposal"
+          },
+          {
+            "name": "CreateGovernance"
+          },
+          {
+            "name": "CreateProposal"
+          },
+          {
+            "name": "SignOffProposal"
+          }
+        ]
+      }
+    }
+  ],
   "errors": [
     {
       "code": 6000,
@@ -528,6 +553,31 @@ export const IDL: Gateway = {
                 8
               ]
             }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "VoterWeightAction",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "CastVote"
+          },
+          {
+            "name": "CommentProposal"
+          },
+          {
+            "name": "CreateGovernance"
+          },
+          {
+            "name": "CreateProposal"
+          },
+          {
+            "name": "SignOffProposal"
           }
         ]
       }
