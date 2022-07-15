@@ -1,6 +1,6 @@
 {
-    "name": "@civic/governance-program-library",
-    "version": "0.16.9-beta.1",
+    "name": "@solana/governance-program-library",
+    "version": "0.16.7",
     "description": "Client for Governance Program Library which is a set of extensions for Solana's spl-governance program.",
     "author": "Solana Maintainers <maintainers@solana.foundation>",
     "license": "MIT",
@@ -38,7 +38,7 @@
         "trailingComma": "all"
     },
     "dependencies": {
-        "@project-serum/anchor": "^0.25.0-beta.1",
+        "@project-serum/anchor": "^0.25.0",
         "@project-serum/serum": "^0.13.61"
     }
 }

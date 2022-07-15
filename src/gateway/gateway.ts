@@ -236,55 +236,6 @@ export type Gateway = {
       }
     }
   ],
-  "types": [
-    {
-      "name": "GenericVoterWeightEnum",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "VoterWeightRecord",
-            "fields": [
-              {
-                "defined": "spl_governance_addin_api::voter_weight::VoterWeightRecord"
-              }
-            ]
-          },
-          {
-            "name": "TokenOwnerRecord",
-            "fields": [
-              {
-                "defined": "TokenOwnerRecordV2"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "VoterWeightAction",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "CastVote"
-          },
-          {
-            "name": "CommentProposal"
-          },
-          {
-            "name": "CreateGovernance"
-          },
-          {
-            "name": "CreateProposal"
-          },
-          {
-            "name": "SignOffProposal"
-          }
-        ]
-      }
-    }
-  ],
   "errors": [
     {
       "code": 6000,
@@ -577,55 +528,6 @@ export const IDL: Gateway = {
                 8
               ]
             }
-          }
-        ]
-      }
-    }
-  ],
-  "types": [
-    {
-      "name": "GenericVoterWeightEnum",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "VoterWeightRecord",
-            "fields": [
-              {
-                "defined": "spl_governance_addin_api::voter_weight::VoterWeightRecord"
-              }
-            ]
-          },
-          {
-            "name": "TokenOwnerRecord",
-            "fields": [
-              {
-                "defined": "TokenOwnerRecordV2"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "VoterWeightAction",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "CastVote"
-          },
-          {
-            "name": "CommentProposal"
-          },
-          {
-            "name": "CreateGovernance"
-          },
-          {
-            "name": "CreateProposal"
-          },
-          {
-            "name": "SignOffProposal"
           }
         ]
       }
