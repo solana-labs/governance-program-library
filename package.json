@@ -1,6 +1,6 @@
 {
-    "name": "@solana/governance-program-library",
-    "version": "0.16.7",
+    "name": "@civic/governance-program-library",
+    "version": "0.16.9-beta.2",
     "description": "Client for Governance Program Library which is a set of extensions for Solana's spl-governance program.",
     "author": "Solana Maintainers <maintainers@solana.foundation>",
     "license": "MIT",
@@ -15,7 +15,8 @@
         "clean": "rm -rf dist",
         "type-check": "tsc --pretty --noEmit",
         "format": "prettier --check .",
-        "lint": "eslint . --ext ts --ext tsx --ext js --quiet"
+        "lint": "eslint . --ext ts --ext tsx --ext js --quiet",
+        "test": "anchor test"
     },
     "devDependencies": {
         "@tsconfig/recommended": "^1.0.1",
@@ -38,7 +39,7 @@
         "trailingComma": "all"
     },
     "dependencies": {
-        "@project-serum/anchor": "^0.24.2",
+        "@project-serum/anchor": "^0.25.0",
         "@project-serum/serum": "^0.13.61"
     }
 }

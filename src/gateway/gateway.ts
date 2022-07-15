@@ -238,30 +238,6 @@ export type Gateway = {
   ],
   "types": [
     {
-      "name": "GenericVoterWeightEnum",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "VoterWeightRecord",
-            "fields": [
-              {
-                "defined": "spl_governance_addin_api::voter_weight::VoterWeightRecord"
-              }
-            ]
-          },
-          {
-            "name": "TokenOwnerRecord",
-            "fields": [
-              {
-                "defined": "TokenOwnerRecordV2"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
       "name": "VoterWeightAction",
       "type": {
         "kind": "enum",
@@ -583,30 +559,6 @@ export const IDL: Gateway = {
     }
   ],
   "types": [
-    {
-      "name": "GenericVoterWeightEnum",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "VoterWeightRecord",
-            "fields": [
-              {
-                "defined": "spl_governance_addin_api::voter_weight::VoterWeightRecord"
-              }
-            ]
-          },
-          {
-            "name": "TokenOwnerRecord",
-            "fields": [
-              {
-                "defined": "TokenOwnerRecordV2"
-              }
-            ]
-          }
-        ]
-      }
-    },
     {
       "name": "VoterWeightAction",
       "type": {
