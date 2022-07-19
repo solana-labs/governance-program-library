@@ -1113,6 +1113,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "gpl-quadratic"
+version = "0.1.1"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "arrayref",
+ "borsh",
+ "enum_dispatch",
+ "gpl-shared",
+ "itertools",
+ "num",
+ "num-derive",
+ "num-traits",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "spl-governance",
+ "spl-governance-addin-api",
+ "spl-governance-addin-mock",
+ "spl-governance-tools",
+ "spl-token",
+]
+
+[[package]]
 name = "gpl-realm-voter"
 version = "0.0.1"
 dependencies = [
@@ -1126,6 +1150,19 @@ dependencies = [
  "spl-governance",
  "spl-governance-tools",
  "spl-token",
+]
+
+[[package]]
+name = "gpl-shared"
+version = "0.1.1"
+dependencies = [
+ "anchor-lang",
+ "enum_dispatch",
+ "num-derive",
+ "num-traits",
+ "spl-governance",
+ "spl-governance-addin-api",
+ "spl-governance-tools",
 ]
 
 [[package]]

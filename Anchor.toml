@@ -7,6 +7,7 @@ seeds = false
 [programs.localnet]
 nft_voter = "GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw"
 gateway = "GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk"
+quadratic = "quadCSapU8nTdLg73KHDnmdxKnJQsh7GUbu5tZfnRRr"
 solana-gateway-program = "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
 
 [registry]
