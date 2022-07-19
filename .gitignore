@@ -5,3 +5,4 @@ target
 **/*.rs.bk
 dist
 node_modules
+Cargo.lock
