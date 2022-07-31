@@ -68,8 +68,9 @@ impl Registrar {
     }
 }
 
-// Resolves governing_token_owner from voter TokenOwnerRecord
-// and ensures it matches the given Registrar and VoterWeightRecord
+// Resolves governing_token_owner from voter TokenOwnerRecord and
+// 1) asserts it matches the given Registrar and VoterWeightRecord
+// 2) asserts governing_token_owner or its delegate is a signer
 pub fn resolve_governing_token_owner(
     registrar: &Registrar,
     voter_token_owner_record_info: &AccountInfo,
