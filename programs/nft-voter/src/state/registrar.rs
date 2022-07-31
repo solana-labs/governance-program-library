@@ -3,12 +3,12 @@ use crate::{
     id,
     state::CollectionConfig,
     tools::{
-        anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
-        spl_token::get_spl_token_amount,
+        anchor::DISCRIMINATOR_SIZE, spl_token::get_spl_token_amount,
         token_metadata::get_token_metadata_for_mint,
     },
 };
 use anchor_lang::prelude::*;
+use solana_program::pubkey::PUBKEY_BYTES;
 use spl_governance::tools::spl_token::{get_spl_token_mint, get_spl_token_owner};
 
 /// Registrar which stores NFT voting configuration for the given Realm
@@ -37,9 +37,9 @@ pub struct Registrar {
 impl Registrar {
     pub fn get_space(max_collections: u8) -> usize {
         DISCRIMINATOR_SIZE
-            + PUBKEY_SIZE * 3
+            + PUBKEY_BYTES * 3
             + 4
-            + max_collections as usize * (PUBKEY_SIZE + 4 + 8 + 8)
+            + max_collections as usize * (PUBKEY_BYTES + 4 + 8 + 8)
             + 128
     }
 }
