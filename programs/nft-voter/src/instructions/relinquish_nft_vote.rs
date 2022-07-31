@@ -65,6 +65,7 @@ pub struct RelinquishNftVote<'info> {
 
 pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
+    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     let voter_token_owner_record =
         token_owner_record::get_token_owner_record_data_for_realm_and_governing_mint(
@@ -78,6 +79,13 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
         .assert_token_owner_or_delegate_is_signer(&ctx.accounts.voter_authority)?;
 
     let governing_token_owner = voter_token_owner_record.governing_token_owner;
+
+    // Assert voter TokenOwnerRecord and VoterWeightRecord are for the same governing_token_owner
+    require_eq!(
+        governing_token_owner,
+        voter_weight_record.governing_token_owner,
+        NftVoterError::InvalidTokenOwnerForVoterWeightRecord
+    );
 
     // Ensure the Governance belongs to Registrar.realm and is owned by Registrar.governance_program_id
     let _governance = governance::get_governance_data_for_realm(
@@ -121,8 +129,6 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
             NftVoterError::VoteRecordMustBeWithdrawn
         );
     }
-
-    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     // Prevent relinquishing NftVoteRecords within the VoterWeightRecord expiration period
     // It's needed when multiple stacked voter-weight plugins are used

@@ -32,15 +32,15 @@ pub struct CastNftVote<'info> {
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
-    /// TokenOwnerRecord of the voter
+    /// TokenOwnerRecord of the voter who casts the vote
     #[account(
         owner = registrar.governance_program_id
      )]
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     voter_token_owner_record: UncheckedAccount<'info>,
 
-    /// Voter authority who must sign this instruction
-    /// It can be either governing_token_owner or its delegate
+    /// Voter authority of the voter who casts the vote
+    /// It can be either governing_token_owner or its delegate and must sign this instruction
     pub voter_authority: Signer<'info>,
 
     /// The account which pays for the transaction
@@ -56,6 +56,7 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
     proposal: Pubkey,
 ) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
+    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     let voter_token_owner_record =
         token_owner_record::get_token_owner_record_data_for_realm_and_governing_mint(
@@ -69,6 +70,13 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
         .assert_token_owner_or_delegate_is_signer(&ctx.accounts.voter_authority)?;
 
     let governing_token_owner = voter_token_owner_record.governing_token_owner;
+
+    // Assert voter TokenOwnerRecord and VoterWeightRecord are for the same governing_token_owner
+    require_eq!(
+        governing_token_owner,
+        voter_weight_record.governing_token_owner,
+        NftVoterError::InvalidTokenOwnerForVoterWeightRecord
+    );
 
     let mut voter_weight = 0u64;
 
@@ -124,8 +132,6 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
             &rent,
         )?;
     }
-
-    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     if voter_weight_record.weight_action_target == Some(proposal)
         && voter_weight_record.weight_action == Some(VoterWeightAction::CastVote)
