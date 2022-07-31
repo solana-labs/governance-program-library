@@ -3,11 +3,11 @@ use crate::{
     program_test::governance_test::TokenOwnerRecordCookie,
 };
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
-use gpl_civic_quadratic::error::QuadraticError;
 use itertools::Either;
 use solana_program::{instruction::InstructionError, pubkey::Pubkey};
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
 use spl_governance_tools::error::GovernanceToolsError;
+use gpl_quadratic::error::QuadraticError;
 
 pub fn clone_keypair(source: &Keypair) -> Keypair {
     Keypair::from_bytes(&source.to_bytes()).unwrap()

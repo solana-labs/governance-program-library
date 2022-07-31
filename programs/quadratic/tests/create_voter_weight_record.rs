@@ -1,4 +1,4 @@
-use program_test::quadratic_voter_test::quadraticVoterTest;
+use program_test::quadratic_voter_test::QuadraticVoterTest;
 use program_test::tools::assert_ix_err;
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
@@ -9,13 +9,12 @@ mod program_test;
 #[tokio::test]
 async fn test_create_voter_weight_record() -> Result<(), TransportError> {
     // Arrange
-    let mut quadratic_voter_test = quadraticVoterTest::start_new().await;
+    let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
     let realm_cookie = quadratic_voter_test.governance.with_realm().await?;
-    let quadratic_cookie = quadratic_voter_test.with_quadratic().await?;
 
     let registrar_cookie = quadratic_voter_test
-        .with_registrar(&realm_cookie, &quadratic_cookie, None)
+        .with_registrar(&realm_cookie, None)
         .await?;
 
     let voter_cookie = quadratic_voter_test.bench.with_wallet().await;
@@ -39,13 +38,12 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
 #[tokio::test]
 async fn test_create_voter_weight_record_with_already_exists_error() -> Result<(), TransportError> {
     // Arrange
-    let mut quadratic_voter_test = quadraticVoterTest::start_new().await;
+    let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
     let realm_cookie = quadratic_voter_test.governance.with_realm().await?;
-    let quadratic_cookie = quadratic_voter_test.with_quadratic().await?;
 
     let registrar_cookie = quadratic_voter_test
-        .with_registrar(&realm_cookie, &quadratic_cookie, None)
+        .with_registrar(&realm_cookie, None)
         .await?;
 
     let voter_cookie = quadratic_voter_test.bench.with_wallet().await;

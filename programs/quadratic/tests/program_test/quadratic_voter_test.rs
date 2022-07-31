@@ -3,13 +3,9 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
 use itertools::Either;
-use solana_quadratic::{
-    instruction::{add_gatekeeper, issue_vanilla},
-    state::{get_gatekeeper_address_with_seed, get_quadratic_token_address_with_seed},
-};
 use solana_program::instruction::AccountMeta;
 
-use gpl_civic_quadratic::state::{get_registrar_address, Registrar, *};
+use gpl_quadratic::state::{get_registrar_address, Registrar, *};
 use solana_sdk::{
     instruction::Instruction, signature::Keypair, signer::Signer, transport::TransportError,
 };
@@ -40,36 +36,6 @@ pub struct VoterWeightRecordCookie {
     pub account: VoterWeightRecord,
 }
 
-pub struct quadraticCookie {
-    pub gatekeeper_network: Keypair,
-    pub gatekeeper: Keypair,
-}
-
-impl quadraticCookie {
-    pub fn get_gatekeeper_account(&self) -> Pubkey {
-        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
-            &self.gatekeeper.pubkey(),
-            &self.gatekeeper_network.pubkey(),
-        );
-        gatekeeper_account
-    }
-}
-
-pub struct quadraticTokenCookie {
-    pub address: Pubkey,
-}
-
-impl quadraticTokenCookie {
-    pub fn new(owner: &Pubkey, quadratic_cookie: &quadraticCookie) -> Self {
-        let (address, _) = get_quadratic_token_address_with_seed(
-            owner,
-            &None,
-            &quadratic_cookie.gatekeeper_network.pubkey(),
-        );
-        Self { address }
-    }
-}
-
 pub struct CastVoteArgs {
     pub cast_spl_gov_vote: bool,
 }
@@ -82,33 +48,28 @@ impl Default for CastVoteArgs {
     }
 }
 
-pub struct quadraticVoterTest {
+pub struct QuadraticVoterTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
     pub governance: GovernanceTest,
     pub predecessor_plugin: PredecessorPluginTest,
 }
 
-impl quadraticVoterTest {
+impl QuadraticVoterTest {
     #[allow(dead_code)]
     pub fn add_programs(program_test: &mut ProgramTest) {
-        program_test.add_program("gpl_civic_quadratic", gpl_civic_quadratic::id(), None);
-        program_test.add_program(
-            "solana_quadratic_program",
-            Pubkey::from_str("gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs").unwrap(),
-            None,
-        );
+        program_test.add_program("gpl_quadratic", gpl_quadratic::id(), None);
     }
 
     #[allow(dead_code)]
     pub async fn start_new() -> Self {
         let mut program_test = ProgramTest::default();
 
-        quadraticVoterTest::add_programs(&mut program_test);
+        QuadraticVoterTest::add_programs(&mut program_test);
         GovernanceTest::add_program(&mut program_test);
         PredecessorPluginTest::add_program(&mut program_test);
 
-        let program_id = gpl_civic_quadratic::id();
+        let program_id = gpl_quadratic::id();
 
         let bench = ProgramTestBench::start_new(program_test).await;
         let bench_rc = Arc::new(bench);
@@ -130,15 +91,13 @@ impl quadraticVoterTest {
     pub async fn with_registrar(
         &mut self,
         realm_cookie: &RealmCookie,
-        quadratic_cookie: &quadraticCookie,
         previous_plugin_program_id: Option<Pubkey>,
     ) -> Result<RegistrarCookie, TransportError> {
         self.with_registrar_using_ix(
             realm_cookie,
-            quadratic_cookie,
             previous_plugin_program_id,
             previous_plugin_program_id.is_some(),
-            &gpl_civic_quadratic::id(),
+            &gpl_quadratic::id(),
             NopOverride,
             None,
         )
@@ -149,7 +108,6 @@ impl quadraticVoterTest {
     pub async fn with_registrar_using_ix<F: Fn(&mut Instruction)>(
         &mut self,
         realm_cookie: &RealmCookie,
-        quadratic_cookie: &quadraticCookie,
         previous_plugin_program_id: Option<Pubkey>,
         use_previous_voter_weight_plugin: bool,
         program_id: &Pubkey,
@@ -160,17 +118,16 @@ impl quadraticVoterTest {
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_civic_quadratic::instruction::CreateRegistrar {
+            anchor_lang::InstructionData::data(&gpl_quadratic::instruction::CreateRegistrar {
                 use_previous_voter_weight_plugin,
             });
 
         let mut accounts = anchor_lang::ToAccountMetas::to_account_metas(
-            &gpl_civic_quadratic::accounts::CreateRegistrar {
+            &gpl_quadratic::accounts::CreateRegistrar {
                 registrar: registrar_key,
                 realm: realm_cookie.address,
                 governance_program_id: self.governance.program_id,
                 governing_token_mint: realm_cookie.account.community_mint,
-                gatekeeper_network: quadratic_cookie.gatekeeper_network.pubkey(),
                 realm_authority: realm_cookie.get_realm_authority().pubkey(),
                 payer: self.bench.payer.pubkey(),
                 system_program: solana_sdk::system_program::id(),
@@ -202,7 +159,6 @@ impl quadraticVoterTest {
             previous_voter_weight_plugin_program_id: previous_plugin_program_id,
             realm: realm_cookie.address,
             governing_token_mint: realm_cookie.account.community_mint,
-            gatekeeper_network: quadratic_cookie.gatekeeper_network.pubkey(),
             reserved: [0; 128],
         };
 
@@ -221,14 +177,11 @@ impl quadraticVoterTest {
         (
             RealmCookie,
             RegistrarCookie,
-            quadraticCookie,
-            quadraticTokenCookie,
             WalletCookie,
         ),
         TransportError,
     > {
         let realm_cookie = self.governance.with_realm().await?;
-        let quadratic_cookie = self.with_quadratic().await?;
 
         // register the quadratic plugin registrar with a predecessor (the dummy voter weight plugin) if requested
         let predecessor_program_id = if with_predecessor {
@@ -238,97 +191,16 @@ impl quadraticVoterTest {
         };
 
         let registrar_cookie = self
-            .with_registrar(&realm_cookie, &quadratic_cookie, predecessor_program_id)
+            .with_registrar(&realm_cookie, predecessor_program_id)
             .await?;
         //
         let voter_cookie = self.bench.with_wallet().await;
-        let quadratic_token_cookie = self
-            .with_quadratic_token(&quadratic_cookie, &voter_cookie)
-            .await?;
 
         Ok((
             realm_cookie,
             registrar_cookie,
-            quadratic_cookie,
-            quadratic_token_cookie,
             voter_cookie,
         ))
-    }
-
-    pub async fn with_quadratic(&mut self) -> Result<quadraticCookie, TransportError> {
-        self.with_quadratic_using_ix(NopOverride, None).await
-    }
-
-    pub async fn with_quadratic_using_ix<F: Fn(&mut Instruction)>(
-        &mut self,
-        instruction_override: F,
-        signers_override: Option<&[&Keypair]>,
-    ) -> Result<quadraticCookie, TransportError> {
-        let gatekeeper_network = Keypair::new();
-        let gatekeeper = Keypair::new();
-
-        let mut add_gatekeeper_ix = add_gatekeeper(
-            &self.bench.payer.pubkey(),
-            &gatekeeper.pubkey(),
-            &gatekeeper_network.pubkey(),
-        );
-
-        instruction_override(&mut add_gatekeeper_ix);
-
-        let default_signers = &[&gatekeeper_network];
-        let signers = signers_override.unwrap_or(default_signers);
-
-        self.bench
-            .process_transaction(&[add_gatekeeper_ix], Some(signers))
-            .await?;
-
-        Ok(quadraticCookie {
-            gatekeeper_network,
-            gatekeeper,
-        })
-    }
-
-    #[allow(dead_code)]
-    pub async fn with_quadratic_token(
-        &mut self,
-        quadratic_cookie: &quadraticCookie,
-        wallet_cookie: &WalletCookie,
-    ) -> Result<quadraticTokenCookie, TransportError> {
-        self.with_quadratic_token_using_ix(quadratic_cookie, wallet_cookie, NopOverride, None)
-            .await
-    }
-
-    #[allow(dead_code)]
-    pub async fn with_quadratic_token_using_ix<F: Fn(&mut Instruction)>(
-        &mut self,
-        quadratic_cookie: &quadraticCookie,
-        wallet_cookie: &WalletCookie,
-        instruction_override: F,
-        signers_override: Option<&[&Keypair]>,
-    ) -> Result<quadraticTokenCookie, TransportError> {
-        let gatekeeper_account = quadratic_cookie.get_gatekeeper_account();
-        let quadratic_token_cookie = quadraticTokenCookie::new(&wallet_cookie.address, quadratic_cookie);
-
-        let mut issue_ix = issue_vanilla(
-            &self.bench.payer.pubkey(),
-            &wallet_cookie.address,
-            &gatekeeper_account,
-            &quadratic_cookie.gatekeeper.pubkey(),
-            &quadratic_cookie.gatekeeper_network.pubkey(),
-            None,
-            None,
-        );
-
-        instruction_override(&mut issue_ix);
-
-        let default_signers = &[&quadratic_cookie.gatekeeper];
-        let signers = signers_override.unwrap_or(default_signers);
-
-        self.bench
-            .process_transaction(&[issue_ix], Some(signers))
-            .await?;
-
-        Ok(quadratic_token_cookie)
     }
 
     #[allow(dead_code)]
@@ -357,16 +229,16 @@ impl quadraticVoterTest {
                 registrar_cookie.account.governing_token_mint.as_ref(),
                 governing_token_owner.as_ref(),
             ],
-            &gpl_civic_quadratic::id(),
+            &gpl_quadratic::id(),
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_civic_quadratic::instruction::CreateVoterWeightRecord {
+            &gpl_quadratic::instruction::CreateVoterWeightRecord {
                 governing_token_owner,
             },
         );
 
-        let accounts = gpl_civic_quadratic::accounts::CreateVoterWeightRecord {
+        let accounts = gpl_quadratic::accounts::CreateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_key,
             payer: self.bench.payer.pubkey(),
@@ -374,7 +246,7 @@ impl quadraticVoterTest {
         };
 
         let mut create_voter_weight_record_ix = Instruction {
-            program_id: gpl_civic_quadratic::id(),
+            program_id: gpl_quadratic::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
@@ -408,15 +280,13 @@ impl quadraticVoterTest {
         registrar_cookie: &RegistrarCookie,
         input_voter_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
         output_voter_weight_record_cookie: &mut VoterWeightRecordCookie,
-        quadratic_token_cookie: &quadraticTokenCookie,
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_civic_quadratic::instruction::UpdateVoterWeightRecord {},
+            &gpl_quadratic::instruction::UpdateVoterWeightRecord {},
         );
 
-        let accounts = gpl_civic_quadratic::accounts::UpdateVoterWeightRecord {
+        let accounts = gpl_quadratic::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
-            quadratic_token: quadratic_token_cookie.address,
             voter_weight_record: output_voter_weight_record_cookie.address,
             input_voter_weight: extract_voting_weight_address(input_voter_weight_cookie),
         };
@@ -424,7 +294,7 @@ impl quadraticVoterTest {
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
         let instructions = vec![Instruction {
-            program_id: gpl_civic_quadratic::id(),
+            program_id: gpl_quadratic::id(),
             accounts: account_metas,
             data,
         }];
@@ -437,13 +307,11 @@ impl quadraticVoterTest {
         &self,
         realm_cookie: &RealmCookie,
         registrar_cookie: &RegistrarCookie,
-        quadratic_cookie: &quadraticCookie,
         predecessor_program_id: Option<Pubkey>,
     ) -> Result<(), TransportError> {
         self.configure_registrar_using_ix(
             realm_cookie,
             registrar_cookie,
-            quadratic_cookie,
             predecessor_program_id,
             predecessor_program_id.is_some(),
             NopOverride,
@@ -457,24 +325,22 @@ impl quadraticVoterTest {
         &self,
         realm_cookie: &RealmCookie,
         registrar_cookie: &RegistrarCookie,
-        quadratic_cookie: &quadraticCookie,
         predecessor_program_id: Option<Pubkey>,
         use_previous_voter_weight_plugin: bool,
         instruction_override: F,
         signers_override: Option<Option<&[&Keypair]>>,
     ) -> Result<(), TransportError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_civic_quadratic::instruction::ConfigureRegistrar {
+            &gpl_quadratic::instruction::ConfigureRegistrar {
                 use_previous_voter_weight_plugin,
             },
         );
 
         let mut accounts = anchor_lang::ToAccountMetas::to_account_metas(
-            &gpl_civic_quadratic::accounts::ConfigureRegistrar {
+            &gpl_quadratic::accounts::ConfigureRegistrar {
                 registrar: registrar_cookie.address,
                 realm: realm_cookie.address,
                 realm_authority: realm_cookie.get_realm_authority().pubkey(),
-                gatekeeper_network: quadratic_cookie.gatekeeper_network.pubkey(),
             },
             None,
         );
@@ -484,7 +350,7 @@ impl quadraticVoterTest {
         }
 
         let mut configure_registrar_ix = Instruction {
-            program_id: gpl_civic_quadratic::id(),
+            program_id: gpl_quadratic::id(),
             accounts,
             data,
         };
@@ -507,7 +373,6 @@ impl quadraticVoterTest {
         voter_weight_record_cookie: &VoterWeightRecordCookie,
         proposal_cookie: &ProposalCookie,
         voter_cookie: &WalletCookie,
-        quadratic_token_cookie: &quadraticTokenCookie,
         voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
         input_voter_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
         args: Option<CastVoteArgs>,
@@ -515,20 +380,19 @@ impl quadraticVoterTest {
         let args = args.unwrap_or_default();
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_civic_quadratic::instruction::UpdateVoterWeightRecord {},
+            &gpl_quadratic::instruction::UpdateVoterWeightRecord {},
         );
 
-        let accounts = gpl_civic_quadratic::accounts::UpdateVoterWeightRecord {
+        let accounts = gpl_quadratic::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            quadratic_token: quadratic_token_cookie.address,
             input_voter_weight: extract_voting_weight_address(input_voter_weight_cookie),
         };
 
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
         let update_voter_weight_ix = Instruction {
-            program_id: gpl_civic_quadratic::id(),
+            program_id: gpl_quadratic::id(),
             accounts: account_metas,
             data,
         };

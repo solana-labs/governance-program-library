@@ -1,28 +1,29 @@
 mod program_test;
 
 use anchor_lang::prelude::Pubkey;
-use program_test::quadratic_voter_test::quadraticVoterTest;
 
-use gpl_civic_quadratic::error::QuadraticError;
+use gpl_quadratic::error::QuadraticError;
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, transport::TransportError};
+use gpl_quadratic::quadratic;
 
 use crate::program_test::predecessor_plugin_test::PredecessorPluginTest;
 use crate::program_test::tools::NopOverride;
 use program_test::tools::{assert_anchor_err, assert_quadratic_err, assert_ix_err};
+use crate::program_test::quadratic_voter_test;
+use crate::quadratic_voter_test::QuadraticVoterTest;
 
 #[tokio::test]
 async fn test_create_registrar() -> Result<(), TransportError> {
     // Arrange
-    let mut quadratic_voter_test = quadraticVoterTest::start_new().await;
+    let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
     let realm_cookie = quadratic_voter_test.governance.with_realm().await?;
-    let quadratic_cookie = quadratic_voter_test.with_quadratic().await?;
 
     // Act
     let registrar_cookie = quadratic_voter_test
-        .with_registrar(&realm_cookie, &quadratic_cookie, None)
+        .with_registrar(&realm_cookie, None)
         .await?;
 
     // Assert
@@ -38,15 +39,14 @@ async fn test_create_registrar() -> Result<(), TransportError> {
 #[tokio::test]
 async fn test_configure_registrar_new_previous_plugin() -> Result<(), TransportError> {
     // Arrange
-    let mut quadratic_voter_test = quadraticVoterTest::start_new().await;
+    let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
     let realm_cookie = quadratic_voter_test.governance.with_realm().await?;
-    let quadratic_cookie = quadratic_voter_test.with_quadratic().await?;
 
     // Act
     let predecessor_program_id = PredecessorPluginTest::program_id();
     let registrar_cookie = quadratic_voter_test
-        .with_registrar(&realm_cookie, &quadratic_cookie, Some(predecessor_program_id))
+        .with_registrar(&realm_cookie, Some(predecessor_program_id))
         .await?;
 
     // Assert
@@ -62,19 +62,17 @@ async fn test_configure_registrar_new_previous_plugin() -> Result<(), TransportE
 #[tokio::test]
 async fn test_configure_registrar_missing_previous_plugin_error() -> Result<(), TransportError> {
     // Arrange
-    let mut quadratic_voter_test = quadraticVoterTest::start_new().await;
+    let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
     let realm_cookie = quadratic_voter_test.governance.with_realm().await?;
-    let quadratic_cookie = quadratic_voter_test.with_quadratic().await?;
 
     // Act
     let err = quadratic_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
-            &quadratic_cookie,
             None,
             true, // This causes the error
-            &gpl_civic_quadratic::id(),
+            &gpl_quadratic::id(),
             NopOverride,
             None,
         )
@@ -91,15 +89,14 @@ async fn test_configure_registrar_missing_previous_plugin_error() -> Result<(), 
 #[tokio::test]
 async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<(), TransportError> {
     // Arrange
-    let mut quadratic_voter_test = quadraticVoterTest::start_new().await;
+    let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let quadratic_cookie = quadratic_voter_test.with_quadratic().await?;
     let mut realm_cookie = quadratic_voter_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
 
     // Act
     let err = quadratic_voter_test
-        .with_registrar(&realm_cookie, &quadratic_cookie, None)
+        .with_registrar(&realm_cookie, None)
         .await
         .err()
         .unwrap();
@@ -113,20 +110,18 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
 async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<(), TransportError>
 {
     // Arrange
-    let mut quadratic_voter_test = quadraticVoterTest::start_new().await;
+    let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
     let mut realm_cookie = quadratic_voter_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
-    let quadratic_cookie = quadratic_voter_test.with_quadratic().await?;
 
     // Act
     let err = quadratic_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
-            &quadratic_cookie,
             None,
             false,
-            &gpl_civic_quadratic::id(),
+            &gpl_quadratic::id(),
             |i| i.accounts[4].is_signer = false, // realm_authority
             Some(&[]),
         )
@@ -143,12 +138,10 @@ async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<
 async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result<(), TransportError>
 {
     // Arrange
-    let mut quadratic_voter_test = quadraticVoterTest::start_new().await;
+    let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
     let mut realm_cookie = quadratic_voter_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
-
-    let quadratic_cookie = quadratic_voter_test.with_quadratic().await?;
 
     // Try to use a different program id
     let governance_program_id = quadratic_voter_test.program_id;
@@ -157,10 +150,9 @@ async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result
     let err = quadratic_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
-            &quadratic_cookie,
             None,
             false,
-            &gpl_civic_quadratic::id(),
+            &gpl_quadratic::id(),
             |i| i.accounts[1].pubkey = governance_program_id, //governance_program_id
             None,
         )
@@ -176,21 +168,18 @@ async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result
 #[tokio::test]
 async fn test_create_registrar_with_invalid_realm_error() -> Result<(), TransportError> {
     // Arrange
-    let mut quadratic_voter_test = quadraticVoterTest::start_new().await;
+    let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
     let mut realm_cookie = quadratic_voter_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
-
-    let quadratic_cookie = quadratic_voter_test.with_quadratic().await?;
 
     // Act
     let err = quadratic_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
-            &quadratic_cookie,
             None,
             false,
-            &gpl_civic_quadratic::id(),
+            &gpl_quadratic::id(),
             |i| i.accounts[2].pubkey = Pubkey::new_unique(), // realm
             None,
         )
@@ -208,12 +197,10 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), Transpor
 async fn test_create_registrar_with_invalid_governing_token_mint_error(
 ) -> Result<(), TransportError> {
     // Arrange
-    let mut quadratic_voter_test = quadraticVoterTest::start_new().await;
+    let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
     let mut realm_cookie = quadratic_voter_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
-
-    let quadratic_cookie = quadratic_voter_test.with_quadratic().await?;
 
     let mint_cookie = quadratic_voter_test.bench.with_mint().await?;
 
@@ -221,10 +208,9 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
     let err = quadratic_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
-            &quadratic_cookie,
             None,
             false,
-            &gpl_civic_quadratic::id(),
+            &gpl_quadratic::id(),
             |i| i.accounts[3].pubkey = mint_cookie.address, // governing_token_mint
             None,
         )
