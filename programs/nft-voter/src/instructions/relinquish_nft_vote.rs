@@ -3,7 +3,6 @@ use crate::state::*;
 use crate::state::{get_nft_vote_record_data_for_proposal_and_token_owner, Registrar};
 use crate::tools::governance::get_vote_record_address;
 use anchor_lang::prelude::*;
-use spl_governance::state::token_owner_record;
 use spl_governance::state::{enums::ProposalState, governance, proposal};
 use spl_governance_tools::account::dispose_account;
 
@@ -67,25 +66,12 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
-    let voter_token_owner_record =
-        token_owner_record::get_token_owner_record_data_for_realm_and_governing_mint(
-            &registrar.governance_program_id,
-            &ctx.accounts.voter_token_owner_record,
-            &registrar.realm,
-            &registrar.governing_token_mint,
-        )?;
-
-    voter_token_owner_record
-        .assert_token_owner_or_delegate_is_signer(&ctx.accounts.voter_authority)?;
-
-    let governing_token_owner = voter_token_owner_record.governing_token_owner;
-
-    // Assert voter TokenOwnerRecord and VoterWeightRecord are for the same governing_token_owner
-    require_eq!(
-        governing_token_owner,
-        voter_weight_record.governing_token_owner,
-        NftVoterError::InvalidTokenOwnerForVoterWeightRecord
-    );
+    let governing_token_owner = resolve_governing_token_owner(
+        &registrar,
+        &ctx.accounts.voter_token_owner_record,
+        &ctx.accounts.voter_authority,
+        &voter_weight_record,
+    )?;
 
     // Ensure the Governance belongs to Registrar.realm and is owned by Registrar.governance_program_id
     let _governance = governance::get_governance_data_for_realm(
