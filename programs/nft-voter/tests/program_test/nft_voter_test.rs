@@ -573,7 +573,7 @@ impl NftVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn get_nf_vote_record_account(&mut self, nft_vote_record: &Pubkey) -> NftVoteRecord {
+    pub async fn get_nft_vote_record_account(&mut self, nft_vote_record: &Pubkey) -> NftVoteRecord {
         self.bench
             .get_borsh_account::<NftVoteRecord>(nft_vote_record)
             .await
