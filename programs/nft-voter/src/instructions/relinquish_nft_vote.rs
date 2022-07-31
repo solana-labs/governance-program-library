@@ -67,10 +67,10 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     let governing_token_owner = resolve_governing_token_owner(
-        &registrar,
+        registrar,
         &ctx.accounts.voter_token_owner_record,
         &ctx.accounts.voter_authority,
-        &voter_weight_record,
+        voter_weight_record,
     )?;
 
     // Ensure the Governance belongs to Registrar.realm and is owned by Registrar.governance_program_id

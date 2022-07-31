@@ -58,10 +58,10 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     let governing_token_owner = resolve_governing_token_owner(
-        &registrar,
+        registrar,
         &ctx.accounts.voter_token_owner_record,
         &ctx.accounts.voter_authority,
-        &voter_weight_record,
+        voter_weight_record,
     )?;
 
     let mut voter_weight = 0u64;
