@@ -1,9 +1,10 @@
 use crate::program_test::nft_voter_test::ConfigureCollectionArgs;
 use gpl_nft_voter::error::NftVoterError;
 use program_test::nft_voter_test::{CastNftVoteArgs, NftVoterTest};
-use program_test::tools::assert_nft_voter_err;
+use program_test::tools::{assert_gov_err, assert_nft_voter_err};
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
+use spl_governance::error::GovernanceError;
 
 mod program_test;
 
@@ -361,7 +362,7 @@ async fn test_relinquish_nft_vote_with_invalid_voter_error() -> Result<(), Trans
 
     // Assert
 
-    assert_nft_voter_err(err, NftVoterError::InvalidTokenOwnerForVoterWeightRecord);
+    assert_gov_err(err, GovernanceError::GoverningTokenOwnerOrDelegateMustSign);
 
     Ok(())
 }

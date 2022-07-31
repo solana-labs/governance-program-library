@@ -3,6 +3,7 @@ use crate::state::*;
 use crate::state::{get_nft_vote_record_data_for_proposal_and_token_owner, Registrar};
 use crate::tools::governance::get_vote_record_address;
 use anchor_lang::prelude::*;
+use spl_governance::state::token_owner_record;
 use spl_governance::state::{enums::ProposalState, governance, proposal};
 use spl_governance_tools::account::dispose_account;
 
@@ -40,11 +41,16 @@ pub struct RelinquishNftVote<'info> {
     #[account(owner = registrar.governance_program_id)]
     pub proposal: UncheckedAccount<'info>,
 
-    /// The token owner who cast the original vote
+    /// TokenOwnerRecord of the voter who cast the original vote
     #[account(
-        address = voter_weight_record.governing_token_owner  @ NftVoterError::InvalidTokenOwnerForVoterWeightRecord
-    )]
-    pub governing_token_owner: Signer<'info>,
+            owner = registrar.governance_program_id
+         )]
+    /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
+    voter_token_owner_record: UncheckedAccount<'info>,
+
+    /// Authority of the voter who cast the original vote
+    /// It can be either governing_token_owner or its delegate and must sign this instruction
+    pub voter_authority: Signer<'info>,
 
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     /// The account is used to validate that it doesn't exist and if it doesn't then Anchor owner check throws error
@@ -59,6 +65,19 @@ pub struct RelinquishNftVote<'info> {
 
 pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
+
+    let voter_token_owner_record =
+        token_owner_record::get_token_owner_record_data_for_realm_and_governing_mint(
+            &registrar.governance_program_id,
+            &ctx.accounts.voter_token_owner_record,
+            &registrar.realm,
+            &registrar.governing_token_mint,
+        )?;
+
+    voter_token_owner_record
+        .assert_token_owner_or_delegate_is_signer(&ctx.accounts.voter_authority)?;
+
+    let governing_token_owner = voter_token_owner_record.governing_token_owner;
 
     // Ensure the Governance belongs to Registrar.realm and is owned by Registrar.governance_program_id
     let _governance = governance::get_governance_data_for_realm(
@@ -87,7 +106,7 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
             &registrar.governance_program_id,
             &registrar.realm,
             &registrar.governing_token_mint,
-            &ctx.accounts.governing_token_owner.key(),
+            &governing_token_owner,
             &ctx.accounts.proposal.key(),
         );
 
@@ -122,7 +141,7 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
         let _nft_vote_record = get_nft_vote_record_data_for_proposal_and_token_owner(
             nft_vote_record_info,
             &ctx.accounts.proposal.key(),
-            &ctx.accounts.governing_token_owner.key(),
+            &governing_token_owner,
         )?;
 
         dispose_account(nft_vote_record_info, &ctx.accounts.beneficiary);

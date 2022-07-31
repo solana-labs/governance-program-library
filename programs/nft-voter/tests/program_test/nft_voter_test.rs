@@ -378,9 +378,10 @@ impl NftVoterTest {
             voter_weight_record: voter_weight_record_cookie.address,
             governance: proposal_cookie.account.governance,
             proposal: proposal_cookie.address,
-            governing_token_owner: voter_cookie.address,
             vote_record: vote_record_key,
             beneficiary: self.bench.payer.pubkey(),
+            voter_token_owner_record: voter_token_owner_record_cookie.address,
+            voter_authority: voter_cookie.address,
         };
 
         let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);

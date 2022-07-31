@@ -39,7 +39,7 @@ pub struct CastNftVote<'info> {
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     voter_token_owner_record: UncheckedAccount<'info>,
 
-    /// Voter auhtority who signs the instruction
+    /// Voter authority who must sign this instruction
     /// It can be either governing_token_owner or its delegate
     pub voter_authority: Signer<'info>,
 
