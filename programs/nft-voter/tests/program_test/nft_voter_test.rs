@@ -494,7 +494,8 @@ impl NftVoterTest {
         let accounts = gpl_nft_voter::accounts::CastNftVote {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            governing_token_owner: nft_voter_cookie.address,
+            voter_token_owner_record: voter_token_owner_record_cookie.address,
+            voter_authority: nft_voter_cookie.address,
             payer: self.bench.payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
         };

@@ -3,6 +3,7 @@ use crate::{id, state::*};
 use anchor_lang::prelude::*;
 use anchor_lang::Accounts;
 use itertools::Itertools;
+use spl_governance::state::token_owner_record;
 use spl_governance_tools::account::create_and_serialize_account_signed;
 
 /// Casts NFT vote. The NFTs used for voting are tracked using NftVoteRecord accounts
@@ -31,11 +32,16 @@ pub struct CastNftVote<'info> {
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
-    /// The token owner who casts the vote
+    /// TokenOwnerRecord of the voter
     #[account(
-        address = voter_weight_record.governing_token_owner @ NftVoterError::InvalidTokenOwnerForVoterWeightRecord
-    )]
-    pub governing_token_owner: Signer<'info>,
+        owner = registrar.governance_program_id
+     )]
+    /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
+    voter_token_owner_record: UncheckedAccount<'info>,
+
+    /// Voter auhtority who signs the instruction
+    /// It can be either governing_token_owner or its delegate
+    pub voter_authority: Signer<'info>,
 
     /// The account which pays for the transaction
     #[account(mut)]
@@ -50,7 +56,19 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
     proposal: Pubkey,
 ) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
-    let governing_token_owner = &ctx.accounts.governing_token_owner.key();
+
+    let voter_token_owner_record =
+        token_owner_record::get_token_owner_record_data_for_realm_and_governing_mint(
+            &registrar.governance_program_id,
+            &ctx.accounts.voter_token_owner_record,
+            &registrar.realm,
+            &registrar.governing_token_mint,
+        )?;
+
+    voter_token_owner_record
+        .assert_token_owner_or_delegate_is_signer(&ctx.accounts.voter_authority)?;
+
+    let governing_token_owner = voter_token_owner_record.governing_token_owner;
 
     let mut voter_weight = 0u64;
 
@@ -64,7 +82,7 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
     {
         let (nft_vote_weight, nft_mint) = resolve_nft_vote_weight_and_mint(
             registrar,
-            governing_token_owner,
+            &governing_token_owner,
             nft_info,
             nft_metadata_info,
             &mut unique_nft_mints,
@@ -90,7 +108,7 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
             account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
             proposal,
             nft_mint,
-            governing_token_owner: *governing_token_owner,
+            governing_token_owner,
             reserved: [0; 8],
         };
 
