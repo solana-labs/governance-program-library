@@ -8,12 +8,12 @@ use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 use spl_governance_addin_mock::instruction::*;
 
 use crate::program_test::{
-    quadratic_voter_test::VoterWeightRecordCookie,
     governance_test::RealmCookie,
     program_test_bench::{ProgramTestBench, WalletCookie},
+    quadratic_voter_test::VoterWeightRecordCookie,
 };
-use solana_program_test::ProgramTest;
 use gpl_quadratic::state::VoterWeightRecord;
+use solana_program_test::ProgramTest;
 
 pub struct PredecessorPluginTest {
     pub bench: Arc<ProgramTestBench>,

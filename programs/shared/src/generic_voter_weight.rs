@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
 use enum_dispatch::enum_dispatch;
-use num_traits::FromPrimitive;
 use spl_governance::state::token_owner_record::TokenOwnerRecordV2;
 use spl_governance_addin_api::voter_weight::{VoterWeightAction, VoterWeightRecord};
 
@@ -51,8 +50,8 @@ impl GenericVoterWeight for VoterWeightRecord {
     // Note - it is imperative that the two enums stay in sync to avoid errors here.
     fn get_weight_action(&self) -> Option<VoterWeightAction> {
         self.weight_action.clone()
-            // .clone()
-            // .map(|x| FromPrimitive::from_u32(x as u32).unwrap())
+        // .clone()
+        // .map(|x| FromPrimitive::from_u32(x as u32).unwrap())
     }
 
     fn get_weight_action_target(&self) -> Option<Pubkey> {

@@ -1163,6 +1163,7 @@ dependencies = [
  "spl-governance",
  "spl-governance-addin-api",
  "spl-governance-tools",
+ "spl-token",
 ]
 
 [[package]]

@@ -37,6 +37,14 @@ pub mod quadratic {
         log_version();
         instructions::update_voter_weight_record(ctx)
     }
+    pub fn create_max_voter_weight_record(ctx: Context<CreateMaxVoterWeightRecord>) -> Result<()> {
+        log_version();
+        instructions::create_max_voter_weight_record(ctx)
+    }
+    pub fn update_max_voter_weight_record(ctx: Context<UpdateMaxVoterWeightRecord>) -> Result<()> {
+        log_version();
+        instructions::update_max_voter_weight_record(ctx)
+    }
 }
 
 fn log_version() {

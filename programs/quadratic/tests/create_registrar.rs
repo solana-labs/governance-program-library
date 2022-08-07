@@ -3,16 +3,16 @@ mod program_test;
 use anchor_lang::prelude::Pubkey;
 
 use gpl_quadratic::error::QuadraticError;
+use gpl_quadratic::quadratic;
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, transport::TransportError};
-use gpl_quadratic::quadratic;
 
 use crate::program_test::predecessor_plugin_test::PredecessorPluginTest;
-use crate::program_test::tools::NopOverride;
-use program_test::tools::{assert_anchor_err, assert_quadratic_err, assert_ix_err};
 use crate::program_test::quadratic_voter_test;
+use crate::program_test::tools::NopOverride;
 use crate::quadratic_voter_test::QuadraticVoterTest;
+use program_test::tools::{assert_anchor_err, assert_ix_err, assert_quadratic_err};
 
 #[tokio::test]
 async fn test_create_registrar() -> Result<(), TransportError> {

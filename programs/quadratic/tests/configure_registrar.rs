@@ -7,21 +7,20 @@ use solana_program::instruction::{Instruction, InstructionError};
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 
+use crate::program_test::quadratic_voter_test::QuadraticVoterTest;
 use crate::program_test::tools::NopOverride;
 use crate::{
     program_test::governance_test::RealmCookie,
     program_test::predecessor_plugin_test::PredecessorPluginTest,
-    program_test::tools::{assert_anchor_err, assert_quadratic_err, assert_ix_err},
+    program_test::tools::{assert_anchor_err, assert_ix_err, assert_quadratic_err},
 };
-use crate::program_test::quadratic_voter_test::QuadraticVoterTest;
 
 #[tokio::test]
 async fn test_configure_registrar_new_previous_plugin() -> Result<(), TransportError> {
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, _) =
-        quadratic_voter_test.setup(false).await?;
+    let (realm_cookie, registrar_cookie, _) = quadratic_voter_test.setup(false).await?;
 
     // Act
     let predecessor_program_id = PredecessorPluginTest::program_id();
@@ -51,8 +50,7 @@ async fn test_configure_registrar_missing_previous_plugin_error() -> Result<(), 
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, _) =
-        quadratic_voter_test.setup(false).await?;
+    let (realm_cookie, registrar_cookie, _) = quadratic_voter_test.setup(false).await?;
 
     // Act
     let err = quadratic_voter_test
@@ -80,8 +78,7 @@ async fn test_configure_registrar_with_invalid_realm_authority_error() -> Result
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, _) =
-        quadratic_voter_test.setup(false).await?;
+    let (realm_cookie, registrar_cookie, _) = quadratic_voter_test.setup(false).await?;
 
     let wrong_key = Keypair::new();
     let broken_realm_cookie = RealmCookie {
@@ -115,8 +112,7 @@ async fn test_configure_registrar_with_realm_authority_must_sign_error(
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, _) =
-        quadratic_voter_test.setup(false).await?;
+    let (realm_cookie, registrar_cookie, _) = quadratic_voter_test.setup(false).await?;
 
     // Act
     let err = quadratic_voter_test
@@ -144,8 +140,7 @@ async fn test_configure_registrar_with_invalid_spl_gov_program_id_error(
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, _) =
-        quadratic_voter_test.setup(false).await?;
+    let (realm_cookie, registrar_cookie, _) = quadratic_voter_test.setup(false).await?;
 
     // Try to use a different program id
     let governance_program_id = quadratic_voter_test.program_id;
@@ -175,8 +170,7 @@ async fn test_configure_registrar_with_invalid_realm_error() -> Result<(), Trans
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, _) =
-        quadratic_voter_test.setup(false).await?;
+    let (realm_cookie, registrar_cookie, _) = quadratic_voter_test.setup(false).await?;
 
     // Act
     let err = quadratic_voter_test

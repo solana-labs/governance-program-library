@@ -1,8 +1,6 @@
 use anchor_lang::prelude::Pubkey;
 // Add the generic voter weight trait to TokenOwnerRecord structs
-use crate::{
-    generic_voter_weight::GenericVoterWeight
-};
+use crate::generic_voter_weight::GenericVoterWeight;
 use spl_governance::state::token_owner_record::TokenOwnerRecordV2;
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 

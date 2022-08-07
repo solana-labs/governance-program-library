@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
-use num_traits::FromPrimitive;
-use num_derive::FromPrimitive;
 use gpl_shared::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
+use num_derive::FromPrimitive;
 
 /// VoterWeightAction enum as defined in spl-governance-addin-api
 /// It's redefined here for Anchor to export it to IDL

@@ -17,8 +17,7 @@ async fn test_update_voter_weight_record_with_predecessor_voter_weight_record(
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, voter_cookie) =
-        quadratic_voter_test.setup(true).await?;
+    let (realm_cookie, registrar_cookie, voter_cookie) = quadratic_voter_test.setup(true).await?;
 
     // the voter weight record from the registered predecessor plugin (will give a constant weight)
     let predecessor_voter_weight_record_cookie = quadratic_voter_test
@@ -65,8 +64,7 @@ async fn test_update_fails_with_predecessor_from_different_realm() -> Result<(),
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, voter_cookie) =
-        quadratic_voter_test.setup(true).await?;
+    let (realm_cookie, registrar_cookie, voter_cookie) = quadratic_voter_test.setup(true).await?;
 
     let different_realm_cookie = RealmCookie {
         address: Default::default(),
@@ -109,8 +107,7 @@ async fn test_update_fails_with_predecessor_for_different_governance() -> Result
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, voter_cookie) =
-        quadratic_voter_test.setup(true).await?;
+    let (realm_cookie, registrar_cookie, voter_cookie) = quadratic_voter_test.setup(true).await?;
 
     let different_community_mint_cookie = quadratic_voter_test.bench.with_mint().await?;
     let different_realm_account = RealmV2 {
@@ -158,8 +155,7 @@ async fn test_update_fails_with_predecessor_with_a_different_owner() -> Result<(
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, voter_cookie) =
-        quadratic_voter_test.setup(true).await?;
+    let (realm_cookie, registrar_cookie, voter_cookie) = quadratic_voter_test.setup(true).await?;
 
     let different_voter_cookie = quadratic_voter_test.bench.with_wallet().await;
 
@@ -199,8 +195,7 @@ async fn test_cast_vote_with_update_voter_weight_record_and_predecessor(
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, voter_cookie) =
-        quadratic_voter_test.setup(true).await?;
+    let (realm_cookie, registrar_cookie, voter_cookie) = quadratic_voter_test.setup(true).await?;
 
     // the voter weight record from the registered predecessor plugin (will give a constant weight)
     let predecessor_voter_weight_record_cookie = quadratic_voter_test

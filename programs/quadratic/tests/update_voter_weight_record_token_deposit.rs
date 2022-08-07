@@ -11,12 +11,12 @@ const INITIAL_VOTES: u64 = 1000000;
 const EXPECTED_VOTES: u64 = 1000; // Square root of 1,000,000
 
 #[tokio::test]
-async fn test_update_voter_weight_record_with_predecessor() -> Result<(), TransportError> {
+async fn test_update_voter_weight_record_with_token_owner_record_as_input(
+) -> Result<(), TransportError> {
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, voter_cookie) =
-        quadratic_voter_test.setup(false).await?;
+    let (realm_cookie, registrar_cookie, voter_cookie) = quadratic_voter_test.setup(false).await?;
 
     let mut voter_weight_record_cookie = quadratic_voter_test
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
@@ -59,13 +59,11 @@ async fn test_update_voter_weight_record_with_predecessor() -> Result<(), Transp
     Ok(())
 }
 
-
 #[tokio::test]
 async fn test_cast_vote_with_update_voter_weight_record() -> Result<(), TransportError> {
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
-    let (realm_cookie, registrar_cookie, voter_cookie) =
-        quadratic_voter_test.setup(false).await?;
+    let (realm_cookie, registrar_cookie, voter_cookie) = quadratic_voter_test.setup(false).await?;
 
     let voter_token_owner_record_cookie = quadratic_voter_test
         .governance

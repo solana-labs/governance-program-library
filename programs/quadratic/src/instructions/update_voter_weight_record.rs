@@ -1,30 +1,9 @@
 use crate::error::QuadraticError;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use spl_governance::state::token_owner_record::get_token_owner_record_data_for_realm_and_governing_mint;
-use spl_governance_tools::account::get_account_data;
-use std::cmp::max;
-use num_traits::FromPrimitive;
-use gpl_shared::compose::{RegistrarBase, resolve_input_voter_weight, VoterWeightRecordBase};
+use gpl_shared::compose::{resolve_input_voter_weight, VoterWeightRecordBase};
 use gpl_shared::generic_voter_weight::GenericVoterWeight;
-
-impl<'a> RegistrarBase<'a> for Registrar {
-    fn get_realm(&'a self) -> &'a Pubkey {
-        &self.realm
-    }
-
-    fn get_governance_program_id(&'a self) -> &'a Pubkey {
-        &self.governance_program_id
-    }
-
-    fn get_governing_token_mint(&'a self) -> &'a Pubkey {
-        &self.governing_token_mint
-    }
-
-    fn get_previous_voter_weight_plugin_program_id(&'a self) -> &'a Option<Pubkey> {
-        &self.previous_voter_weight_plugin_program_id
-    }
-}
+use std::cmp::max;
 
 impl<'a> VoterWeightRecordBase<'a> for VoterWeightRecord {
     fn get_governing_token_mint(&'a self) -> &'a Pubkey {
@@ -42,7 +21,7 @@ impl<'a> VoterWeightRecordBase<'a> for VoterWeightRecord {
 #[derive(Accounts)]
 #[instruction()]
 pub struct UpdateVoterWeightRecord<'info> {
-    /// The quadratic Registrar
+    /// The quadratic plugin Registrar
     pub registrar: Account<'info, Registrar>,
 
     /// An account that is either of type TokenOwnerRecordV2 or VoterWeightRecord
@@ -82,8 +61,6 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
         output_voter_weight
     );
     voter_weight_record.voter_weight = output_voter_weight;
-    voter_weight_record.weight_action = input_voter_weight_record.get_weight_action().map(|x| FromPrimitive::from_u32(x as u32).unwrap());
-    voter_weight_record.weight_action_target = input_voter_weight_record.get_weight_action_target();
 
     // If the input voter weight record has an expiry, use the max between that and the current slot
     // Otherwise use the current slot

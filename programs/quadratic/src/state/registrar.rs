@@ -1,8 +1,9 @@
-use crate::{
-    id,
-};
+use crate::id;
 use anchor_lang::prelude::*;
-use gpl_shared::anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE};
+use gpl_shared::{
+    anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
+    compose::RegistrarBase,
+};
 
 /// Registrar which stores Civic Pass voting configuration for the given Realm
 #[account]
@@ -70,5 +71,23 @@ mod test {
 
         // Assert
         assert_eq!(expected_space, actual_space);
+    }
+}
+
+impl<'a> RegistrarBase<'a> for Registrar {
+    fn get_realm(&'a self) -> &'a Pubkey {
+        &self.realm
+    }
+
+    fn get_governance_program_id(&'a self) -> &'a Pubkey {
+        &self.governance_program_id
+    }
+
+    fn get_governing_token_mint(&'a self) -> &'a Pubkey {
+        &self.governing_token_mint
+    }
+
+    fn get_previous_voter_weight_plugin_program_id(&'a self) -> &'a Option<Pubkey> {
+        &self.previous_voter_weight_plugin_program_id
     }
 }
