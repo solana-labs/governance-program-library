@@ -1,11 +1,14 @@
+use std::str::FromStr;
 use std::sync::Arc;
 
 use anchor_lang::prelude::{AccountMeta, Pubkey};
 
+use anchor_spl::token::TokenAccount;
 use gpl_nft_voter::state::max_voter_weight_record::{
     get_max_voter_weight_record_address, MaxVoterWeightRecord,
 };
 use gpl_nft_voter::state::*;
+use solana_program::pubkey::ParsePubkeyError;
 use solana_sdk::transport::TransportError;
 use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{self, Vote, VoteChoice};
@@ -18,6 +21,7 @@ use solana_program_test::ProgramTest;
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
+use spl_token::state::Account;
 
 use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
@@ -59,6 +63,11 @@ impl Default for ConfigureCollectionArgs {
     fn default() -> Self {
         Self { weight: 1, size: 3 }
     }
+}
+
+pub struct GovernanceTokenHoldingAccountCookie {
+    pub address: Pubkey,
+    pub account: TokenAccount,
 }
 
 #[derive(Debug, PartialEq)]
@@ -591,5 +600,74 @@ impl NftVoterTest {
     #[allow(dead_code)]
     pub async fn get_voter_weight_record(&self, voter_weight_record: &Pubkey) -> VoterWeightRecord {
         self.bench.get_anchor_account(*voter_weight_record).await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_governance_token_holding_account(
+        &self,
+        registrar_cookie: &RegistrarCookie,
+        nft_cookie: &NftCookie,
+    ) -> Result<GovernanceTokenHoldingAccountCookie, TransportError> {
+        self.with_governance_token_holding_account_using_ix(
+            registrar_cookie,
+            nft_cookie,
+            NopOverride,
+        )
+        .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_governance_token_holding_account_using_ix<F: Fn(&mut Instruction)>(
+        &self,
+        registrar_cookie: &RegistrarCookie,
+        nft_cookie: &NftCookie,
+        instruction_override: F,
+    ) -> Result<GovernanceTokenHoldingAccountCookie, TransportError> {
+        let (holding_account_key, _) = Pubkey::find_program_address(
+            &[
+                b"nft-power-holding-account".as_ref(),
+                registrar_cookie.account.realm.as_ref(),
+                registrar_cookie.account.governing_token_mint.as_ref(),
+                nft_cookie.mint_cookie.address.as_ref(),
+            ],
+            &gpl_nft_voter::id(),
+        );
+
+        let data = anchor_lang::InstructionData::data(
+            &gpl_nft_voter::instruction::CreateGovernanceTokenHoldingAccount {},
+        );
+
+        let accounts = gpl_nft_voter::accounts::CreateGovernanceTokenHoldingAccount {
+            governance_program_id: self.governance.program_id,
+            realm: registrar_cookie.account.realm,
+            realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
+            payer: self.bench.payer.pubkey(),
+            system_program: solana_sdk::system_program::id(),
+            holding_account_info: holding_account_key,
+            nft: nft_cookie.mint_cookie.address,
+            associated_token_program: anchor_spl::associated_token::ID,
+            token_program: spl_token::id(),
+            rent: Pubkey::from_str("SysvarRent111111111111111111111111111111111")
+                .map_err(|e| TransportError::Custom(e.to_string()))?,
+        };
+
+        let mut create_governing_token_holding_account_ix = Instruction {
+            program_id: gpl_nft_voter::id(),
+            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            data,
+        };
+
+        instruction_override(&mut create_governing_token_holding_account_ix);
+
+        self.bench
+            .process_transaction(&[create_governing_token_holding_account_ix], Some(&[&self.bench.payer]))
+            .await?;
+
+        let account = self.bench.get_anchor_account(holding_account_key).await;
+
+        Ok(GovernanceTokenHoldingAccountCookie {
+            address: holding_account_key,
+            account,
+        })
     }
 }

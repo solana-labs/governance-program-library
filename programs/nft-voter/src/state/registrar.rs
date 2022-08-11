@@ -107,6 +107,9 @@ pub fn resolve_nft_vote_weight_and_mint(
 
     let collection_config = registrar.get_collection_config(collection.key)?;
 
+    //TODO get the token holding account assigned to this NFT
+    // TODO compute voter weight based on collection_config.weight and holding account balance
+
     Ok((collection_config.weight, nft_mint))
 }
 

@@ -13,6 +13,7 @@ pub struct NftCookie {
     pub mint_cookie: MintCookie,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct NftCollectionCookie {
     pub mint: Pubkey,
     pub metadata: Pubkey,

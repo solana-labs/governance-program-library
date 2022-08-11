@@ -61,6 +61,13 @@ pub mod nft_voter {
         log_version();
         instructions::cast_nft_vote(ctx, proposal)
     }
+
+    pub fn create_governance_token_holding_account(
+        ctx: Context<CreateGovernanceTokenHoldingAccount>,
+    ) -> Result<()> {
+        log_version();
+        instructions::create_governance_token_holding_account(ctx)
+    }
 }
 
 fn log_version() {
