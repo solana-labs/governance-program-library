@@ -31,11 +31,16 @@ pub struct CastNftVote<'info> {
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
-    /// The token owner who casts the vote
+    /// TokenOwnerRecord of the voter who casts the vote
     #[account(
-        address = voter_weight_record.governing_token_owner @ NftVoterError::InvalidTokenOwnerForVoterWeightRecord
-    )]
-    pub governing_token_owner: Signer<'info>,
+        owner = registrar.governance_program_id
+     )]
+    /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
+    voter_token_owner_record: UncheckedAccount<'info>,
+
+    /// Authority of the voter who casts the vote
+    /// It can be either governing_token_owner or its delegate and must sign this instruction
+    pub voter_authority: Signer<'info>,
 
     /// The account which pays for the transaction
     #[account(mut)]
@@ -50,7 +55,14 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
     proposal: Pubkey,
 ) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
-    let governing_token_owner = &ctx.accounts.governing_token_owner.key();
+    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
+
+    let governing_token_owner = resolve_governing_token_owner(
+        registrar,
+        &ctx.accounts.voter_token_owner_record,
+        &ctx.accounts.voter_authority,
+        voter_weight_record,
+    )?;
 
     let mut voter_weight = 0u64;
 
@@ -64,7 +76,7 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
     {
         let (nft_vote_weight, nft_mint) = resolve_nft_vote_weight_and_mint(
             registrar,
-            governing_token_owner,
+            &governing_token_owner,
             nft_info,
             nft_metadata_info,
             &mut unique_nft_mints,
@@ -90,7 +102,7 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
             account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
             proposal,
             nft_mint,
-            governing_token_owner: *governing_token_owner,
+            governing_token_owner,
             reserved: [0; 8],
         };
 
@@ -106,8 +118,6 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
             &rent,
         )?;
     }
-
-    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     if voter_weight_record.weight_action_target == Some(proposal)
         && voter_weight_record.weight_action == Some(VoterWeightAction::CastVote)

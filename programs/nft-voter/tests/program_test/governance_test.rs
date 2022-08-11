@@ -6,7 +6,7 @@ use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 use spl_governance::{
     instruction::{
         create_governance, create_proposal, create_realm, create_token_owner_record,
-        deposit_governing_tokens, relinquish_vote, sign_off_proposal,
+        deposit_governing_tokens, relinquish_vote, set_governance_delegate, sign_off_proposal,
     },
     state::{
         enums::{
@@ -368,6 +368,32 @@ impl GovernanceTest {
             .await?;
 
         Ok(())
+    }
+
+    #[allow(dead_code)]
+    pub async fn set_governance_delegate(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        token_owner_record_cookie: &TokenOwnerRecordCookie,
+        token_owner_authority_cookie: &WalletCookie,
+        new_governance_delegate: &Option<Pubkey>,
+    ) {
+        let set_governance_delegate_ix = set_governance_delegate(
+            &self.program_id,
+            &token_owner_authority_cookie.address,
+            &realm_cookie.address,
+            &token_owner_record_cookie.account.governing_token_mint,
+            &token_owner_record_cookie.account.governing_token_owner,
+            new_governance_delegate,
+        );
+
+        self.bench
+            .process_transaction(
+                &[set_governance_delegate_ix],
+                Some(&[&token_owner_authority_cookie.signer]),
+            )
+            .await
+            .unwrap();
     }
 
     #[allow(dead_code)]

@@ -378,9 +378,10 @@ impl NftVoterTest {
             voter_weight_record: voter_weight_record_cookie.address,
             governance: proposal_cookie.account.governance,
             proposal: proposal_cookie.address,
-            governing_token_owner: voter_cookie.address,
             vote_record: vote_record_key,
             beneficiary: self.bench.payer.pubkey(),
+            voter_token_owner_record: voter_token_owner_record_cookie.address,
+            voter_authority: voter_cookie.address,
         };
 
         let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
@@ -494,7 +495,8 @@ impl NftVoterTest {
         let accounts = gpl_nft_voter::accounts::CastNftVote {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            governing_token_owner: nft_voter_cookie.address,
+            voter_token_owner_record: voter_token_owner_record_cookie.address,
+            voter_authority: nft_voter_cookie.address,
             payer: self.bench.payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
         };
@@ -572,7 +574,7 @@ impl NftVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn get_nf_vote_record_account(&mut self, nft_vote_record: &Pubkey) -> NftVoteRecord {
+    pub async fn get_nft_vote_record_account(&mut self, nft_vote_record: &Pubkey) -> NftVoteRecord {
         self.bench
             .get_borsh_account::<NftVoteRecord>(nft_vote_record)
             .await
