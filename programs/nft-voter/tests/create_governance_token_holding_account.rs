@@ -15,7 +15,7 @@ async fn test_create_governance_token_holding_account() -> Result<(), TransportE
 
     let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
 
@@ -109,7 +109,7 @@ async fn test_create_governance_token_holding_account_nft_is_not_part_of_configu
         "Unable to add collection to registrar"
     );
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let nft_cookie = nft_voter_test
         .token_metadata
@@ -140,7 +140,7 @@ async fn test_create_governance_token_holding_account_already_exists_errors(
 
     let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(Some(10000000000000)).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
 

@@ -40,7 +40,7 @@ async fn test_cast_nft_vote() -> Result<(), TransportError> {
         )
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -130,7 +130,7 @@ async fn test_cast_nft_vote_with_multiple_nfts() -> Result<(), TransportError> {
         )
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -228,7 +228,7 @@ async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), Transpo
         )
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -311,7 +311,7 @@ async fn test_cast_nft_vote_with_invalid_voter_error() -> Result<(), TransportEr
         )
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -332,7 +332,7 @@ async fn test_cast_nft_vote_with_invalid_voter_error() -> Result<(), TransportEr
         .with_nft_v2(&nft_collection_cookie, &voter_cookie, None)
         .await?;
 
-    let voter_cookie2 = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie2 = nft_voter_test.bench.with_wallet().await;
 
     // Act
 
@@ -384,7 +384,7 @@ async fn test_cast_nft_vote_with_unverified_collection_error() -> Result<(), Tra
         )
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -462,7 +462,7 @@ async fn test_cast_nft_vote_with_invalid_owner_error() -> Result<(), TransportEr
         )
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -473,7 +473,7 @@ async fn test_cast_nft_vote_with_invalid_owner_error() -> Result<(), TransportEr
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
-    let voter_cookie2 = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie2 = nft_voter_test.bench.with_wallet().await;
 
     let proposal_cookie = nft_voter_test
         .governance
@@ -539,7 +539,7 @@ async fn test_cast_nft_vote_with_invalid_collection_error() -> Result<(), Transp
         .with_proposal(&realm_cookie)
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -611,7 +611,7 @@ async fn test_cast_nft_vote_with_invalid_metadata_error() -> Result<(), Transpor
         .with_proposal(&realm_cookie)
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -693,7 +693,7 @@ async fn test_cast_nft_vote_with_same_nft_error() -> Result<(), TransportError> 
         .with_proposal(&realm_cookie)
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -759,7 +759,7 @@ async fn test_cast_nft_vote_with_no_nft_error() -> Result<(), TransportError> {
         )
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -836,7 +836,7 @@ async fn test_cast_nft_vote_with_max_5_nfts() -> Result<(), TransportError> {
         )
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -939,7 +939,7 @@ async fn test_cast_nft_vote_using_multiple_instructions() -> Result<(), Transpor
         )
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -1048,7 +1048,7 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_nft_already_voted_e
         )
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
@@ -1137,7 +1137,7 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_attempted_sandwiche
         )
         .await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = nft_voter_test
         .governance
