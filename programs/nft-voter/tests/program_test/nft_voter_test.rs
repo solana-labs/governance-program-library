@@ -692,6 +692,7 @@ impl NftVoterTest {
         governing_token_holding_account_cookie: &GovernanceTokenHoldingAccountCookie,
         governing_token_owner_cookie: &WalletCookie,
         governing_token_source_cookie: &TokenAccountCookie,
+        deposit_amount: Option<u64>
     ) -> Result<NftVoterTokenOwnerRecordCookie, TransportError> {
         self.with_nft_voter_token_owner_record_using_ix(
             realm_cookie,
@@ -699,6 +700,7 @@ impl NftVoterTest {
             governing_token_holding_account_cookie,
             governing_token_owner_cookie,
             governing_token_source_cookie,
+            deposit_amount,
             NopOverride,
         )
         .await
@@ -712,6 +714,7 @@ impl NftVoterTest {
         governing_token_holding_account_cookie: &GovernanceTokenHoldingAccountCookie,
         governing_token_owner_cookie: &WalletCookie,
         governing_token_source_cookie: &TokenAccountCookie,
+        deposit_amount: Option<u64>,
         instruction_override: F,
     ) -> Result<NftVoterTokenOwnerRecordCookie, TransportError> {
         let (token_owner_record_pubkey, _) = Pubkey::find_program_address(
@@ -725,7 +728,7 @@ impl NftVoterTest {
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_nft_voter::instruction::DepositGovernanceTokens { amount: 0 },
+            &gpl_nft_voter::instruction::DepositGovernanceTokens { amount: deposit_amount.unwrap_or(0) },
         );
 
         let accounts = gpl_nft_voter::accounts::DepositGovernanceTokens {
@@ -741,41 +744,6 @@ impl NftVoterTest {
             token_program: spl_token::id(),
         };
 
-        println!(
-            "DEPOSIT ACCOUNTS token_owner_record {:?}",
-            accounts.token_owner_record
-        );
-        println!(
-            "DEPOSIT ACCOUNTS holding_account_info {:?}",
-            accounts.holding_account_info
-        );
-        println!(
-            "DEPOSIT ACCOUNTS governance_program_id {:?}",
-            accounts.governance_program_id
-        );
-        println!("DEPOSIT ACCOUNTS realm {:?}", accounts.realm);
-        println!(
-            "DEPOSIT ACCOUNTS realm_governing_token_mint {:?}",
-            accounts.realm_governing_token_mint
-        );
-        println!(
-            "DEPOSIT ACCOUNTS governing_token_owner {:?}",
-            accounts.governing_token_owner
-        );
-        println!("DEPOSIT ACCOUNTS nft_mint {:?}", accounts.nft_mint);
-        println!(
-            "DEPOSIT ACCOUNTS governing_token_source_account {:?}",
-            accounts.governing_token_source_account
-        );
-        println!(
-            "DEPOSIT ACCOUNTS system_program {:?}",
-            accounts.system_program
-        );
-        println!(
-            "DEPOSIT ACCOUNTS token_program {:?}",
-            accounts.token_program
-        );
-
         let mut deposit_governing_token_ix = Instruction {
             program_id: gpl_nft_voter::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
@@ -784,7 +752,6 @@ impl NftVoterTest {
 
         instruction_override(&mut deposit_governing_token_ix);
 
-        println!("PROCESSING TRANSACTION");
         self.bench
             .process_transaction(
                 &[deposit_governing_token_ix],
@@ -792,7 +759,6 @@ impl NftVoterTest {
             )
             .await?;
 
-        println!("GETTING ACCOUNT");
         let account = self
             .bench
             .get_anchor_account(token_owner_record_pubkey)

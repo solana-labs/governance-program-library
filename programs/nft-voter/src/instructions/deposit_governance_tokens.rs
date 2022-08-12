@@ -1,9 +1,8 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
-use solana_program::{entrypoint::ProgramResult, program::invoke};
 use spl_governance::state::realm;
 
-use crate::{id, state::nft_voter_token_owner_record::NftVoterTokenOwnerRecord};
+use crate::{state::nft_voter_token_owner_record::NftVoterTokenOwnerRecord};
 
 /// Deposits tokens into the holding account for a given NFT to boost its voting power
 #[derive(Accounts)]
@@ -23,6 +22,7 @@ pub struct DepositGovernanceTokens<'info> {
     pub token_owner_record: Account<'info, NftVoterTokenOwnerRecord>,
 
     #[account(
+        mut,
         seeds = [ b"nft-power-holding-account".as_ref(),
                 realm.key().as_ref(),
                 realm_governing_token_mint.key().as_ref(),
@@ -52,7 +52,7 @@ pub struct DepositGovernanceTokens<'info> {
     //TODO add constraint that the nft is the one configured for a realm collection
     pub nft_mint: Account<'info, Mint>,
 
-    #[account(constraint = governing_token_source_account.owner == governing_token_owner.key())]
+    #[account(mut, constraint = governing_token_source_account.owner == governing_token_owner.key())]
     pub governing_token_source_account: Account<'info, TokenAccount>,
 
     pub system_program: Program<'info, System>,
@@ -68,6 +68,17 @@ pub fn deposit_governance_tokens(ctx: Context<DepositGovernanceTokens>, amount: 
         &ctx.accounts.realm_governing_token_mint.key(),
     )?;
 
+    spl_governance::tools::spl_token::transfer_spl_tokens(
+        &ctx.accounts
+            .governing_token_source_account
+            .to_account_info(),
+        &ctx.accounts.holding_account_info.to_account_info(),
+        &ctx.accounts.governing_token_owner.to_account_info(),
+        amount,
+        &ctx.accounts.realm_governing_token_mint.to_account_info(),
+    )
+    .unwrap();
+
     let token_owner_record = &mut ctx.accounts.token_owner_record;
     token_owner_record.set_inner(NftVoterTokenOwnerRecord {
         realm: ctx.accounts.realm.key(),
@@ -79,72 +90,6 @@ pub fn deposit_governance_tokens(ctx: Context<DepositGovernanceTokens>, amount: 
             .checked_add(amount)
             .unwrap(),
     });
-
-    spl_governance::tools::spl_token::transfer_spl_tokens_signed(
-        &ctx.accounts
-            .governing_token_source_account
-            .to_account_info(),
-        &ctx.accounts.holding_account_info.to_account_info(),
-        &ctx.accounts.governing_token_owner,
-        //TODO WTF is this?
-        &[ctx
-            .accounts
-            .governing_token_owner
-            .signer_key()
-            .unwrap()
-            .as_ref()],
-        &ctx.accounts.governance_program_id.key(),
-        amount,
-        &ctx.accounts.realm_governing_token_mint.to_account_info(),
-    )
-    .unwrap();
-    // spl_governance::tools::spl_token::transfer_spl_tokens(
-    //     &ctx.accounts
-    //         .governing_token_source_account
-    //         .to_account_info(),
-    //     &ctx.accounts.holding_account_info.to_account_info(),
-    //     &ctx.accounts.governing_token_owner.to_account_info(),
-    //     amount,
-    //     &ctx.accounts.realm_governing_token_mint.to_account_info(),
-    // )
-    // .unwrap();
-
-    let token_owner_record = &mut ctx.accounts.token_owner_record;
-
-    token_owner_record.governing_token_deposit_amount = token_owner_record
-        .governing_token_deposit_amount
-        .checked_add(amount)
-        .unwrap();
-
-    Ok(())
-}
-
-fn transfer_spl_tokens<'a>(
-    source_info: &AccountInfo<'a>,
-    destination_info: &AccountInfo<'a>,
-    authority_info: &AccountInfo<'a>,
-    amount: u64,
-    spl_token_info: &AccountInfo<'a>,
-) -> ProgramResult {
-    let transfer_instruction = spl_token::instruction::transfer(
-        &spl_token::id(),
-        source_info.key,
-        destination_info.key,
-        authority_info.key,
-        &[authority_info.key],
-        amount,
-    )
-    .unwrap();
-
-    invoke(
-        &transfer_instruction,
-        &[
-            spl_token_info.clone(),
-            authority_info.clone(),
-            source_info.clone(),
-            destination_info.clone(),
-        ],
-    )?;
 
     Ok(())
 }
