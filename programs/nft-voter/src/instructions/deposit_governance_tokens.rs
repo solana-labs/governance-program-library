@@ -3,7 +3,7 @@ use anchor_spl::token::{Mint, Token, TokenAccount};
 use solana_program::{entrypoint::ProgramResult, program::invoke};
 use spl_governance::state::realm;
 
-use crate::{state::nft_voter_token_owner_record::NftVoterTokenOwnerRecord, id};
+use crate::{id, state::nft_voter_token_owner_record::NftVoterTokenOwnerRecord};
 
 /// Deposits tokens into the holding account for a given NFT to boost its voting power
 #[derive(Accounts)]
@@ -87,7 +87,12 @@ pub fn deposit_governance_tokens(ctx: Context<DepositGovernanceTokens>, amount: 
         &ctx.accounts.holding_account_info.to_account_info(),
         &ctx.accounts.governing_token_owner,
         //TODO WTF is this?
-        &[ctx.accounts.governing_token_owner.signer_key().unwrap().as_ref()],
+        &[ctx
+            .accounts
+            .governing_token_owner
+            .signer_key()
+            .unwrap()
+            .as_ref()],
         &ctx.accounts.governance_program_id.key(),
         amount,
         &ctx.accounts.realm_governing_token_mint.to_account_info(),
