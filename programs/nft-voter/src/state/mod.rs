@@ -13,3 +13,6 @@ pub use voter_weight_record::*;
 pub mod voter_weight_record;
 
 pub mod idl_types;
+
+pub use nft_voter_token_owner_record::*;
+pub mod nft_voter_token_owner_record;

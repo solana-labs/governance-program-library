@@ -1,13 +1,14 @@
+use anchor_spl::token::Mint;
 use program_test::nft_voter_test::NftVoterTest;
-use solana_program::program_option::COption;
+use program_test::program_test_bench::MintCookie;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
-use spl_token::state::AccountState;
 
 mod program_test;
 
 #[tokio::test]
-async fn test_create_governance_token_holding_account() -> Result<(), TransportError> {
+async fn test_deposit_governance_tokens_first_deposit_creates_record() -> Result<(), TransportError>
+{
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -15,60 +16,80 @@ async fn test_create_governance_token_holding_account() -> Result<(), TransportE
 
     let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
+    let owner_cookie = nft_voter_test.bench.with_wallet(Some(100000000000)).await;
 
     let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
 
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &voter_cookie, None)
+        .with_nft_v2(&nft_collection_cookie, &owner_cookie, None)
         .await?;
 
-    // Act
     let governance_token_holding_account_cookie = nft_voter_test
         .with_governance_token_holding_account(&registrar_cookie, &nft_cookie)
         .await?;
 
+    let governing_token_source_account_cookie = nft_voter_test
+        .bench
+        .with_tokens(
+            &realm_cookie.community_mint_cookie,
+            &owner_cookie.address,
+            1000,
+        )
+        .await?;
+
+    // Act
+
+    let token_owner_record = nft_voter_test
+        .with_nft_voter_token_owner_record(
+            &realm_cookie,
+            &nft_cookie,
+            &governance_token_holding_account_cookie,
+            &owner_cookie,
+            &governing_token_source_account_cookie,
+        )
+        .await?;
+
     // Assert
-    assert_eq_formatted(
-        0,
-        governance_token_holding_account_cookie.account.amount,
-        "amount",
-    );
-    assert_eq_formatted(
-        COption::None,
-        governance_token_holding_account_cookie.account.delegate,
-        "delegate",
-    );
-    assert_eq_formatted(
-        0,
-        governance_token_holding_account_cookie
-            .account
-            .delegated_amount,
-        "delegated_amount",
-    );
-    assert_eq_formatted(
-        COption::None,
-        governance_token_holding_account_cookie
-            .account
-            .close_authority,
-        "close_authority",
-    );
-    assert_eq_formatted(
-        realm_cookie.community_mint_cookie.address,
-        governance_token_holding_account_cookie.account.mint,
-        "mint",
-    );
-    assert_eq_formatted(
-        registrar_cookie.account.governance_program_id,
-        governance_token_holding_account_cookie.account.owner,
-        "owner",
-    );
-    assert_eq_formatted(
-        AccountState::Initialized,
-        governance_token_holding_account_cookie.account.state,
-        "state",
-    );
+    // assert_eq_formatted(
+    //     0,
+    //     governance_token_holding_account_cookie.account.amount,
+    //     "amount",
+    // );
+    // assert_eq_formatted(
+    //     COption::None,
+    //     governance_token_holding_account_cookie.account.delegate,
+    //     "delegate",
+    // );
+    // assert_eq_formatted(
+    //     0,
+    //     governance_token_holding_account_cookie
+    //         .account
+    //         .delegated_amount,
+    //     "delegated_amount",
+    // );
+    // assert_eq_formatted(
+    //     COption::None,
+    //     governance_token_holding_account_cookie
+    //         .account
+    //         .close_authority,
+    //     "close_authority",
+    // );
+    // assert_eq_formatted(
+    //     realm_cookie.community_mint_cookie.address,
+    //     governance_token_holding_account_cookie.account.mint,
+    //     "mint",
+    // );
+    // assert_eq_formatted(
+    //     registrar_cookie.account.governance_program_id,
+    //     governance_token_holding_account_cookie.account.owner,
+    //     "owner",
+    // );
+    // assert_eq_formatted(
+    //     AccountState::Initialized,
+    //     governance_token_holding_account_cookie.account.state,
+    //     "state",
+    // );
 
     Ok(())
 }
@@ -140,7 +161,7 @@ async fn test_create_governance_token_holding_account_already_exists_errors(
 
     let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
 
-    let voter_cookie = nft_voter_test.bench.with_wallet(Some(10000000000000)).await;
+    let voter_cookie = nft_voter_test.bench.with_wallet(None).await;
 
     let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
 

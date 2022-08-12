@@ -68,6 +68,14 @@ pub mod nft_voter {
         log_version();
         instructions::create_governance_token_holding_account(ctx)
     }
+
+    pub fn deposit_governance_tokens(
+        ctx: Context<DepositGovernanceTokens>,
+        amount: u64,
+    ) -> Result<()> {
+        log_version();
+        instructions::deposit_governance_tokens(ctx, amount)
+    }
 }
 
 fn log_version() {

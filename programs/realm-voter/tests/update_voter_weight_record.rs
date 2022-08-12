@@ -16,7 +16,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 
     // Create TokenOwnerRecord for other Realm
     let realm_cookie2 = realm_voter_test.governance.with_realm().await?;
-    let token_owner_cookie = realm_voter_test.bench.with_wallet().await;
+    let token_owner_cookie = realm_voter_test.bench.with_wallet(None).await;
     let token_owner_record_cookie = realm_voter_test
         .governance
         .with_token_owner_record(&realm_cookie2, &token_owner_cookie)
@@ -84,7 +84,7 @@ async fn test_update_voter_weight_record_with_token_owner_record_from_own_realm_
 
     let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
-    let token_owner_cookie = realm_voter_test.bench.with_wallet().await;
+    let token_owner_cookie = realm_voter_test.bench.with_wallet(None).await;
     let token_owner_record_cookie = realm_voter_test
         .governance
         .with_token_owner_record(&realm_cookie, &token_owner_cookie)
@@ -133,7 +133,7 @@ async fn test_update_voter_weight_record_for_member_from_not_configured_governan
 
     // Create TokenOwnerRecord for other Realm
     let realm_cookie2 = realm_voter_test.governance.with_realm().await?;
-    let token_owner_cookie = realm_voter_test.bench.with_wallet().await;
+    let token_owner_cookie = realm_voter_test.bench.with_wallet(None).await;
     let token_owner_record_cookie = realm_voter_test
         .governance
         .with_token_owner_record(&realm_cookie2, &token_owner_cookie)
@@ -183,13 +183,13 @@ async fn test_update_voter_weight_record_with_token_owner_record_must_match_erro
 
     // Create TokenOwnerRecord for other Realm
     let realm_cookie2 = realm_voter_test.governance.with_realm().await?;
-    let token_owner_cookie = realm_voter_test.bench.with_wallet().await;
+    let token_owner_cookie = realm_voter_test.bench.with_wallet(None).await;
     let token_owner_record_cookie = realm_voter_test
         .governance
         .with_token_owner_record(&realm_cookie2, &token_owner_cookie)
         .await?;
 
-    let token_owner_cookie2 = realm_voter_test.bench.with_wallet().await;
+    let token_owner_cookie2 = realm_voter_test.bench.with_wallet(None).await;
 
     let mut voter_weight_record_cookie = realm_voter_test
         .with_voter_weight_record(&registrar_cookie, &token_owner_cookie2)

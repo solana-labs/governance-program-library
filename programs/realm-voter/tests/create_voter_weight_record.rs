@@ -15,7 +15,7 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
 
     let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
-    let voter_cookie = realm_voter_test.bench.with_wallet().await;
+    let voter_cookie = realm_voter_test.bench.with_wallet(None).await;
 
     // Act
     let voter_weight_record_cookie = realm_voter_test
@@ -42,7 +42,7 @@ async fn test_create_voter_weight_record_with_already_exists_error() -> Result<(
 
     let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
 
-    let voter_cookie = realm_voter_test.bench.with_wallet().await;
+    let voter_cookie = realm_voter_test.bench.with_wallet(None).await;
 
     realm_voter_test
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)

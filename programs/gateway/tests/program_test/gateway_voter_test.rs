@@ -241,7 +241,7 @@ impl GatewayVoterTest {
             .with_registrar(&realm_cookie, &gateway_cookie, predecessor_program_id)
             .await?;
         //
-        let voter_cookie = self.bench.with_wallet().await;
+        let voter_cookie = self.bench.with_wallet(None).await;
         let gateway_token_cookie = self
             .with_gateway_token(&gateway_cookie, &voter_cookie)
             .await?;

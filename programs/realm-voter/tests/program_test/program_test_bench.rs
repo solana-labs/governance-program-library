@@ -253,14 +253,15 @@ impl ProgramTestBench {
     }
 
     #[allow(dead_code)]
-    pub async fn with_wallet(&self) -> WalletCookie {
+    pub async fn with_wallet(&self, lamports: Option<u64>) -> WalletCookie {
         let account_rent = self.rent.minimum_balance(0);
         let account_keypair = Keypair::new();
+        let lamports = account_rent.checked_add(lamports.unwrap_or(0)).unwrap();
 
         let create_account_ix = system_instruction::create_account(
             &self.context.borrow().payer.pubkey(),
             &account_keypair.pubkey(),
-            account_rent,
+            lamports,
             0,
             &system_program::id(),
         );

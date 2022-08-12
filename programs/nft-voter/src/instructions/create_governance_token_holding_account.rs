@@ -16,7 +16,7 @@ pub struct CreateGovernanceTokenHoldingAccount<'info> {
         seeds = [ b"nft-power-holding-account".as_ref(),
                 realm.key().as_ref(),
                 realm_governing_token_mint.key().as_ref(),
-                nft.key().as_ref()],
+                nft_mint.key().as_ref()],
         bump,
         payer = payer,
         token::mint = realm_governing_token_mint,
@@ -34,13 +34,14 @@ pub struct CreateGovernanceTokenHoldingAccount<'info> {
     pub realm: UncheckedAccount<'info>,
 
     /// Either the realm community mint or the council mint.
+    // TODO revert when you can figure out how to correctly set up/verify the owning program
     pub realm_governing_token_mint: Account<'info, Mint>,
-
+    // pub realm_governing_token_mint: UncheckedAccount<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
 
     //TODO add constraint that the nft is the one configured for a realm collection
-    pub nft: Account<'info, Mint>,
+    pub nft_mint: Account<'info, Mint>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
@@ -52,31 +53,12 @@ pub struct CreateGovernanceTokenHoldingAccount<'info> {
 pub fn create_governance_token_holding_account(
     ctx: Context<CreateGovernanceTokenHoldingAccount>,
 ) -> Result<()> {
-    //TODO extract reused stuff to variables
-
     // Deserialize the Realm to validate it
     let _realm = realm::get_realm_data_for_governing_token_mint(
         &ctx.accounts.governance_program_id.key(),
         &ctx.accounts.realm,
         &ctx.accounts.realm_governing_token_mint.key(),
     )?;
-
-    // create_spl_token_account_signed(
-    //     &ctx.accounts.payer,
-    //     &ctx.accounts.realm_governing_token_mint.to_account_info(),
-    //     &get_governing_token_holding_address_seeds(
-    //         &ctx.accounts.realm.key(),
-    //         &ctx.accounts.realm_governing_token_mint.key(),
-    //         &ctx.accounts.nft.key(),
-    //     ),
-    //     &ctx.accounts.realm_governing_token_mint.to_account_info(),
-    //     &ctx.accounts.realm,
-    //     &ctx.accounts.governance_program_id.key(),
-    //     &ctx.accounts.system_program,
-    //     &ctx.accounts.realm_governing_token_mint.to_account_info(),
-    //     &ctx.accounts.rent.to_account_info(),
-    //     &ctx.accounts.rent
-    // )?;
 
     Ok(())
 }

@@ -163,7 +163,7 @@ async fn test_update_fails_with_predecessor_with_a_different_owner() -> Result<(
     let (realm_cookie, registrar_cookie, _, gateway_token_cookie, voter_cookie) =
         gateway_voter_test.setup(true).await?;
 
-    let different_voter_cookie = gateway_voter_test.bench.with_wallet().await;
+    let different_voter_cookie = gateway_voter_test.bench.with_wallet(None).await;
 
     // the voter weight record from the registered predecessor plugin (will give a constant weight)
     let predecessor_voter_weight_record_cookie = gateway_voter_test
