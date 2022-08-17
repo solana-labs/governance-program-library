@@ -5,6 +5,8 @@ use anchor_spl::{
 };
 use spl_governance::state::realm;
 
+use crate::tools::governance::NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX;
+
 /// Creates a governance token holding account for a given NFT to boost its voting power
 /// This instruction should only be executed once per realm/governing_token_mint/nft
 /// to create the account
@@ -13,7 +15,7 @@ pub struct CreateGovernanceTokenHoldingAccount<'info> {
     //TODO add docs
     #[account(
         init,
-        seeds = [ b"nft-power-holding-account".as_ref(),
+        seeds = [ &NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX,
                 realm.key().as_ref(),
                 realm_governing_token_mint.key().as_ref(),
                 nft_mint.key().as_ref()],

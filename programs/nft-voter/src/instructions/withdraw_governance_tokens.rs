@@ -3,24 +3,24 @@ use anchor_spl::token::{Mint, Token, TokenAccount};
 use spl_governance::state::realm;
 
 use crate::{
-    state::delegator_token_owner_record::DelegatorTokenOwnerRecord,
+    error::NftVoterError, state::delegator_token_owner_record::DelegatorTokenOwnerRecord,
     tools::governance::NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX,
 };
 
-/// Deposits tokens into the holding account for a given NFT to boost its voting power
+/// Withdraws tokens from the holding account for a given NFT
 #[derive(Accounts)]
-pub struct DepositGovernanceTokens<'info> {
+#[instruction(amount: u64)]
+pub struct WithdrawGovernanceTokens<'info> {
     #[account(
-        init_if_needed,
-        seeds = [&DelegatorTokenOwnerRecord::SEED_PREFIX,
+        mut,
+        seeds = [b"delegator-token-owner-record".as_ref(),
             realm.key().as_ref(),
             realm_governing_token_mint.key().as_ref(),
             nft_mint.key().as_ref(),
             governing_token_owner.key().as_ref()
         ],
         bump,
-        payer = governing_token_owner,
-        space = DelegatorTokenOwnerRecord::SPACE
+        constraint = token_owner_record.governing_token_deposit_amount >= amount
     )]
     pub token_owner_record: Account<'info, DelegatorTokenOwnerRecord>,
 
@@ -32,7 +32,8 @@ pub struct DepositGovernanceTokens<'info> {
                 nft_mint.key().as_ref()],
         bump,
         token::mint = realm_governing_token_mint,
-        token::authority = governance_program_id
+        token::authority = governance_program_id,
+        constraint = holding_account_info.amount >= amount
     )]
     pub holding_account_info: Account<'info, TokenAccount>,
 
@@ -61,37 +62,39 @@ pub struct DepositGovernanceTokens<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-/// Deposits tokens into the holding account for a given NFT to boost its voting power
-pub fn deposit_governance_tokens(ctx: Context<DepositGovernanceTokens>, amount: u64) -> Result<()> {
-    // Deserialize the Realm to validate it
-    let _realm = realm::get_realm_data_for_governing_token_mint(
+/// Withdraws tokens from the holding account for a given NFT to boost its voting power
+pub fn withdraw_governance_tokens(
+    ctx: Context<WithdrawGovernanceTokens>,
+    amount: u64,
+) -> Result<()> {
+    let realm = realm::get_realm_data_for_governing_token_mint(
         &ctx.accounts.governance_program_id.key(),
         &ctx.accounts.realm,
         &ctx.accounts.realm_governing_token_mint.key(),
     )?;
 
-    spl_governance::tools::spl_token::transfer_spl_tokens(
+    //TODO check for proposal status (voted on, expired, etc) from NftUsageRecord
+    // TODO do all proposals have to have an expiration?
+    require!(false, NftVoterError::CannotWithdrawTokensWithActiveVotes);
+
+    spl_governance::tools::spl_token::transfer_spl_tokens_signed(
+        &ctx.accounts.holding_account_info.to_account_info(),
         &ctx.accounts
             .governing_token_source_account
             .to_account_info(),
-        &ctx.accounts.holding_account_info.to_account_info(),
-        &ctx.accounts.governing_token_owner.to_account_info(),
+        &ctx.accounts.realm.to_account_info(),
+        &spl_governance::state::realm::get_realm_address_seeds(&realm.name),
+        &ctx.accounts.governance_program_id.key(),
         amount,
         &ctx.accounts.realm_governing_token_mint.to_account_info(),
     )
     .unwrap();
 
     let token_owner_record = &mut ctx.accounts.token_owner_record;
-    token_owner_record.set_inner(DelegatorTokenOwnerRecord {
-        realm: ctx.accounts.realm.key(),
-        governing_token_mint: ctx.accounts.realm_governing_token_mint.key(),
-        nft_mint: ctx.accounts.nft_mint.key(),
-        governing_token_owner: ctx.accounts.governing_token_owner.key(),
-        governing_token_deposit_amount: token_owner_record
-            .governing_token_deposit_amount
-            .checked_add(amount)
-            .unwrap(),
-    });
+    token_owner_record.governing_token_deposit_amount = token_owner_record
+        .governing_token_deposit_amount
+        .checked_sub(amount)
+        .unwrap();
 
     Ok(())
 }

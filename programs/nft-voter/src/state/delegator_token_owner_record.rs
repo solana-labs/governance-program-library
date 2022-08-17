@@ -5,7 +5,7 @@ use crate::{id, tools::anchor::DISCRIMINATOR_SIZE};
 /// Receipt for depositing tokens against a voting NFT to enable
 /// token owners to withdraw tokens from the NFT's holding account
 #[account]
-#[derive(Debug, Copy, PartialEq)]
+#[derive(Debug, Copy, PartialEq, Default)]
 pub struct DelegatorTokenOwnerRecord {
     /// The Realm the token owner is participating in
     pub realm: Pubkey,
@@ -26,61 +26,56 @@ pub struct DelegatorTokenOwnerRecord {
 }
 
 impl DelegatorTokenOwnerRecord {
-    pub fn get_space() -> usize {
-        DISCRIMINATOR_SIZE +
-        32 + // realm
-        32 + // governing token mint
-        32 + // nft mint
-        32 + // governing token owner
-        8 // deposit amount
+    pub const SEED_PREFIX: [u8; 28] = *b"delegator-token-owner-record";
+
+    pub const SPACE: usize = DISCRIMINATOR_SIZE +
+    32 + // realm
+    32 + // governing token mint
+    32 + // nft mint
+    32 + // governing token owner
+    8; // deposit amount
+
+    pub fn make_seeds<'a>(
+        realm: &'a Pubkey,
+        governing_token_mint: &'a Pubkey,
+        nft_mint: &'a Pubkey,
+        governing_token_owner: &'a Pubkey,
+    ) -> [&'a [u8]; 5] {
+        [
+            &DelegatorTokenOwnerRecord::SEED_PREFIX,
+            realm.as_ref(),
+            governing_token_mint.as_ref(),
+            nft_mint.as_ref(),
+            governing_token_owner.as_ref(),
+        ]
     }
-}
 
-impl Default for DelegatorTokenOwnerRecord {
-    fn default() -> Self {
-        Self {
-            realm: Default::default(),
-            governing_token_mint: Default::default(),
-            nft_mint: Default::default(),
-            governing_token_owner: Default::default(),
-            governing_token_deposit_amount: 0,
-        }
+    pub fn get_seeds(&self) -> [&[u8]; 5] {
+        DelegatorTokenOwnerRecord::make_seeds(
+            &self.realm,
+            &self.governing_token_mint,
+            &self.nft_mint,
+            &self.governing_token_owner,
+        )
     }
-}
 
-/// Returns NftVoterTokenOwnerRecord PDA seeds
-pub fn get_delegator_token_owner_record_seeds<'a>(
-    realm: &'a Pubkey,
-    governing_token_mint: &'a Pubkey,
-    nft_mint: &'a Pubkey,
-    governing_token_owner: &'a Pubkey,
-) -> [&'a [u8]; 5] {
-    [
-        b"delegator-token-owner-record",
-        realm.as_ref(),
-        governing_token_mint.as_ref(),
-        nft_mint.as_ref(),
-        governing_token_owner.as_ref(),
-    ]
-}
-
-/// Returns NftVoterTokenOwnerRecord PDA address
-pub fn get_delegator_token_owner_record_address(
-    realm: &Pubkey,
-    governing_token_mint: &Pubkey,
-    nft_mint: &Pubkey,
-    governing_token_owner: &Pubkey,
-) -> Pubkey {
-    Pubkey::find_program_address(
-        &get_delegator_token_owner_record_seeds(
-            realm,
-            governing_token_mint,
-            nft_mint,
-            governing_token_owner,
-        ),
-        &id(),
-    )
-    .0
+    pub fn find_address(
+        realm: &Pubkey,
+        governing_token_mint: &Pubkey,
+        nft_mint: &Pubkey,
+        governing_token_owner: &Pubkey,
+    ) -> Pubkey {
+        Pubkey::find_program_address(
+            &DelegatorTokenOwnerRecord::make_seeds(
+                realm,
+                governing_token_mint,
+                nft_mint,
+                governing_token_owner,
+            ),
+            &id(),
+        )
+        .0
+    }
 }
 
 #[cfg(test)]
@@ -93,7 +88,7 @@ mod test {
     #[test]
     fn test_get_space() {
         // Arrange
-        let expected_space = DelegatorTokenOwnerRecord::get_space();
+        let expected_space = DelegatorTokenOwnerRecord::SPACE;
 
         // Act
         let actual_space = DISCRIMINATOR_SIZE

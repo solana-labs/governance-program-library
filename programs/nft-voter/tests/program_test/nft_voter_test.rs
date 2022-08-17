@@ -8,6 +8,9 @@ use gpl_nft_voter::state::max_voter_weight_record::{
     get_max_voter_weight_record_address, MaxVoterWeightRecord,
 };
 use gpl_nft_voter::state::*;
+use gpl_nft_voter::tools::governance::{
+    find_nft_power_holding_account_address, NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX,
+};
 use solana_program::pubkey::ParsePubkeyError;
 use solana_sdk::transport::TransportError;
 use spl_governance::instruction::cast_vote;
@@ -633,14 +636,10 @@ impl NftVoterTest {
         nft_cookie: &NftCookie,
         instruction_override: F,
     ) -> Result<GovernanceTokenHoldingAccountCookie, TransportError> {
-        let (holding_account_key, _) = Pubkey::find_program_address(
-            &[
-                b"nft-power-holding-account".as_ref(),
-                registrar_cookie.account.realm.as_ref(),
-                registrar_cookie.account.governing_token_mint.as_ref(),
-                nft_cookie.mint_cookie.address.as_ref(),
-            ],
-            &gpl_nft_voter::id(),
+        let holding_account_key = find_nft_power_holding_account_address(
+            &registrar_cookie.account.realm,
+            &registrar_cookie.account.governing_token_mint,
+            &nft_cookie.mint_cookie.address,
         );
 
         let data = anchor_lang::InstructionData::data(
@@ -717,14 +716,11 @@ impl NftVoterTest {
         deposit_amount: Option<u64>,
         instruction_override: F,
     ) -> Result<NftVoterTokenOwnerRecordCookie, TransportError> {
-        let (token_owner_record_pubkey, _) = Pubkey::find_program_address(
-            &get_delegator_token_owner_record_seeds(
-                &realm_cookie.address,
-                &realm_cookie.account.community_mint,
-                &nft_cookie.mint_cookie.address,
-                &governing_token_owner_cookie.address,
-            ),
-            &gpl_nft_voter::id(),
+        let token_owner_record_pubkey = DelegatorTokenOwnerRecord::find_address(
+            &realm_cookie.address,
+            &realm_cookie.account.community_mint,
+            &nft_cookie.mint_cookie.address,
+            &governing_token_owner_cookie.address,
         );
 
         let data = anchor_lang::InstructionData::data(
