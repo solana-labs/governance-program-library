@@ -1,5 +1,3 @@
-use anchor_spl::token::TokenAccount;
-use gpl_nft_voter::state::DelegatorTokenOwnerRecord;
 use program_test::nft_voter_test::NftVoterTest;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;

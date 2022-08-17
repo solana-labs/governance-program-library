@@ -9,9 +9,8 @@ use gpl_nft_voter::state::max_voter_weight_record::{
 };
 use gpl_nft_voter::state::*;
 use gpl_nft_voter::tools::governance::{
-    find_nft_power_holding_account_address, NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX,
+    find_nft_power_holding_account_address,
 };
-use solana_program::pubkey::ParsePubkeyError;
 use solana_sdk::transport::TransportError;
 use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{self, Vote, VoteChoice};
@@ -24,7 +23,6 @@ use solana_program_test::ProgramTest;
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
-use spl_token::state::Account;
 
 use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;

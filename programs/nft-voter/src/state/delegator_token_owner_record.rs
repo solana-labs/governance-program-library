@@ -29,11 +29,11 @@ impl DelegatorTokenOwnerRecord {
     pub const SEED_PREFIX: [u8; 28] = *b"delegator-token-owner-record";
 
     pub const SPACE: usize = DISCRIMINATOR_SIZE +
-    32 + // realm
-    32 + // governing token mint
-    32 + // nft mint
-    32 + // governing token owner
-    8; // deposit amount
+        32 + // realm
+        32 + // governing token mint
+        32 + // nft mint
+        32 + // governing token owner
+        8; // deposit amount
 
     pub fn make_seeds<'a>(
         realm: &'a Pubkey,
