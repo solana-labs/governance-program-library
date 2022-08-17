@@ -82,4 +82,7 @@ pub enum NftVoterError {
 
     #[msg("NFT must belong to a collection configured for the realm")]
     InvalidNftCollection,
+    
+    #[msg("Proposal account muse be equal to Voting Proposal Count for the realm")]
+    InvalidProposalsForWithdraw,
 }

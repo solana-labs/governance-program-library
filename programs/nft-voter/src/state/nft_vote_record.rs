@@ -9,7 +9,8 @@ use crate::{error::NftVoterError, id};
 /// Vote record indicating the given NFT voted on the Proposal
 /// The PDA of the record is ["nft-vote-record",proposal,nft_mint]
 /// It guarantees uniques and ensures the same NFT can't vote twice
-#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
+#[account]
+#[derive(Debug, PartialEq, BorshSchema)]
 pub struct NftVoteRecord {
     /// NftVoteRecord discriminator sha256("account:NftVoteRecord")[..8]
     /// Note: The discriminator is used explicitly because NftVoteRecords

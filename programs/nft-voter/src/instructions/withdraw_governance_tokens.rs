@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 use spl_governance::state::realm;
+use itertools::Itertools;
 
 use crate::{
     error::NftVoterError, state::delegator_token_owner_record::DelegatorTokenOwnerRecord,
@@ -73,7 +74,19 @@ pub fn withdraw_governance_tokens(
         &ctx.accounts.realm_governing_token_mint.key(),
     )?;
 
-    //TODO check for proposal status (voted on, expired, etc) from NftUsageRecord
+
+    require_eq!(
+        realm.voting_proposal_count * 2,
+        ctx.remaining_accounts.len() as u16,
+        NftVoterError::InvalidProposalsForWithdraw,
+    );
+
+    // for (open_proposal, nft_voting_record) in ctx.remaining_accounts.iter().tuples() {
+
+
+    // }
+
+    // TODO check for proposal status (voted on, expired, etc) from NftUsageRecord
     // TODO do all proposals have to have an expiration?
     require!(false, NftVoterError::CannotWithdrawTokensWithActiveVotes);
 
