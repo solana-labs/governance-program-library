@@ -51,6 +51,7 @@ pub struct CreateGovernanceTokenHoldingAccount<'info> {
 
     /// Metadata of the NFT for which the holding account is being created. The
     /// NFT must have a verified collection configured for the realm.
+    /// CHECK: metadata account cant be automatically deserialized by anchor
     pub nft_metadata: UncheckedAccount<'info>,
 
     /// Associated token program that will own the holding account
