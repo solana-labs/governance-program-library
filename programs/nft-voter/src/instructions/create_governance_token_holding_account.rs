@@ -3,20 +3,26 @@ use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Mint, Token, TokenAccount},
 };
-use spl_governance::state::realm;
 
-use crate::tools::governance::NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX;
+use crate::{
+    error::NftVoterError,
+    state::Registrar,
+    tools::{
+        governance::NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX,
+        token_metadata::get_token_metadata_for_mint,
+    },
+};
 
 /// Creates a governance token holding account for a given NFT to boost its voting power
 /// This instruction should only be executed once per realm/governing_token_mint/nft
 /// to create the account
 #[derive(Accounts)]
 pub struct CreateGovernanceTokenHoldingAccount<'info> {
-    //TODO add docs
+    /// Associated fungible token account for the NFT being backed
     #[account(
         init,
         seeds = [ &NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX,
-                realm.key().as_ref(),
+                registrar.realm.as_ref(),
                 realm_governing_token_mint.key().as_ref(),
                 nft_mint.key().as_ref()],
         bump,
@@ -31,23 +37,32 @@ pub struct CreateGovernanceTokenHoldingAccount<'info> {
     #[account(executable)]
     pub governance_program_id: UncheckedAccount<'info>,
 
-    /// CHECK: Owned by spl-governance instance specified in governance_program_id
-    #[account(owner = governance_program_id.key())]
-    pub realm: UncheckedAccount<'info>,
+    pub registrar: Account<'info, Registrar>,
 
     /// Either the realm community mint or the council mint.
-    // TODO revert when you can figure out how to correctly set up/verify the owning program
     pub realm_governing_token_mint: Account<'info, Mint>,
+
     // pub realm_governing_token_mint: UncheckedAccount<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    //TODO add constraint that the nft is the one configured for a realm collection
+    /// Mint of the NFT for which the holding account is being created
     pub nft_mint: Account<'info, Mint>,
 
+    /// Metadata of the NFT for which the holding account is being created. The
+    /// NFT must have a verified collection configured for the realm.
+    pub nft_metadata: UncheckedAccount<'info>,
+
+    /// Associated token program that will own the holding account
     pub associated_token_program: Program<'info, AssociatedToken>,
+
+    /// Token program of the governance token mint
     pub token_program: Program<'info, Token>,
+
+    /// System program required for creating the holding account
     pub system_program: Program<'info, System>,
+
+    /// Rent required for creating the holding account
     pub rent: Sysvar<'info, Rent>,
 }
 
@@ -55,12 +70,31 @@ pub struct CreateGovernanceTokenHoldingAccount<'info> {
 pub fn create_governance_token_holding_account(
     ctx: Context<CreateGovernanceTokenHoldingAccount>,
 ) -> Result<()> {
-    // Deserialize the Realm to validate it
-    let _realm = realm::get_realm_data_for_governing_token_mint(
-        &ctx.accounts.governance_program_id.key(),
-        &ctx.accounts.realm,
-        &ctx.accounts.realm_governing_token_mint.key(),
+    let registrar = &ctx.accounts.registrar;
+    let nft_mint = &ctx.accounts.nft_mint;
+    let nft_metadata = get_token_metadata_for_mint(
+        &ctx.accounts.nft_metadata.to_account_info(),
+        &nft_mint.key(),
     )?;
+
+    // The NFT must have a collection and the collection must be verified
+    let nft_collection = nft_metadata
+        .collection
+        .ok_or(NftVoterError::MissingMetadataCollection)?;
+
+    require!(
+        nft_collection.verified,
+        NftVoterError::CollectionMustBeVerified
+    );
+
+    require!(
+        registrar
+            .collection_configs
+            .iter()
+            .map(|c| c.collection.key())
+            .any(|c| c.key() == nft_collection.key),
+        NftVoterError::InvalidNftCollection
+    );
 
     Ok(())
 }

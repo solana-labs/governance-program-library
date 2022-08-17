@@ -79,4 +79,10 @@ pub enum NftVoterError {
 
     #[msg("NFT owner must withdraw all votes or voting period must end before you may withdraw tokens")]
     CannotWithdrawTokensWithActiveVotes,
+
+    #[msg("NFT must belong to a collection configured for the realm")]
+    InvalidNftCollection,
+
+    #[msg("Account already initialized")]
+    AccountAlreadyInitialized,
 }

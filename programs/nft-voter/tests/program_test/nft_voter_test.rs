@@ -8,9 +8,7 @@ use gpl_nft_voter::state::max_voter_weight_record::{
     get_max_voter_weight_record_address, MaxVoterWeightRecord,
 };
 use gpl_nft_voter::state::*;
-use gpl_nft_voter::tools::governance::{
-    find_nft_power_holding_account_address,
-};
+use gpl_nft_voter::tools::governance::find_nft_power_holding_account_address;
 use solana_sdk::transport::TransportError;
 use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{self, Vote, VoteChoice};
@@ -645,15 +643,16 @@ impl NftVoterTest {
         );
 
         let accounts = gpl_nft_voter::accounts::CreateGovernanceTokenHoldingAccount {
+            holding_account_info: holding_account_key,
             governance_program_id: self.governance.program_id,
-            realm: registrar_cookie.account.realm,
+            registrar: registrar_cookie.address,
             realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
             payer: self.bench.payer.pubkey(),
-            system_program: solana_sdk::system_program::id(),
-            holding_account_info: holding_account_key,
             nft_mint: nft_cookie.mint_cookie.address,
+            nft_metadata: nft_cookie.metadata,
             associated_token_program: anchor_spl::associated_token::ID,
             token_program: spl_token::id(),
+            system_program: solana_sdk::system_program::id(),
             rent: Pubkey::from_str("SysvarRent111111111111111111111111111111111")
                 .map_err(|e| TransportError::Custom(e.to_string()))?,
         };
