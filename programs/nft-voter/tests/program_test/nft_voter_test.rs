@@ -75,7 +75,7 @@ pub struct GovernanceTokenHoldingAccountCookie {
 #[derive(Debug, PartialEq)]
 pub struct NftVoterTokenOwnerRecordCookie {
     pub address: Pubkey,
-    pub account: NftVoterTokenOwnerRecord,
+    pub account: DelegatorTokenOwnerRecord,
 }
 
 #[derive(Debug, PartialEq)]
@@ -692,7 +692,7 @@ impl NftVoterTest {
         governing_token_holding_account_cookie: &GovernanceTokenHoldingAccountCookie,
         governing_token_owner_cookie: &WalletCookie,
         governing_token_source_cookie: &TokenAccountCookie,
-        deposit_amount: Option<u64>
+        deposit_amount: Option<u64>,
     ) -> Result<NftVoterTokenOwnerRecordCookie, TransportError> {
         self.with_nft_voter_token_owner_record_using_ix(
             realm_cookie,
@@ -718,7 +718,7 @@ impl NftVoterTest {
         instruction_override: F,
     ) -> Result<NftVoterTokenOwnerRecordCookie, TransportError> {
         let (token_owner_record_pubkey, _) = Pubkey::find_program_address(
-            &get_nft_voter_token_owner_record_seeds(
+            &get_delegator_token_owner_record_seeds(
                 &realm_cookie.address,
                 &realm_cookie.account.community_mint,
                 &nft_cookie.mint_cookie.address,
@@ -728,7 +728,9 @@ impl NftVoterTest {
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_nft_voter::instruction::DepositGovernanceTokens { amount: deposit_amount.unwrap_or(0) },
+            &gpl_nft_voter::instruction::DepositGovernanceTokens {
+                amount: deposit_amount.unwrap_or(0),
+            },
         );
 
         let accounts = gpl_nft_voter::accounts::DepositGovernanceTokens {

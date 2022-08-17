@@ -2,14 +2,14 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 use spl_governance::state::realm;
 
-use crate::{state::nft_voter_token_owner_record::NftVoterTokenOwnerRecord};
+use crate::state::delegator_token_owner_record::DelegatorTokenOwnerRecord;
 
 /// Deposits tokens into the holding account for a given NFT to boost its voting power
 #[derive(Accounts)]
 pub struct DepositGovernanceTokens<'info> {
     #[account(
         init_if_needed,
-        seeds = [b"nft-voter-token-owner-record".as_ref(),
+        seeds = [b"delegator-token-owner-record".as_ref(),
             realm.key().as_ref(),
             realm_governing_token_mint.key().as_ref(),
             nft_mint.key().as_ref(),
@@ -17,9 +17,9 @@ pub struct DepositGovernanceTokens<'info> {
         ],
         bump,
         payer = governing_token_owner,
-        space = NftVoterTokenOwnerRecord::get_space()
+        space = DelegatorTokenOwnerRecord::get_space()
     )]
-    pub token_owner_record: Account<'info, NftVoterTokenOwnerRecord>,
+    pub token_owner_record: Account<'info, DelegatorTokenOwnerRecord>,
 
     #[account(
         mut,
@@ -43,9 +43,8 @@ pub struct DepositGovernanceTokens<'info> {
     pub realm: UncheckedAccount<'info>,
 
     /// Either the realm community mint or the council mint.
-    // TODO revert when you can figure out how to correctly set up/verify the owning program
     pub realm_governing_token_mint: Account<'info, Mint>,
-    // pub realm_governing_token_mint: UncheckedAccount<'info>,
+
     #[account(mut)]
     pub governing_token_owner: Signer<'info>,
 
@@ -80,7 +79,7 @@ pub fn deposit_governance_tokens(ctx: Context<DepositGovernanceTokens>, amount: 
     .unwrap();
 
     let token_owner_record = &mut ctx.accounts.token_owner_record;
-    token_owner_record.set_inner(NftVoterTokenOwnerRecord {
+    token_owner_record.set_inner(DelegatorTokenOwnerRecord {
         realm: ctx.accounts.realm.key(),
         governing_token_mint: ctx.accounts.realm_governing_token_mint.key(),
         nft_mint: ctx.accounts.nft_mint.key(),

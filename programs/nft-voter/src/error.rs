@@ -76,4 +76,10 @@ pub enum NftVoterError {
 
     #[msg("Cannot configure collection with voting proposals")]
     CannotConfigureCollectionWithVotingProposals,
+
+    #[msg("NFT owner must withdraw all votes or voting period must end before you may withdraw tokens")]
+    CannotWithdrawTokensWithActiveVotes,
+
+    #[msg("NFT owner must withdraw all proposals or voting period must end before you may withdraw tokens")]
+    CannotWithdrawTokensWithActiveProposals,
 }

@@ -1,5 +1,5 @@
 use anchor_spl::token::TokenAccount;
-use gpl_nft_voter::state::NftVoterTokenOwnerRecord;
+use gpl_nft_voter::state::DelegatorTokenOwnerRecord;
 use program_test::nft_voter_test::NftVoterTest;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
@@ -46,14 +46,16 @@ async fn test_deposit_governance_tokens_first_deposit_creates_record() -> Result
             &governance_token_holding_account_cookie,
             &owner_cookie,
             &governing_token_source_account_cookie,
-            None
+            None,
         )
         .await?;
 
     // Assert
     assert_eq_formatted(
         0,
-        token_owner_record_cookie.account.governing_token_deposit_amount,
+        token_owner_record_cookie
+            .account
+            .governing_token_deposit_amount,
         "amount",
     );
     assert_eq_formatted(
@@ -81,8 +83,7 @@ async fn test_deposit_governance_tokens_first_deposit_creates_record() -> Result
 }
 
 #[tokio::test]
-async fn test_deposit_governance_tokens_record_exists_doesnt_error(
-) -> Result<(), TransportError> {
+async fn test_deposit_governance_tokens_record_exists_doesnt_error() -> Result<(), TransportError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -120,7 +121,7 @@ async fn test_deposit_governance_tokens_record_exists_doesnt_error(
             &governance_token_holding_account_cookie,
             &owner_cookie,
             &governing_token_source_account_cookie,
-            None
+            None,
         )
         .await;
 
@@ -131,20 +132,24 @@ async fn test_deposit_governance_tokens_record_exists_doesnt_error(
             &governance_token_holding_account_cookie,
             &owner_cookie,
             &governing_token_source_account_cookie,
-            None
+            None,
         )
         .await;
 
     // Assert
     assert!(!second_result.is_err());
-    assert_eq_formatted(first_result.unwrap().address, second_result.unwrap().address, "record address");
+    assert_eq_formatted(
+        first_result.unwrap().address,
+        second_result.unwrap().address,
+        "record address",
+    );
 
     Ok(())
 }
 
 #[tokio::test]
-async fn test_deposit_governance_tokens_transfers_tokens_to_holding_account() -> Result<(), TransportError>
-{
+async fn test_deposit_governance_tokens_transfers_tokens_to_holding_account(
+) -> Result<(), TransportError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -166,7 +171,7 @@ async fn test_deposit_governance_tokens_transfers_tokens_to_holding_account() ->
         .await?;
 
     let source_tokens: u64 = 1000;
-    let deposit_tokens: u64 = ((source_tokens as f64)*0.5) as u64;
+    let deposit_tokens: u64 = ((source_tokens as f64) * 0.5) as u64;
 
     let governing_token_source_account_cookie = nft_voter_test
         .bench
@@ -185,24 +190,34 @@ async fn test_deposit_governance_tokens_transfers_tokens_to_holding_account() ->
             &governance_token_holding_account_cookie,
             &owner_cookie,
             &governing_token_source_account_cookie,
-            Some(deposit_tokens)
+            Some(deposit_tokens),
         )
         .await?;
 
     // Assert
     assert_eq_formatted(
         deposit_tokens,
-        token_owner_record_cookie.account.governing_token_deposit_amount,
+        token_owner_record_cookie
+            .account
+            .governing_token_deposit_amount,
         "deposit amount",
     );
     assert_eq_formatted(
         source_tokens - deposit_tokens,
-        nft_voter_test.bench.get_anchor_account::<TokenAccount>(governing_token_source_account_cookie.address).await.amount,
+        nft_voter_test
+            .bench
+            .get_anchor_account::<TokenAccount>(governing_token_source_account_cookie.address)
+            .await
+            .amount,
         "source remaining amount",
     );
     assert_eq_formatted(
         deposit_tokens,
-        nft_voter_test.bench.get_anchor_account::<TokenAccount>(governance_token_holding_account_cookie.address).await.amount,
+        nft_voter_test
+            .bench
+            .get_anchor_account::<TokenAccount>(governance_token_holding_account_cookie.address)
+            .await
+            .amount,
         "holding account amount",
     );
 
@@ -210,8 +225,8 @@ async fn test_deposit_governance_tokens_transfers_tokens_to_holding_account() ->
 }
 
 #[tokio::test]
-async fn test_deposit_governance_tokens_multiple_deposits_holding_account_stores_cumulative() -> Result<(), TransportError>
-{
+async fn test_deposit_governance_tokens_multiple_deposits_holding_account_stores_cumulative(
+) -> Result<(), TransportError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -233,8 +248,8 @@ async fn test_deposit_governance_tokens_multiple_deposits_holding_account_stores
         .await?;
 
     let source_tokens: u64 = 1000;
-    let first_deposit_tokens: u64 = ((source_tokens as f64)*0.25) as u64;
-    let second_deposit_tokens: u64 = ((source_tokens as f64)*0.1) as u64;
+    let first_deposit_tokens: u64 = ((source_tokens as f64) * 0.25) as u64;
+    let second_deposit_tokens: u64 = ((source_tokens as f64) * 0.1) as u64;
     let total_deposit: u64 = first_deposit_tokens + second_deposit_tokens;
 
     let governing_token_source_account_cookie = nft_voter_test
@@ -254,7 +269,7 @@ async fn test_deposit_governance_tokens_multiple_deposits_holding_account_stores
             &governance_token_holding_account_cookie,
             &owner_cookie,
             &governing_token_source_account_cookie,
-            Some(first_deposit_tokens)
+            Some(first_deposit_tokens),
         )
         .await?;
 
@@ -265,14 +280,18 @@ async fn test_deposit_governance_tokens_multiple_deposits_holding_account_stores
             &governance_token_holding_account_cookie,
             &owner_cookie,
             &governing_token_source_account_cookie,
-            Some(second_deposit_tokens)
+            Some(second_deposit_tokens),
         )
         .await?;
 
     // Assert
     assert_eq_formatted(
         total_deposit,
-        nft_voter_test.bench.get_anchor_account::<TokenAccount>(governance_token_holding_account_cookie.address).await.amount,
+        nft_voter_test
+            .bench
+            .get_anchor_account::<TokenAccount>(governance_token_holding_account_cookie.address)
+            .await
+            .amount,
         "holding account amount",
     );
     assert_eq_formatted(
@@ -282,7 +301,11 @@ async fn test_deposit_governance_tokens_multiple_deposits_holding_account_stores
     );
     assert_eq_formatted(
         total_deposit,
-        nft_voter_test.bench.get_anchor_account::<NftVoterTokenOwnerRecord>(first_deposit_record_cookie.address).await.governing_token_deposit_amount,
+        nft_voter_test
+            .bench
+            .get_anchor_account::<DelegatorTokenOwnerRecord>(first_deposit_record_cookie.address)
+            .await
+            .governing_token_deposit_amount,
         "record deposit",
     );
 
@@ -290,8 +313,8 @@ async fn test_deposit_governance_tokens_multiple_deposits_holding_account_stores
 }
 
 #[tokio::test]
-async fn test_deposit_governance_tokens_source_insufficient_balance_errors() -> Result<(), TransportError>
-{
+async fn test_deposit_governance_tokens_source_insufficient_balance_errors(
+) -> Result<(), TransportError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -332,7 +355,7 @@ async fn test_deposit_governance_tokens_source_insufficient_balance_errors() -> 
             &governance_token_holding_account_cookie,
             &owner_cookie,
             &governing_token_source_account_cookie,
-            Some(deposit_tokens)
+            Some(deposit_tokens),
         )
         .await;
 

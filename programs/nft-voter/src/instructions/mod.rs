@@ -24,3 +24,6 @@ mod create_governance_token_holding_account;
 
 pub use deposit_governance_tokens::*;
 mod deposit_governance_tokens;
+
+pub use withdraw_governance_tokens::*;
+mod withdraw_governance_tokens;
