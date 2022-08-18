@@ -85,4 +85,10 @@ pub enum NftVoterError {
     
     #[msg("Proposal account muse be equal to Voting Proposal Count for the realm")]
     InvalidProposalsForWithdraw,
+    
+    #[msg("Proposal is not currently voting")]
+    ProposalNotVoting,
+    
+    #[msg("Duplicated Proposal detected")]
+    DuplicateProposals,
 }

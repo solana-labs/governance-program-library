@@ -1,10 +1,15 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
-use spl_governance::state::realm;
 use itertools::Itertools;
+use spl_governance::state::{proposal::ProposalV2, realm, enums::ProposalState};
+use spl_governance_tools::account::get_account_data;
+use std::collections::HashSet;
+
 
 use crate::{
-    error::NftVoterError, state::delegator_token_owner_record::DelegatorTokenOwnerRecord,
+    error::NftVoterError, state::{
+        get_nft_vote_record_address,
+        delegator_token_owner_record::DelegatorTokenOwnerRecord},
     tools::governance::NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX,
 };
 
@@ -81,14 +86,39 @@ pub fn withdraw_governance_tokens(
         NftVoterError::InvalidProposalsForWithdraw,
     );
 
-    // for (open_proposal, nft_voting_record) in ctx.remaining_accounts.iter().tuples() {
+    let mut proposal_uniqueness_tracker: HashSet<Pubkey> = HashSet::new();
+    for (open_proposal, nft_voting_record) in ctx.remaining_accounts.iter().tuples() {
+        let op = get_account_data::<ProposalV2>(&ctx.accounts.governance_program_id.key(), open_proposal)?;
+
+        require!(
+            !proposal_uniqueness_tracker.insert(open_proposal.key()),
+            NftVoterError::DuplicateProposals
+        );
+
+        
+        let verified_nvr_address = get_nft_vote_record_address(
+            &open_proposal.key(),
+            &ctx.accounts.nft_mint.key(),
+        );
+
+        // TODO: add an explicit error message
+        require_keys_eq!(
+            verified_nvr_address,
+            nft_voting_record.key(),
+        );
+
+        if op.state != ProposalState::Voting {
+            return err!(NftVoterError::ProposalNotVoting);
+        }
+
+        require!(
+            nft_voting_record.data_is_empty(),
+            NftVoterError::NftAlreadyVoted
+        );
 
 
-    // }
+    }
 
-    // TODO check for proposal status (voted on, expired, etc) from NftUsageRecord
-    // TODO do all proposals have to have an expiration?
-    require!(false, NftVoterError::CannotWithdrawTokensWithActiveVotes);
 
     spl_governance::tools::spl_token::transfer_spl_tokens_signed(
         &ctx.accounts.holding_account_info.to_account_info(),
