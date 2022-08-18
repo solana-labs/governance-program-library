@@ -1368,3 +1368,24 @@ async fn test_cast_nft_vote_with_invalid_voter_weight_token_owner_error(
 
     Ok(())
 }
+
+
+#[tokio::test]
+async fn test_cast_nft_vote_no_power_holding_account_ok(
+) -> Result<(), TransportError> {
+    todo!()
+}
+
+
+#[tokio::test]
+async fn test_cast_nft_vote_power_holding_account_zero_balance_uses_to_collection_weight(
+) -> Result<(), TransportError> {
+    todo!()
+}
+
+
+#[tokio::test]
+async fn test_cast_nft_vote_power_holding_account_nonzero_balance_uses_collection_weight_multiplied_balance(
+) -> Result<(), TransportError> {
+    todo!()
+}

@@ -530,6 +530,13 @@ impl NftVoterTest {
             );
             account_metas.push(AccountMeta::new(nft_vote_record_key, false));
 
+            let nft_power_holding_account_key = find_nft_power_holding_account_address(
+                &registrar_cookie.account.realm,
+                &registrar_cookie.account.governing_token_mint,
+                &nft_cookie.mint_cookie.address,
+            );
+            account_metas.push(AccountMeta::new(nft_power_holding_account_key, false));
+
             let account = NftVoteRecord {
                 proposal: proposal_cookie.address,
                 nft_mint: nft_cookie.mint_cookie.address,
@@ -616,10 +623,12 @@ impl NftVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         nft_cookie: &NftCookie,
+        initial_amount: Option<u64>,
     ) -> Result<GovernanceTokenHoldingAccountCookie, TransportError> {
         self.with_governance_token_holding_account_using_ix(
             registrar_cookie,
             nft_cookie,
+            initial_amount,
             NopOverride,
         )
         .await
@@ -630,6 +639,7 @@ impl NftVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         nft_cookie: &NftCookie,
+        initial_amount: Option<u64>,
         instruction_override: F,
     ) -> Result<GovernanceTokenHoldingAccountCookie, TransportError> {
         let holding_account_key = find_nft_power_holding_account_address(
@@ -671,6 +681,17 @@ impl NftVoterTest {
                 Some(&[&self.bench.payer]),
             )
             .await?;
+
+        if let Some(initial_amount) = initial_amount {
+            self.bench
+                .mint_tokens(
+                    &registrar_cookie.account.governing_token_mint,
+                    &registrar_cookie.realm_authority,
+                    &holding_account_key,
+                    initial_amount,
+                )
+                .await?;
+        }
 
         let account = self.bench.get_anchor_account(holding_account_key).await;
 

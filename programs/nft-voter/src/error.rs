@@ -82,4 +82,10 @@ pub enum NftVoterError {
 
     #[msg("NFT must belong to a collection configured for the realm")]
     InvalidNftCollection,
+
+    #[msg("Invalid NFT voting power holding account token mint")]
+    InvalidHoldingAccountMint,
+
+    #[msg("Provided NFT power holding account address doesnt match expected")]
+    InvalidHoldingAccountAddress,
 }

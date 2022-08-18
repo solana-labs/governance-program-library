@@ -1,8 +1,6 @@
 use anchor_lang::prelude::Pubkey;
 use spl_governance::state::{token_owner_record, vote_record};
 
-use crate::id;
-
 pub const NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX: [u8; 25] = *b"nft-power-holding-account";
 
 pub fn find_nft_power_holding_account_address(
@@ -17,7 +15,7 @@ pub fn find_nft_power_holding_account_address(
             governance_token_mint.as_ref(),
             nft_mint.as_ref(),
         ],
-        &id(),
+        &spl_token::ID,
     )
     .0
 }

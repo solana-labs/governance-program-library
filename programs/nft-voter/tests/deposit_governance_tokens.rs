@@ -26,7 +26,7 @@ async fn test_deposit_governance_tokens_first_deposit_creates_record() -> Result
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie)
+        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
         .await?;
 
     let governing_token_source_account_cookie = nft_voter_test
@@ -101,7 +101,7 @@ async fn test_deposit_governance_tokens_record_exists_doesnt_error() -> Result<(
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie)
+        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
         .await?;
 
     let governing_token_source_account_cookie = nft_voter_test
@@ -167,7 +167,7 @@ async fn test_deposit_governance_tokens_transfers_tokens_to_holding_account(
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie)
+        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
         .await?;
 
     let source_tokens: u64 = 1000;
@@ -244,7 +244,7 @@ async fn test_deposit_governance_tokens_multiple_deposits_holding_account_stores
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie)
+        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
         .await?;
 
     let source_tokens: u64 = 1000;
@@ -332,7 +332,7 @@ async fn test_deposit_governance_tokens_source_insufficient_balance_errors(
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie)
+        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
         .await?;
 
     let source_tokens: u64 = 1000;

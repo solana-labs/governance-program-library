@@ -11,7 +11,27 @@ async fn test_withdraw_governance_tokens_nothing_deposited_errors() -> Result<()
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = &mut nft_voter_test.with_registrar(&realm_cookie).await?;
+
+    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
+    let max_voter_weight_record = nft_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
+
+    nft_voter_test
+        .with_collection(
+            &registrar_cookie,
+            &nft_collection_cookie,
+            &max_voter_weight_record,
+            None,
+        )
+        .await?;
+
+    let registrar_updated = nft_voter_test
+        .get_registrar_account(&registrar_cookie.address)
+        .await;
+
+    registrar_cookie.account = registrar_updated;
 
     let owner_cookie = nft_voter_test.bench.with_wallet_funded(100000000000).await;
 
@@ -23,7 +43,7 @@ async fn test_withdraw_governance_tokens_nothing_deposited_errors() -> Result<()
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie)
+        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
         .await?;
 
     let governing_token_source_account_cookie = nft_voter_test

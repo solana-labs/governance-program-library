@@ -1,10 +1,10 @@
 use gpl_nft_voter::error::NftVoterError;
 use program_test::nft_voter_test::NftVoterTest;
+use program_test::tools::assert_nft_voter_err;
 use solana_program::program_option::COption;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
 use spl_token::state::AccountState;
-use program_test::tools::assert_nft_voter_err;
 
 mod program_test;
 
@@ -46,7 +46,7 @@ async fn test_create_governance_token_holding_account() -> Result<(), TransportE
 
     // Act
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie)
+        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
         .await?;
 
     // Assert
@@ -138,12 +138,16 @@ async fn test_create_governance_token_holding_account_nft_is_not_part_of_configu
     // create the NFT with a different collection not configured for th realm
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_voter_test.token_metadata.with_nft_collection().await?, &voter_cookie, None)
+        .with_nft_v2(
+            &nft_voter_test.token_metadata.with_nft_collection().await?,
+            &voter_cookie,
+            None,
+        )
         .await?;
 
     // Act
     let error = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie)
+        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
         .await
         .err();
 
@@ -152,7 +156,6 @@ async fn test_create_governance_token_holding_account_nft_is_not_part_of_configu
 
     Ok(())
 }
-
 
 fn assert_eq_formatted<T: std::fmt::Debug + std::cmp::PartialEq>(
     expected: T,
