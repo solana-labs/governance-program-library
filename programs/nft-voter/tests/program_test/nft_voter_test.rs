@@ -39,6 +39,10 @@ pub struct RegistrarCookie {
 
     pub realm_authority: Keypair,
     pub max_collections: u8,
+
+    // only populated with using with_registrar_with_collection
+    pub collection_cookies: Option<Vec<NftCollectionCookie>>,
+    pub max_voter_weight_record_cookie: Option<MaxVoterWeightRecordCookie>,
 }
 
 pub struct VoterWeightRecordCookie {
@@ -46,6 +50,7 @@ pub struct VoterWeightRecordCookie {
     pub account: VoterWeightRecord,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct MaxVoterWeightRecordCookie {
     pub address: Pubkey,
     pub account: MaxVoterWeightRecord,
@@ -138,7 +143,16 @@ impl NftVoterTest {
         &mut self,
         realm_cookie: &RealmCookie,
     ) -> Result<RegistrarCookie, TransportError> {
-        self.with_registrar_using_ix(realm_cookie, NopOverride, None)
+        self.with_registrar_using_ix(realm_cookie, false, NopOverride, None)
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_registrar_with_collection(
+        &mut self,
+        realm_cookie: &RealmCookie,
+    ) -> Result<RegistrarCookie, TransportError> {
+        self.with_registrar_using_ix(realm_cookie, true, NopOverride, None)
             .await
     }
 
@@ -146,6 +160,7 @@ impl NftVoterTest {
     pub async fn with_registrar_using_ix<F: Fn(&mut Instruction)>(
         &mut self,
         realm_cookie: &RealmCookie,
+        include_collection: bool,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
     ) -> Result<RegistrarCookie, TransportError> {
@@ -183,10 +198,6 @@ impl NftVoterTest {
         let default_signers = &[&realm_cookie.realm_authority];
         let signers = signers_override.unwrap_or(default_signers);
 
-        self.bench
-            .process_transaction(&[create_registrar_ix], Some(signers))
-            .await?;
-
         let account = Registrar {
             governance_program_id: self.governance.program_id,
             realm: realm_cookie.address,
@@ -195,12 +206,38 @@ impl NftVoterTest {
             reserved: [0; 128],
         };
 
-        Ok(RegistrarCookie {
+        let mut registrar_cookie = RegistrarCookie {
             address: registrar_key,
             account,
             realm_authority: realm_cookie.get_realm_authority(),
             max_collections,
-        })
+            max_voter_weight_record_cookie: None,
+            collection_cookies: None,
+        };
+
+        if include_collection {
+            self.bench
+                .process_transaction(&[create_registrar_ix], Some(signers))
+                .await?;
+
+            let nft_collection_cookie = self.token_metadata.with_nft_collection().await?;
+            let max_voter_weight_record =
+                self.with_max_voter_weight_record(&registrar_cookie).await?;
+
+            self.with_collection(
+                &registrar_cookie,
+                &nft_collection_cookie,
+                &max_voter_weight_record,
+                None,
+            )
+            .await?;
+
+            registrar_cookie.account = self.get_registrar_account(&registrar_cookie.address).await;
+            registrar_cookie.max_voter_weight_record_cookie = Some(max_voter_weight_record);
+            registrar_cookie.collection_cookies = Some(vec![nft_collection_cookie]);
+        }
+
+        Ok(registrar_cookie)
     }
 
     #[allow(dead_code)]
@@ -622,11 +659,13 @@ impl NftVoterTest {
     pub async fn with_governance_token_holding_account(
         &self,
         registrar_cookie: &RegistrarCookie,
+        realm_cookie: &RealmCookie,
         nft_cookie: &NftCookie,
         initial_amount: Option<u64>,
     ) -> Result<GovernanceTokenHoldingAccountCookie, TransportError> {
         self.with_governance_token_holding_account_using_ix(
             registrar_cookie,
+            realm_cookie,
             nft_cookie,
             initial_amount,
             NopOverride,
@@ -638,6 +677,7 @@ impl NftVoterTest {
     pub async fn with_governance_token_holding_account_using_ix<F: Fn(&mut Instruction)>(
         &self,
         registrar_cookie: &RegistrarCookie,
+        realm_cookie: &RealmCookie,
         nft_cookie: &NftCookie,
         initial_amount: Option<u64>,
         instruction_override: F,
@@ -685,8 +725,8 @@ impl NftVoterTest {
         if let Some(initial_amount) = initial_amount {
             self.bench
                 .mint_tokens(
-                    &registrar_cookie.account.governing_token_mint,
-                    &registrar_cookie.realm_authority,
+                    &realm_cookie.community_mint_cookie.address,
+                    &realm_cookie.community_mint_cookie.mint_authority,
                     &holding_account_key,
                     initial_amount,
                 )

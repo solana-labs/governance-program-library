@@ -43,7 +43,7 @@ async fn test_withdraw_governance_tokens_nothing_deposited_errors() -> Result<()
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
+        .with_governance_token_holding_account(&registrar_cookie, &realm_cookie, &nft_cookie, None)
         .await?;
 
     let governing_token_source_account_cookie = nft_voter_test

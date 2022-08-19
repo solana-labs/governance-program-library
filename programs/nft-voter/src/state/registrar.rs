@@ -129,7 +129,7 @@ pub fn resolve_nft_vote_weight_and_mint(
         NftVoterError::InvalidHoldingAccountAddress
     );
 
-    // For compatibility with NFT-based DAOs that dont use fungibles to boost the NFT's weight, 
+    // For compatibility with NFT-based DAOs that dont use fungibles to boost the NFT's weight,
     // we cant require the holding account to be initialized
     let mut nft_power_holding_account_amount = 0;
     if !nft_power_holding_account_info.data_is_empty() {

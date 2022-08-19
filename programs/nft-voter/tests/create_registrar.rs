@@ -63,6 +63,7 @@ async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<
     let err = nft_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
+            false,
             |i| i.accounts[4].is_signer = false, // realm_authority
             Some(&[]),
         )
@@ -91,6 +92,7 @@ async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result
     let err = nft_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
+            false,
             |i| i.accounts[1].pubkey = governance_program_id, //governance_program_id
             None,
         )
@@ -115,6 +117,7 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), Transpor
     let err = nft_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
+            false,
             |i| i.accounts[2].pubkey = Pubkey::new_unique(), // realm
             None,
         )
@@ -143,6 +146,7 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
     let err = nft_voter_test
         .with_registrar_using_ix(
             &realm_cookie,
+            false,
             |i| i.accounts[3].pubkey = mint_cookie.address, // governing_token_mint
             None,
         )

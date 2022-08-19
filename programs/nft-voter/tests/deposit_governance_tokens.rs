@@ -14,19 +14,17 @@ async fn test_deposit_governance_tokens_first_deposit_creates_record() -> Result
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = nft_voter_test.with_registrar_with_collection(&realm_cookie).await?;
 
     let owner_cookie = nft_voter_test.bench.with_wallet_funded(100000000000).await;
 
-    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
-
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &owner_cookie, None)
+        .with_nft_v2(&registrar_cookie.collection_cookies.as_ref().unwrap().first().unwrap(), &owner_cookie, None)
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
+        .with_governance_token_holding_account(&registrar_cookie, &realm_cookie, &nft_cookie, None)
         .await?;
 
     let governing_token_source_account_cookie = nft_voter_test
@@ -89,19 +87,17 @@ async fn test_deposit_governance_tokens_record_exists_doesnt_error() -> Result<(
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = nft_voter_test.with_registrar_with_collection(&realm_cookie).await?;
 
     let owner_cookie = nft_voter_test.bench.with_wallet_funded(100000000000).await;
 
-    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
-
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &owner_cookie, None)
+        .with_nft_v2(&registrar_cookie.collection_cookies.as_ref().unwrap().first().unwrap(), &owner_cookie, None)
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
+        .with_governance_token_holding_account(&registrar_cookie, &realm_cookie, &nft_cookie, None)
         .await?;
 
     let governing_token_source_account_cookie = nft_voter_test
@@ -155,19 +151,17 @@ async fn test_deposit_governance_tokens_transfers_tokens_to_holding_account(
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = nft_voter_test.with_registrar_with_collection(&realm_cookie).await?;
 
     let owner_cookie = nft_voter_test.bench.with_wallet_funded(100000000000).await;
 
-    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
-
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &owner_cookie, None)
+        .with_nft_v2(&registrar_cookie.collection_cookies.as_ref().unwrap().first().unwrap(), &owner_cookie, None)
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
+        .with_governance_token_holding_account(&registrar_cookie, &realm_cookie, &nft_cookie, None)
         .await?;
 
     let source_tokens: u64 = 1000;
@@ -232,19 +226,17 @@ async fn test_deposit_governance_tokens_multiple_deposits_holding_account_stores
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = nft_voter_test.with_registrar_with_collection(&realm_cookie).await?;
 
     let owner_cookie = nft_voter_test.bench.with_wallet_funded(100000000000).await;
 
-    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
-
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &owner_cookie, None)
+        .with_nft_v2(&registrar_cookie.collection_cookies.as_ref().unwrap().first().unwrap(), &owner_cookie, None)
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
+        .with_governance_token_holding_account(&registrar_cookie, &realm_cookie, &nft_cookie, None)
         .await?;
 
     let source_tokens: u64 = 1000;
@@ -320,19 +312,17 @@ async fn test_deposit_governance_tokens_source_insufficient_balance_errors(
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
+    let registrar_cookie = nft_voter_test.with_registrar_with_collection(&realm_cookie).await?;
 
     let owner_cookie = nft_voter_test.bench.with_wallet_funded(100000000000).await;
 
-    let nft_collection_cookie = nft_voter_test.token_metadata.with_nft_collection().await?;
-
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&nft_collection_cookie, &owner_cookie, None)
+        .with_nft_v2(&registrar_cookie.collection_cookies.as_ref().unwrap().first().unwrap(), &owner_cookie, None)
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
-        .with_governance_token_holding_account(&registrar_cookie, &nft_cookie, None)
+        .with_governance_token_holding_account(&registrar_cookie, &realm_cookie, &nft_cookie, None)
         .await?;
 
     let source_tokens: u64 = 1000;
@@ -360,9 +350,8 @@ async fn test_deposit_governance_tokens_source_insufficient_balance_errors(
         .await;
 
     // Assert
-    //TODO better error to check for?
     assert!(result.is_err());
-
+    
     Ok(())
 }
 
