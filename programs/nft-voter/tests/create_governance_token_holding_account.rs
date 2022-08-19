@@ -1,5 +1,5 @@
 use gpl_nft_voter::error::NftVoterError;
-use program_test::nft_voter_test::NftVoterTest;
+use program_test::nft_voter_test::{ConfigureCollectionArgs, NftVoterTest};
 use program_test::tools::assert_nft_voter_err;
 use solana_program::program_option::COption;
 use solana_program_test::*;
@@ -16,7 +16,13 @@ async fn test_create_governance_token_holding_account() -> Result<(), TransportE
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = &mut nft_voter_test
-        .with_registrar_with_collection(&realm_cookie)
+        .with_registrar_with_collection(
+            &realm_cookie,
+            ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            },
+        )
         .await?;
 
     let voter_cookie = nft_voter_test.bench.with_wallet().await;
@@ -93,7 +99,13 @@ async fn test_create_governance_token_holding_account_nft_is_not_part_of_configu
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = &mut nft_voter_test
-        .with_registrar_with_collection(&realm_cookie)
+        .with_registrar_with_collection(
+            &realm_cookie,
+            ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            },
+        )
         .await?;
 
     let voter_cookie = nft_voter_test.bench.with_wallet().await;

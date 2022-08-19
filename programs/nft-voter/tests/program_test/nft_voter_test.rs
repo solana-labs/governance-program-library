@@ -143,7 +143,7 @@ impl NftVoterTest {
         &mut self,
         realm_cookie: &RealmCookie,
     ) -> Result<RegistrarCookie, TransportError> {
-        self.with_registrar_using_ix(realm_cookie, false, NopOverride, None)
+        self.with_registrar_using_ix(realm_cookie, None, NopOverride, None)
             .await
     }
 
@@ -151,8 +151,9 @@ impl NftVoterTest {
     pub async fn with_registrar_with_collection(
         &mut self,
         realm_cookie: &RealmCookie,
+        collection_config: ConfigureCollectionArgs,
     ) -> Result<RegistrarCookie, TransportError> {
-        self.with_registrar_using_ix(realm_cookie, true, NopOverride, None)
+        self.with_registrar_using_ix(realm_cookie, Some(collection_config), NopOverride, None)
             .await
     }
 
@@ -160,7 +161,7 @@ impl NftVoterTest {
     pub async fn with_registrar_using_ix<F: Fn(&mut Instruction)>(
         &mut self,
         realm_cookie: &RealmCookie,
-        include_collection: bool,
+        collection_config: Option<ConfigureCollectionArgs>,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
     ) -> Result<RegistrarCookie, TransportError> {
@@ -215,7 +216,7 @@ impl NftVoterTest {
             collection_cookies: None,
         };
 
-        if include_collection {
+        if let Some(collection_config) = collection_config {
             self.bench
                 .process_transaction(&[create_registrar_ix], Some(signers))
                 .await?;
@@ -228,7 +229,7 @@ impl NftVoterTest {
                 &registrar_cookie,
                 &nft_collection_cookie,
                 &max_voter_weight_record,
-                None,
+                Some(collection_config),
             )
             .await?;
 

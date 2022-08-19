@@ -1,6 +1,6 @@
 use anchor_spl::token::TokenAccount;
 use gpl_nft_voter::state::DelegatorTokenOwnerRecord;
-use program_test::nft_voter_test::NftVoterTest;
+use program_test::nft_voter_test::{ConfigureCollectionArgs, NftVoterTest};
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
 
@@ -14,13 +14,30 @@ async fn test_deposit_governance_tokens_first_deposit_creates_record() -> Result
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar_with_collection(&realm_cookie).await?;
+    let registrar_cookie = nft_voter_test
+        .with_registrar_with_collection(
+            &realm_cookie,
+            ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            },
+        )
+        .await?;
 
     let owner_cookie = nft_voter_test.bench.with_wallet_funded(100000000000).await;
 
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&registrar_cookie.collection_cookies.as_ref().unwrap().first().unwrap(), &owner_cookie, None)
+        .with_nft_v2(
+            &registrar_cookie
+                .collection_cookies
+                .as_ref()
+                .unwrap()
+                .first()
+                .unwrap(),
+            &owner_cookie,
+            None,
+        )
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
@@ -87,13 +104,30 @@ async fn test_deposit_governance_tokens_record_exists_doesnt_error() -> Result<(
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar_with_collection(&realm_cookie).await?;
+    let registrar_cookie = nft_voter_test
+        .with_registrar_with_collection(
+            &realm_cookie,
+            ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            },
+        )
+        .await?;
 
     let owner_cookie = nft_voter_test.bench.with_wallet_funded(100000000000).await;
 
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&registrar_cookie.collection_cookies.as_ref().unwrap().first().unwrap(), &owner_cookie, None)
+        .with_nft_v2(
+            &registrar_cookie
+                .collection_cookies
+                .as_ref()
+                .unwrap()
+                .first()
+                .unwrap(),
+            &owner_cookie,
+            None,
+        )
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
@@ -151,13 +185,30 @@ async fn test_deposit_governance_tokens_transfers_tokens_to_holding_account(
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar_with_collection(&realm_cookie).await?;
+    let registrar_cookie = nft_voter_test
+        .with_registrar_with_collection(
+            &realm_cookie,
+            ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            },
+        )
+        .await?;
 
     let owner_cookie = nft_voter_test.bench.with_wallet_funded(100000000000).await;
 
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&registrar_cookie.collection_cookies.as_ref().unwrap().first().unwrap(), &owner_cookie, None)
+        .with_nft_v2(
+            &registrar_cookie
+                .collection_cookies
+                .as_ref()
+                .unwrap()
+                .first()
+                .unwrap(),
+            &owner_cookie,
+            None,
+        )
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
@@ -226,13 +277,30 @@ async fn test_deposit_governance_tokens_multiple_deposits_holding_account_stores
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar_with_collection(&realm_cookie).await?;
+    let registrar_cookie = nft_voter_test
+        .with_registrar_with_collection(
+            &realm_cookie,
+            ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            },
+        )
+        .await?;
 
     let owner_cookie = nft_voter_test.bench.with_wallet_funded(100000000000).await;
 
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&registrar_cookie.collection_cookies.as_ref().unwrap().first().unwrap(), &owner_cookie, None)
+        .with_nft_v2(
+            &registrar_cookie
+                .collection_cookies
+                .as_ref()
+                .unwrap()
+                .first()
+                .unwrap(),
+            &owner_cookie,
+            None,
+        )
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
@@ -312,13 +380,30 @@ async fn test_deposit_governance_tokens_source_insufficient_balance_errors(
 
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
-    let registrar_cookie = nft_voter_test.with_registrar_with_collection(&realm_cookie).await?;
+    let registrar_cookie = nft_voter_test
+        .with_registrar_with_collection(
+            &realm_cookie,
+            ConfigureCollectionArgs {
+                weight: 10,
+                size: 20,
+            },
+        )
+        .await?;
 
     let owner_cookie = nft_voter_test.bench.with_wallet_funded(100000000000).await;
 
     let nft_cookie = nft_voter_test
         .token_metadata
-        .with_nft_v2(&registrar_cookie.collection_cookies.as_ref().unwrap().first().unwrap(), &owner_cookie, None)
+        .with_nft_v2(
+            &registrar_cookie
+                .collection_cookies
+                .as_ref()
+                .unwrap()
+                .first()
+                .unwrap(),
+            &owner_cookie,
+            None,
+        )
         .await?;
 
     let governance_token_holding_account_cookie = nft_voter_test
@@ -351,7 +436,7 @@ async fn test_deposit_governance_tokens_source_insufficient_balance_errors(
 
     // Assert
     assert!(result.is_err());
-    
+
     Ok(())
 }
 
