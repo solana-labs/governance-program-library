@@ -10,6 +10,8 @@ use crate::{
 /// Deposits tokens into the holding account for a given NFT to boost its voting power
 #[derive(Accounts)]
 pub struct DepositGovernanceTokens<'info> {
+    /// Record tracking what amount of the tokens in the holding
+    /// account belong to this delegator
     #[account(
         init_if_needed,
         seeds = [&DelegatorTokenOwnerRecord::SEED_PREFIX,
@@ -24,6 +26,7 @@ pub struct DepositGovernanceTokens<'info> {
     )]
     pub token_owner_record: Account<'info, DelegatorTokenOwnerRecord>,
 
+    /// Associated fungible token account for the NFT being backed
     #[account(
         mut,
         seeds = [ &NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX,
@@ -48,16 +51,27 @@ pub struct DepositGovernanceTokens<'info> {
     /// Either the realm community mint or the council mint.
     pub realm_governing_token_mint: Account<'info, Mint>,
 
+    /// Delegator, payer, and wallet that should receive the deposited tokens
+    /// upon withdrawal
     #[account(mut)]
     pub governing_token_owner: Signer<'info>,
 
-    //TODO add constraint that the nft is the one configured for a realm collection
+    /// Mint of the NFT being backed.
+    // We dont need to check that the NFT has a collection or that the collection
+    // is one configured for the realm, because a) this already happened when
+    // creating the holding account, and b) we have a constraint here that the
+    // holding account's seeds include this mint
     pub nft_mint: Account<'info, Mint>,
 
+    /// Associated token account owned by governing_token_owner from which
+    /// tokens are being withdrawn for the deposit
     #[account(mut, constraint = governing_token_source_account.owner == governing_token_owner.key())]
     pub governing_token_source_account: Account<'info, TokenAccount>,
 
+    /// System program required for creating the DelegatorTokenOwnerRecord
     pub system_program: Program<'info, System>,
+
+    /// Token program required for withdrawing (mutating) the source and holding accounts
     pub token_program: Program<'info, Token>,
 }
 
