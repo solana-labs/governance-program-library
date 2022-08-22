@@ -40,8 +40,10 @@ pub struct RegistrarCookie {
     pub realm_authority: Keypair,
     pub max_collections: u8,
 
-    // only populated with using with_registrar_with_collection
+    /// only populated when using with_registrar_with_collection
     pub collection_cookies: Option<Vec<NftCollectionCookie>>,
+    
+    /// only populated when using with_registrar_with_collection
     pub max_voter_weight_record_cookie: Option<MaxVoterWeightRecordCookie>,
 }
 
