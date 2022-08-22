@@ -201,6 +201,10 @@ impl NftVoterTest {
         let default_signers = &[&realm_cookie.realm_authority];
         let signers = signers_override.unwrap_or(default_signers);
 
+        self.bench
+                .process_transaction(&[create_registrar_ix], Some(signers))
+                .await?;
+                
         let account = Registrar {
             governance_program_id: self.governance.program_id,
             realm: realm_cookie.address,
@@ -219,9 +223,6 @@ impl NftVoterTest {
         };
 
         if let Some(collection_config) = collection_config {
-            self.bench
-                .process_transaction(&[create_registrar_ix], Some(signers))
-                .await?;
 
             let nft_collection_cookie = self.token_metadata.with_nft_collection().await?;
             let max_voter_weight_record =
