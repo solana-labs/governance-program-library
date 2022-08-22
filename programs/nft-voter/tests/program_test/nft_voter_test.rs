@@ -397,6 +397,13 @@ impl NftVoterTest {
         for nft_cookie in nft_cookies {
             account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
             account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
+        
+            let nft_power_holding_account_key = find_nft_power_holding_account_address(
+                &registrar_cookie.account.realm,
+                &registrar_cookie.account.governing_token_mint,
+                &nft_cookie.mint_cookie.address,
+            );
+            account_metas.push(AccountMeta::new(nft_power_holding_account_key, false));
         }
 
         let instructions = vec![Instruction {
