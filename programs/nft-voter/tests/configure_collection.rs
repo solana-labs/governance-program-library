@@ -5,14 +5,14 @@ use program_test::{
 };
 
 use solana_program_test::*;
-use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
+use solana_sdk::{signature::Keypair, signer::Signer};
 
 use crate::program_test::nft_voter_test::ConfigureCollectionArgs;
 
 mod program_test;
 
 #[tokio::test]
-async fn test_configure_collection() -> Result<(), TransportError> {
+async fn test_configure_collection() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -63,7 +63,7 @@ async fn test_configure_collection() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_configure_multiple_collections() -> Result<(), TransportError> {
+async fn test_configure_multiple_collections() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -118,7 +118,7 @@ async fn test_configure_multiple_collections() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_configure_max_collections() -> Result<(), TransportError> {
+async fn test_configure_max_collections() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -166,7 +166,7 @@ async fn test_configure_max_collections() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_configure_existing_collection() -> Result<(), TransportError> {
+async fn test_configure_existing_collection() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -223,7 +223,7 @@ async fn test_configure_existing_collection() -> Result<(), TransportError> {
 // TODO: Remove collection test
 
 #[tokio::test]
-async fn test_configure_collection_with_invalid_realm_error() -> Result<(), TransportError> {
+async fn test_configure_collection_with_invalid_realm_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -263,7 +263,7 @@ async fn test_configure_collection_with_invalid_realm_error() -> Result<(), Tran
 
 #[tokio::test]
 async fn test_configure_collection_with_realm_authority_must_sign_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -299,8 +299,8 @@ async fn test_configure_collection_with_realm_authority_must_sign_error(
 }
 
 #[tokio::test]
-async fn test_configure_collection_with_invalid_realm_authority_error() -> Result<(), TransportError>
-{
+async fn test_configure_collection_with_invalid_realm_authority_error(
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -339,7 +339,7 @@ async fn test_configure_collection_with_invalid_realm_authority_error() -> Resul
 
 #[tokio::test]
 async fn test_configure_collection_with_invalid_max_voter_weight_realm_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -376,7 +376,7 @@ async fn test_configure_collection_with_invalid_max_voter_weight_realm_error(
 
 #[tokio::test]
 async fn test_configure_collection_with_invalid_max_voter_weight_mint_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -413,7 +413,7 @@ async fn test_configure_collection_with_invalid_max_voter_weight_mint_error(
 }
 
 #[tokio::test]
-async fn test_configure_collection_with_voting_proposal_error() -> Result<(), TransportError> {
+async fn test_configure_collection_with_voting_proposal_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 

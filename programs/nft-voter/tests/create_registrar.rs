@@ -1,17 +1,16 @@
 mod program_test;
 
-use anchor_lang::prelude::Pubkey;
+use anchor_lang::prelude::{ErrorCode, Pubkey};
 use gpl_nft_voter::error::NftVoterError;
 use program_test::nft_voter_test::NftVoterTest;
 
-use solana_program::instruction::InstructionError;
 use solana_program_test::*;
-use solana_sdk::{signature::Keypair, transport::TransportError};
+use solana_sdk::signature::Keypair;
 
-use program_test::tools::{assert_anchor_err, assert_ix_err, assert_nft_voter_err};
+use program_test::tools::{assert_anchor_err, assert_nft_voter_err};
 
 #[tokio::test]
-async fn test_create_registrar() -> Result<(), TransportError> {
+async fn test_create_registrar() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -31,7 +30,8 @@ async fn test_create_registrar() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<(), TransportError> {
+async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<(), BanksClientError>
+{
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -51,7 +51,7 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
 }
 
 #[tokio::test]
-async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<(), TransportError>
+async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<(), BanksClientError>
 {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
@@ -76,8 +76,8 @@ async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<
 }
 
 #[tokio::test]
-async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result<(), TransportError>
-{
+async fn test_create_registrar_with_invalid_spl_gov_program_id_error(
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -104,7 +104,7 @@ async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result
 }
 
 #[tokio::test]
-async fn test_create_registrar_with_invalid_realm_error() -> Result<(), TransportError> {
+async fn test_create_registrar_with_invalid_realm_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -122,15 +122,15 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), Transpor
         .err()
         .unwrap();
 
-    // PDA doesn't match and hence the error is PrivilegeEscalation
-    assert_ix_err(err, InstructionError::PrivilegeEscalation);
+    // PDA doesn't match and hence the error is ConstraintSeeds
+    assert_anchor_err(err, ErrorCode::ConstraintSeeds);
 
     Ok(())
 }
 
 #[tokio::test]
 async fn test_create_registrar_with_invalid_governing_token_mint_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -150,8 +150,8 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
         .err()
         .unwrap();
 
-    // PDA doesn't match and hence the error is PrivilegeEscalation
-    assert_ix_err(err, InstructionError::PrivilegeEscalation);
+    // PDA doesn't match and hence the error is ConstraintSeeds
+    assert_anchor_err(err, ErrorCode::ConstraintSeeds);
 
     Ok(())
 }
