@@ -136,7 +136,7 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
             &governing_token_owner,
         )?;
 
-        dispose_account(nft_vote_record_info, &ctx.accounts.beneficiary);
+        dispose_account(nft_vote_record_info, &ctx.accounts.beneficiary)?;
     }
 
     // Reset VoterWeightRecord and set expiry to expired to prevent it from being used
