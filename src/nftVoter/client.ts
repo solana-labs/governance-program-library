@@ -9,16 +9,13 @@ export const NFT_VOTER_ID = new PublicKey(
 export class NftVoterClient {
   constructor(public program: Program<NftVoter>, public devnet?: boolean) {}
 
-  static async connect(
+  static connect(
     provider: Provider,
     devnet?: boolean,
-  ): Promise<NftVoterClient> {
-    // alternatively we could fetch from chain
-    // const idl = await Program.fetchIdl(VSR_ID, provider);
-    const idl = IDL;
-
+    programId = NFT_VOTER_ID,
+  ): NftVoterClient {
     return new NftVoterClient(
-      new Program<NftVoter>(idl as NftVoter, NFT_VOTER_ID, provider),
+      new Program<NftVoter>(IDL, programId, provider),
       devnet,
     );
   }
