@@ -116,6 +116,7 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
             &id(),
             &ctx.accounts.system_program.to_account_info(),
             &rent,
+            0,
         )?;
     }
 

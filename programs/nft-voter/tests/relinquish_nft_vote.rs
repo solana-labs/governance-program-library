@@ -3,13 +3,12 @@ use gpl_nft_voter::error::NftVoterError;
 use program_test::nft_voter_test::{CastNftVoteArgs, NftVoterTest};
 use program_test::tools::{assert_gov_err, assert_nft_voter_err};
 use solana_program_test::*;
-use solana_sdk::transport::TransportError;
 use spl_governance::error::GovernanceError;
 
 mod program_test;
 
 #[tokio::test]
-async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
+async fn test_relinquish_nft_vote() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -102,7 +101,7 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), TransportError> {
+async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -206,7 +205,7 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
 
 #[tokio::test]
 async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_exists_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -285,7 +284,7 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_e
 }
 
 #[tokio::test]
-async fn test_relinquish_nft_vote_with_invalid_voter_error() -> Result<(), TransportError> {
+async fn test_relinquish_nft_vote_with_invalid_voter_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -368,7 +367,7 @@ async fn test_relinquish_nft_vote_with_invalid_voter_error() -> Result<(), Trans
 }
 
 #[tokio::test]
-async fn test_relinquish_nft_vote_with_unexpired_vote_weight_record() -> Result<(), TransportError>
+async fn test_relinquish_nft_vote_with_unexpired_vote_weight_record() -> Result<(), BanksClientError>
 {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
@@ -458,7 +457,7 @@ async fn test_relinquish_nft_vote_with_unexpired_vote_weight_record() -> Result<
 
 #[tokio::test]
 async fn test_relinquish_nft_vote_with_invalid_voter_weight_token_owner_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
@@ -544,7 +543,7 @@ async fn test_relinquish_nft_vote_with_invalid_voter_weight_token_owner_error(
 }
 
 #[tokio::test]
-async fn test_relinquish_nft_vote_using_delegate() -> Result<(), TransportError> {
+async fn test_relinquish_nft_vote_using_delegate() -> Result<(), BanksClientError> {
     // Arrange
     let mut nft_voter_test = NftVoterTest::start_new().await;
 
