@@ -71,7 +71,7 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
 
     let rent = Rent::get()?;
 
-    for (nft_info, nft_metadata_info, nft_vote_record_info) in
+    for (nft_info, nft_metadata_info, nft_vote_record_info, nft_power_holding_account_info) in
         ctx.remaining_accounts.iter().tuples()
     {
         let (nft_vote_weight, nft_mint) = resolve_nft_vote_weight_and_mint(
@@ -79,6 +79,7 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
             &governing_token_owner,
             nft_info,
             nft_metadata_info,
+            nft_power_holding_account_info,
             &mut unique_nft_mints,
         )?;
 

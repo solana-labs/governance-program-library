@@ -1,10 +1,12 @@
+use std::cmp::max;
+
 use crate::{
     error::NftVoterError,
     id,
     state::{CollectionConfig, VoterWeightRecord},
     tools::{
-        anchor::DISCRIMINATOR_SIZE, spl_token::get_spl_token_amount,
-        token_metadata::get_token_metadata_for_mint,
+        anchor::DISCRIMINATOR_SIZE, governance::find_nft_power_holding_account_address,
+        spl_token::get_spl_token_amount, token_metadata::get_token_metadata_for_mint,
     },
 };
 use anchor_lang::prelude::*;
@@ -88,7 +90,7 @@ pub fn resolve_governing_token_owner(
     voter_token_owner_record.assert_token_owner_or_delegate_is_signer(voter_authority_info)?;
 
     // Assert voter TokenOwnerRecord and VoterWeightRecord are for the same governing_token_owner
-    require_eq!(
+    require_keys_eq!(
         voter_token_owner_record.governing_token_owner,
         voter_weight_record.governing_token_owner,
         NftVoterError::InvalidTokenOwnerForVoterWeightRecord
@@ -103,9 +105,11 @@ pub fn resolve_nft_vote_weight_and_mint(
     governing_token_owner: &Pubkey,
     nft_info: &AccountInfo,
     nft_metadata_info: &AccountInfo,
+    nft_power_holding_account_info: &AccountInfo,
     unique_nft_mints: &mut Vec<Pubkey>,
 ) -> Result<(u64, Pubkey)> {
     let nft_owner = get_spl_token_owner(nft_info)?;
+    let nft_mint = get_spl_token_mint(nft_info)?;
 
     // voter_weight_record.governing_token_owner must be the owner of the NFT
     require!(
@@ -113,7 +117,30 @@ pub fn resolve_nft_vote_weight_and_mint(
         NftVoterError::VoterDoesNotOwnNft
     );
 
-    let nft_mint = get_spl_token_mint(nft_info)?;
+    let expected_nft_power_holding_account_address = find_nft_power_holding_account_address(
+        &registrar.realm,
+        &registrar.governing_token_mint,
+        &nft_mint,
+    );
+
+    require_keys_eq!(
+        expected_nft_power_holding_account_address,
+        *nft_power_holding_account_info.key,
+        NftVoterError::InvalidHoldingAccountAddress
+    );
+
+    // For compatibility with NFT-based DAOs that dont use fungibles to boost the NFT's weight,
+    // we cant require the holding account to be initialized
+    let mut nft_power_holding_account_amount = 0;
+    if !nft_power_holding_account_info.data_is_empty() {
+        let nft_power_holding_account_mint = get_spl_token_mint(nft_power_holding_account_info)?;
+        require_keys_eq!(
+            nft_power_holding_account_mint,
+            registrar.governing_token_mint,
+            NftVoterError::InvalidHoldingAccountMint
+        );
+        nft_power_holding_account_amount = get_spl_token_amount(nft_power_holding_account_info)?;
+    }
 
     // Ensure the same NFT was not provided more than once
     if unique_nft_mints.contains(&nft_mint) {
@@ -137,7 +164,9 @@ pub fn resolve_nft_vote_weight_and_mint(
 
     let collection_config = registrar.get_collection_config(collection.key)?;
 
-    Ok((collection_config.weight, nft_mint))
+    let nft_power = collection_config.weight * max(1, nft_power_holding_account_amount);
+
+    Ok((nft_power, nft_mint))
 }
 
 #[cfg(test)]

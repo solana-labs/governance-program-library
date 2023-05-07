@@ -76,4 +76,16 @@ pub enum NftVoterError {
 
     #[msg("Cannot configure collection with voting proposals")]
     CannotConfigureCollectionWithVotingProposals,
+
+    #[msg("NFT owner must withdraw all votes or voting period must end before you may withdraw tokens")]
+    CannotWithdrawTokensWithActiveVotes,
+
+    #[msg("NFT must belong to a collection configured for the realm")]
+    InvalidNftCollection,
+
+    #[msg("Invalid NFT voting power holding account token mint")]
+    InvalidHoldingAccountMint,
+
+    #[msg("Provided NFT power holding account address doesnt match expected")]
+    InvalidHoldingAccountAddress,
 }

@@ -49,12 +49,15 @@ pub fn update_voter_weight_record(
     // Ensure all nfts are unique
     let mut unique_nft_mints = vec![];
 
-    for (nft_info, nft_metadata_info) in ctx.remaining_accounts.iter().tuples() {
+    for (nft_info, nft_metadata_info, nft_power_holding_account_info) in
+        ctx.remaining_accounts.iter().tuples()
+    {
         let (nft_vote_weight, _) = resolve_nft_vote_weight_and_mint(
             registrar,
             governing_token_owner,
             nft_info,
             nft_metadata_info,
+            nft_power_holding_account_info,
             &mut unique_nft_mints,
         )?;
 

@@ -13,6 +13,7 @@ pub struct NftCookie {
     pub mint_cookie: MintCookie,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct NftCollectionCookie {
     pub mint: Pubkey,
     pub metadata: Pubkey,
@@ -150,7 +151,7 @@ impl TokenMetadataTest {
             amount,
         } = args.unwrap_or_default();
 
-        // Crate NFT
+        // Create NFT
         let mint_cookie = self.bench.with_mint().await?;
         let nft_account_cookie = self
             .bench

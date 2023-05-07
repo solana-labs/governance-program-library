@@ -61,6 +61,29 @@ pub mod nft_voter {
         log_version();
         instructions::cast_nft_vote(ctx, proposal)
     }
+
+    pub fn create_governance_token_holding_account(
+        ctx: Context<CreateGovernanceTokenHoldingAccount>,
+    ) -> Result<()> {
+        log_version();
+        instructions::create_governance_token_holding_account(ctx)
+    }
+
+    pub fn deposit_governance_tokens(
+        ctx: Context<DepositGovernanceTokens>,
+        amount: u64,
+    ) -> Result<()> {
+        log_version();
+        instructions::deposit_governance_tokens(ctx, amount)
+    }
+
+    pub fn withdraw_governance_tokens(
+        ctx: Context<WithdrawGovernanceTokens>,
+        amount: u64,
+    ) -> Result<()> {
+        log_version();
+        instructions::withdraw_governance_tokens(ctx, amount)
+    }
 }
 
 fn log_version() {

@@ -255,12 +255,17 @@ impl ProgramTestBench {
     #[allow(dead_code)]
     pub async fn with_wallet(&self) -> WalletCookie {
         let account_rent = self.rent.minimum_balance(0);
+        self.with_wallet_funded(account_rent).await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_wallet_funded(&self, lamports: u64) -> WalletCookie {
         let account_keypair = Keypair::new();
 
         let create_account_ix = system_instruction::create_account(
             &self.context.borrow().payer.pubkey(),
             &account_keypair.pubkey(),
-            account_rent,
+            lamports,
             0,
             &system_program::id(),
         );
@@ -270,7 +275,7 @@ impl ProgramTestBench {
             .unwrap();
 
         let account = Account {
-            lamports: account_rent,
+            lamports,
             data: vec![],
             owner: system_program::id(),
             executable: false,

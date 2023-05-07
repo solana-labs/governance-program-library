@@ -13,3 +13,6 @@ pub use voter_weight_record::*;
 pub mod voter_weight_record;
 
 pub mod idl_types;
+
+pub use delegator_token_owner_record::*;
+pub mod delegator_token_owner_record;

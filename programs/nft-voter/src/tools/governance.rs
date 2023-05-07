@@ -1,6 +1,40 @@
 use anchor_lang::prelude::Pubkey;
 use spl_governance::state::{token_owner_record, vote_record};
 
+use crate::id;
+
+pub const NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX: [u8; 25] = *b"nft-power-holding-account";
+
+pub fn find_nft_power_holding_account_address(
+    realm: &Pubkey,
+    governance_token_mint: &Pubkey,
+    nft_mint: &Pubkey,
+) -> Pubkey {
+    Pubkey::find_program_address(
+        &[
+            &NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX,
+            realm.as_ref(),
+            governance_token_mint.as_ref(),
+            nft_mint.as_ref(),
+        ],
+        &id(),
+    )
+    .0
+}
+
+pub fn make_nft_power_holding_account_seeds<'a>(
+    realm: &'a Pubkey,
+    governance_token_mint: &'a Pubkey,
+    nft_mint: &'a Pubkey,
+) -> [&'a [u8]; 4] {
+    [
+        &NFT_POWER_HOLDING_ACCOUNT_SEED_PREFIX,
+        realm.as_ref(),
+        governance_token_mint.as_ref(),
+        nft_mint.as_ref(),
+    ]
+}
+
 pub fn get_vote_record_address(
     program_id: &Pubkey,
     realm: &Pubkey,
