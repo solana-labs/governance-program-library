@@ -26,7 +26,7 @@ num = "0.4"
 num-derive = "0.3"
 num-traits = "0.2"
 solana-gateway = "0.2.2"
-solana-program = "1.9.13"
+solana-program = "1.14.16"
 spl-governance = { version = "2.2.4", features = ["no-entrypoint"] }
 spl-governance-tools=  "0.1.2"
 spl-governance-addin-api = "0.1.2"
@@ -34,6 +34,6 @@ spl-token = { version = "3.3", features = [ "no-entrypoint" ] }
 
 [dev-dependencies]
 borsh = "0.9.1"
-solana-sdk = "1.9.5"
-solana-program-test = "1.9.13"
+solana-sdk = "1.14.16"
+solana-program-test = "1.14.16"
 spl-governance-addin-mock = "0.1.2"

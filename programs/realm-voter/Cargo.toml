@@ -20,12 +20,12 @@ default = []
 arrayref = "0.3.6"
 anchor-lang = { version = "0.26.0" }
 anchor-spl = "0.26.0"
-solana-program = "1.9.13"
+solana-program = "1.14.16"
 spl-governance = { version = "2.2.2", features = ["no-entrypoint"] }
 spl-governance-tools=  "0.1.2"
 spl-token = { version = "3.3", features = [ "no-entrypoint" ] }
 
 [dev-dependencies]
 borsh = "0.9.1"
-solana-sdk = "1.9.5"
-solana-program-test = "1.9.13"
+solana-sdk = "1.14.16"
+solana-program-test = "1.14.16"
