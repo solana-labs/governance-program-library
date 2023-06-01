@@ -1,5 +1,6 @@
+use anchor_lang::prelude::ErrorCode;
 use program_test::nft_voter_test::NftVoterTest;
-use program_test::tools::assert_ix_err;
+use program_test::tools::{assert_anchor_err, assert_ix_err};
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
@@ -57,8 +58,8 @@ async fn test_create_voter_weight_record_with_invalid_realm_error() -> Result<()
 
     // Assert
 
-    // PDA doesn't match and hence the error is PrivilegeEscalation
-    assert_ix_err(err, InstructionError::PrivilegeEscalation);
+    // PDA doesn't match and hence the error is ConstraintSeeds
+    assert_anchor_err(err, ErrorCode::ConstraintSeeds);
 
     Ok(())
 }
@@ -87,8 +88,8 @@ async fn test_create_voter_weight_record_with_invalid_mint_error() -> Result<(),
 
     // Assert
 
-    // PDA doesn't match and hence the error is PrivilegeEscalation
-    assert_ix_err(err, InstructionError::PrivilegeEscalation);
+    // PDA doesn't match and hence the error is ConstraintSeeds
+    assert_anchor_err(err, ErrorCode::ConstraintSeeds);
 
     Ok(())
 }
