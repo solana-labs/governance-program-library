@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use mpl_token_metadata::state::Metadata;
+use mpl_token_metadata::state::{Metadata, TokenMetadataAccount};
 
 use crate::error::NftVoterError;
 

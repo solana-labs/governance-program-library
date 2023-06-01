@@ -111,10 +111,14 @@ impl ProgramTestBench {
     pub async fn with_mint(&self) -> Result<MintCookie, TransportError> {
         let mint_keypair = Keypair::new();
         let mint_authority = Keypair::new();
-        let freeze_authority = Keypair::new();
+        let freeze_authority = clone_keypair(&mint_authority);
 
-        self.create_mint(&mint_keypair, &mint_authority.pubkey(), None)
-            .await?;
+        self.create_mint(
+            &mint_keypair,
+            &mint_authority.pubkey(),
+            Some(&freeze_authority.pubkey()),
+        )
+        .await?;
 
         Ok(MintCookie {
             address: mint_keypair.pubkey(),

@@ -79,7 +79,7 @@ impl TokenMetadataTest {
         let coll_symbol = "NFT_C".to_string();
         let coll_uri = "URI".to_string();
 
-        let create_coll_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v2(
+        let create_coll_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v3(
             self.program_id,
             coll_metadata_key,
             coll_mint_cookie.address,
@@ -93,6 +93,7 @@ impl TokenMetadataTest {
             10,
             false,
             false,
+            None,
             None,
             None,
         );
@@ -173,7 +174,7 @@ impl TokenMetadataTest {
             key: nft_collection_cookie.mint,
         };
 
-        let create_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v2(
+        let create_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v3(
             self.program_id,
             metadata_key,
             mint_cookie.address,
@@ -188,6 +189,7 @@ impl TokenMetadataTest {
             false,
             false,
             Some(collection),
+            None,
             None,
         );
 
