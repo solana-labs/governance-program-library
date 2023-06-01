@@ -6,9 +6,8 @@ use gpl_realm_voter::state::max_voter_weight_record::{
     get_max_voter_weight_record_address, MaxVoterWeightRecord,
 };
 use gpl_realm_voter::state::*;
-use solana_sdk::transport::TransportError;
 
-use solana_program_test::ProgramTest;
+use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
@@ -99,7 +98,7 @@ impl RealmVoterTest {
     pub async fn with_registrar(
         &mut self,
         realm_cookie: &RealmCookie,
-    ) -> Result<RegistrarCookie, TransportError> {
+    ) -> Result<RegistrarCookie, BanksClientError> {
         self.with_registrar_using_ix(realm_cookie, NopOverride, None)
             .await
     }
@@ -110,7 +109,7 @@ impl RealmVoterTest {
         realm_cookie: &RealmCookie,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<RegistrarCookie, TransportError> {
+    ) -> Result<RegistrarCookie, BanksClientError> {
         let registrar_key =
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
@@ -172,7 +171,7 @@ impl RealmVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         self.with_voter_weight_record_using_ix(registrar_cookie, voter_cookie, NopOverride)
             .await
     }
@@ -183,7 +182,7 @@ impl RealmVoterTest {
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
         instruction_override: F,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         let governing_token_owner = voter_cookie.address;
 
         let (voter_weight_record_key, _) = Pubkey::find_program_address(
@@ -242,7 +241,7 @@ impl RealmVoterTest {
     pub async fn with_max_voter_weight_record(
         &mut self,
         registrar_cookie: &RegistrarCookie,
-    ) -> Result<MaxVoterWeightRecordCookie, TransportError> {
+    ) -> Result<MaxVoterWeightRecordCookie, BanksClientError> {
         self.with_max_voter_weight_record_using_ix(registrar_cookie, NopOverride)
             .await
     }
@@ -252,7 +251,7 @@ impl RealmVoterTest {
         &mut self,
         registrar_cookie: &RegistrarCookie,
         instruction_override: F,
-    ) -> Result<MaxVoterWeightRecordCookie, TransportError> {
+    ) -> Result<MaxVoterWeightRecordCookie, BanksClientError> {
         let max_voter_weight_record_key = get_max_voter_weight_record_address(
             &registrar_cookie.account.realm,
             &registrar_cookie.account.governing_token_mint,
@@ -301,7 +300,7 @@ impl RealmVoterTest {
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &mut VoterWeightRecordCookie,
         token_owner_record_cookie: &TokenOwnerRecordCookie,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_realm_voter::instruction::UpdateVoterWeightRecord {},
         );
@@ -330,7 +329,7 @@ impl RealmVoterTest {
         max_voter_weight_record_cookie: &mut MaxVoterWeightRecordCookie,
         realm_member_voter_weight: u64,
         max_voter_weight: u64,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         self.configure_voter_weights_using_ix(
             registrar_cookie,
             max_voter_weight_record_cookie,
@@ -351,7 +350,7 @@ impl RealmVoterTest {
         max_voter_weight: u64,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_realm_voter::instruction::ConfigureVoterWeights {
                 max_voter_weight,
@@ -389,7 +388,7 @@ impl RealmVoterTest {
         registrar_cookie: &RegistrarCookie,
         governance_program_cookie: &GovernanceProgramCookie,
         change_type: CollectionItemChangeType,
-    ) -> Result<GovernanceProgramConfigCookie, TransportError> {
+    ) -> Result<GovernanceProgramConfigCookie, BanksClientError> {
         self.configure_governance_program_using_ix(
             registrar_cookie,
             governance_program_cookie,
@@ -408,7 +407,7 @@ impl RealmVoterTest {
         change_type: CollectionItemChangeType,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<GovernanceProgramConfigCookie, TransportError> {
+    ) -> Result<GovernanceProgramConfigCookie, BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_realm_voter::instruction::ConfigureGovernanceProgram { change_type },
         );

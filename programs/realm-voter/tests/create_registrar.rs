@@ -1,6 +1,6 @@
 mod program_test;
 
-use anchor_lang::prelude::Pubkey;
+use anchor_lang::prelude::{ErrorCode, Pubkey};
 use gpl_realm_voter::error::RealmVoterError;
 use program_test::realm_voter_test::RealmVoterTest;
 
@@ -119,8 +119,8 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), Transpor
         .err()
         .unwrap();
 
-    // PDA doesn't match and hence the error is PrivilegeEscalation
-    assert_ix_err(err, InstructionError::PrivilegeEscalation);
+    // PDA doesn't match and hence the error is ConstraintSeeds
+    assert_anchor_err(err, ErrorCode::ConstraintSeeds);
 
     Ok(())
 }
@@ -146,8 +146,8 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
         .err()
         .unwrap();
 
-    // PDA doesn't match and hence the error is PrivilegeEscalation
-    assert_ix_err(err, InstructionError::PrivilegeEscalation);
+    // PDA doesn't match and hence the error is ConstraintSeeds
+    assert_anchor_err(err, ErrorCode::ConstraintSeeds);
 
     Ok(())
 }
