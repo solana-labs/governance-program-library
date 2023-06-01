@@ -1,6 +1,6 @@
 [package]
 name = "gpl-nft-voter"
-version = "0.2.1"
+version = "0.2.2"
 description = "SPL Governance addin implementing NFT based governance"
 license = "Apache-2.0"
 edition = "2018"
