@@ -18,14 +18,19 @@ default = []
 
 [dependencies]
 arrayref = "0.3.6"
-anchor-lang = { version = "0.24.2", features = ["init-if-needed"] }
-anchor-spl = "0.24.2"
+anchor-lang = { version = "0.26.0", features = ["init-if-needed"] }
+anchor-spl = { version = "0.26.0", features = ["token"] }
 itertools = "0.10.2"
-mpl-token-metadata = { version = "1.1.0", features = ["no-entrypoint"] }
+mpl-token-metadata = { version = "=1.1.0", features = ["no-entrypoint"] }
 solana-program = "1.9.13"
 spl-governance = { version = "2.2.2", features = ["no-entrypoint"] }
-spl-governance-tools=  "0.1.2"
-spl-token = { version = "3.3", features = [ "no-entrypoint" ] }
+spl-governance-tools=  "=0.1.2"
+spl-token = { version = "3.5", features = [ "no-entrypoint" ] }
+
+# The explicit versions are required to compile Anchor <= 0.27.0
+# Once upgraded to the higher version this can be removed
+winnow = "=0.4.1"
+toml_datetime = "=0.6.1"
 
 [dev-dependencies]
 borsh = "0.9.1"
