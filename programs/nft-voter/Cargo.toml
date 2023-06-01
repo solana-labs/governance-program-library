@@ -23,8 +23,8 @@ anchor-spl = { version = "0.26.0", features = ["token"] }
 itertools = "0.10.2"
 mpl-token-metadata = { version = "=1.1.0", features = ["no-entrypoint"] }
 solana-program = "1.14.16"
-spl-governance = { version = "2.2.2", features = ["no-entrypoint"] }
-spl-governance-tools=  "=0.1.2"
+spl-governance = { version = "3.1.1", features = ["no-entrypoint"] }
+spl-governance-tools=  "0.1.3"
 spl-token = { version = "3.5", features = [ "no-entrypoint" ] }
 
 # The explicit versions are required to compile Anchor <= 0.27.0
