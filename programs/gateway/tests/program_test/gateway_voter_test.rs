@@ -18,7 +18,7 @@ use spl_governance::{
     state::vote_record::{Vote, VoteChoice},
 };
 
-use solana_program_test::ProgramTest;
+use solana_program_test::{BanksClientError, ProgramTest};
 
 use crate::program_test::{
     governance_test::{GovernanceTest, ProposalCookie, RealmCookie, TokenOwnerRecordCookie},
@@ -132,7 +132,7 @@ impl GatewayVoterTest {
         realm_cookie: &RealmCookie,
         gateway_cookie: &GatewayCookie,
         previous_plugin_program_id: Option<Pubkey>,
-    ) -> Result<RegistrarCookie, TransportError> {
+    ) -> Result<RegistrarCookie, BanksClientError> {
         self.with_registrar_using_ix(
             realm_cookie,
             gateway_cookie,
@@ -155,7 +155,7 @@ impl GatewayVoterTest {
         program_id: &Pubkey,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<RegistrarCookie, TransportError> {
+    ) -> Result<RegistrarCookie, BanksClientError> {
         let registrar_key =
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
@@ -336,7 +336,7 @@ impl GatewayVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         self.with_voter_weight_record_using_ix(registrar_cookie, voter_cookie, NopOverride)
             .await
     }
@@ -347,7 +347,7 @@ impl GatewayVoterTest {
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
         instruction_override: F,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         let governing_token_owner = voter_cookie.address;
 
         let (voter_weight_record_key, _) = Pubkey::find_program_address(
@@ -409,7 +409,7 @@ impl GatewayVoterTest {
         input_voter_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
         output_voter_weight_record_cookie: &mut VoterWeightRecordCookie,
         gateway_token_cookie: &GatewayTokenCookie,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_civic_gateway::instruction::UpdateVoterWeightRecord {},
         );
@@ -439,7 +439,7 @@ impl GatewayVoterTest {
         registrar_cookie: &RegistrarCookie,
         gateway_cookie: &GatewayCookie,
         predecessor_program_id: Option<Pubkey>,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         self.configure_registrar_using_ix(
             realm_cookie,
             registrar_cookie,
@@ -462,7 +462,7 @@ impl GatewayVoterTest {
         use_previous_voter_weight_plugin: bool,
         instruction_override: F,
         signers_override: Option<Option<&[&Keypair]>>,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_civic_gateway::instruction::ConfigureRegistrar {
                 use_previous_voter_weight_plugin,
