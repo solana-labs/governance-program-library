@@ -139,17 +139,12 @@ impl NftVoterTest {
         let max_collections = 10;
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CreateRegistrar {
-                max_collections,
-            });
+            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CreateRegistrar {});
 
         let accounts = anchor_lang::ToAccountMetas::to_account_metas(
             &gpl_nft_voter::accounts::CreateRegistrar {
                 registrar: registrar_key,
-                realm: realm_cookie.address,
-                governance_program_id: self.governance.program_id,
-                governing_token_mint: realm_cookie.account.community_mint,
-                realm_authority: realm_cookie.get_realm_authority().pubkey(),
+
                 payer: self.bench.payer.pubkey(),
                 system_program: solana_sdk::system_program::id(),
             },
@@ -164,11 +159,8 @@ impl NftVoterTest {
 
         instruction_override(&mut create_registrar_ix);
 
-        let default_signers = &[&realm_cookie.realm_authority];
-        let signers = signers_override.unwrap_or(default_signers);
-
         self.bench
-            .process_transaction(&[create_registrar_ix], Some(signers))
+            .process_transaction(&[create_registrar_ix], None)
             .await?;
 
         let account = Registrar {

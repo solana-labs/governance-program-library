@@ -47,10 +47,10 @@ impl Registrar {
 
 /// Returns Registrar PDA seeds
 pub fn get_registrar_seeds<'a>(
-    realm: &'a Pubkey,
-    governing_token_mint: &'a Pubkey,
-) -> [&'a [u8]; 3] {
-    [b"registrar", realm.as_ref(), governing_token_mint.as_ref()]
+    _realm: &'a Pubkey,
+    _governing_token_mint: &'a Pubkey,
+) -> [&'a [u8]; 1] {
+    [b"registrar"]
 }
 
 /// Returns Registrar PDA address

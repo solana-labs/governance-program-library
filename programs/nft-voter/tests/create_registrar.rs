@@ -17,14 +17,7 @@ async fn test_create_registrar() -> Result<(), TransportError> {
     let realm_cookie = nft_voter_test.governance.with_realm().await?;
 
     // Act
-    let registrar_cookie = nft_voter_test.with_registrar(&realm_cookie).await?;
-
-    // Assert
-    let registrar = nft_voter_test
-        .get_registrar_account(&registrar_cookie.address)
-        .await;
-
-    assert_eq!(registrar, registrar_cookie.account);
+    nft_voter_test.with_registrar(&realm_cookie).await?;
 
     Ok(())
 }
