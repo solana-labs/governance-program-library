@@ -1,6 +1,4 @@
-use gpl_nft_voter::state::get_registrar_address;
-
-use solana_program::instruction::Instruction;
+use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use solana_program_test::*;
 use solana_sdk::{signer::Signer, transaction::Transaction, transport::TransportError};
 
@@ -11,7 +9,7 @@ async fn test_create_registrar() -> Result<(), TransportError> {
 
     let mut context = program_test.start_with_context().await;
 
-    let registrar_key = get_registrar_address();
+    let registrar_key = Pubkey::find_program_address(&[b"registrar"], &gpl_nft_voter::id()).0;
 
     let data = anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CreateRegistrar {});
 
