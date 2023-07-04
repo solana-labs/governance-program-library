@@ -1,5 +1,3 @@
-mod program_test;
-
 use gpl_nft_voter::state::get_registrar_address;
 
 use solana_program::instruction::Instruction;

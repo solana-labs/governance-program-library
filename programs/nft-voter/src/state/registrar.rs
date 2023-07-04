@@ -1,7 +1,6 @@
 use crate::{
     error::NftVoterError,
     id,
-    state::{CollectionConfig, VoterWeightRecord},
     tools::{
         anchor::DISCRIMINATOR_SIZE, spl_token::get_spl_token_amount,
         token_metadata::get_token_metadata_for_mint,
@@ -9,8 +8,29 @@ use crate::{
 };
 use anchor_lang::prelude::*;
 use solana_program::pubkey::PUBKEY_BYTES;
-use spl_governance::state::token_owner_record;
+
 use spl_governance::tools::spl_token::{get_spl_token_mint, get_spl_token_owner};
+
+/// Configuration of an NFT collection used for governance power
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq, Default)]
+pub struct CollectionConfig {
+    /// The NFT collection used for governance
+    pub collection: Pubkey,
+
+    /// The size of the NFT collection used to calculate max voter weight
+    /// Note: At the moment the size is not captured on Metaplex accounts
+    /// and it has to be manually updated on the Registrar
+    pub size: u32,
+
+    /// Governance power weight of the collection
+    /// Each NFT in the collection has governance power = 1 * weight
+    /// Note: The weight is scaled accordingly to the governing_token_mint decimals
+    /// Ex: if the the mint has 2 decimal places then weight of 1 should be stored as 100
+    pub weight: u64,
+
+    /// Reserved for future upgrades
+    pub reserved: [u8; 8],
+}
 
 /// Registrar which stores NFT voting configuration for the given Realm
 #[account]
@@ -63,35 +83,6 @@ impl Registrar {
             .find(|cc| cc.collection == collection)
             .ok_or_else(|| NftVoterError::CollectionNotFound.into());
     }
-}
-
-// Resolves governing_token_owner from voter TokenOwnerRecord and
-// 1) asserts it matches the given Registrar and VoterWeightRecord
-// 2) asserts governing_token_owner or its delegate is a signer
-pub fn resolve_governing_token_owner(
-    registrar: &Registrar,
-    voter_token_owner_record_info: &AccountInfo,
-    voter_authority_info: &AccountInfo,
-    voter_weight_record: &VoterWeightRecord,
-) -> Result<Pubkey> {
-    let voter_token_owner_record =
-        token_owner_record::get_token_owner_record_data_for_realm_and_governing_mint(
-            &registrar.governance_program_id,
-            voter_token_owner_record_info,
-            &registrar.realm,
-            &registrar.governing_token_mint,
-        )?;
-
-    voter_token_owner_record.assert_token_owner_or_delegate_is_signer(voter_authority_info)?;
-
-    // Assert voter TokenOwnerRecord and VoterWeightRecord are for the same governing_token_owner
-    require_eq!(
-        voter_token_owner_record.governing_token_owner,
-        voter_weight_record.governing_token_owner,
-        NftVoterError::InvalidTokenOwnerForVoterWeightRecord
-    );
-
-    Ok(voter_token_owner_record.governing_token_owner)
 }
 
 /// Resolves vote weight and voting mint for the given NFT

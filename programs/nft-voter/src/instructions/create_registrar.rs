@@ -4,7 +4,6 @@ use anchor_lang::prelude::*;
 /// Creates Registrar storing NFT governance configuration for spl-gov Realm
 /// This instruction should only be executed once per realm/governing_token_mint to create the account
 #[derive(Accounts)]
-
 pub struct CreateRegistrar<'info> {
     /// The NFT voting Registrar
     /// There can only be a single registrar per governance Realm and governing mint of the Realm
