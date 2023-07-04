@@ -1,8 +1,5 @@
-use crate::error::NftVoterError;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use anchor_spl::token::Mint;
-use spl_governance::state::realm;
 
 /// Creates Registrar storing NFT governance configuration for spl-gov Realm
 /// This instruction should only be executed once per realm/governing_token_mint to create the account

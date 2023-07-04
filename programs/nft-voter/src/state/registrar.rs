@@ -46,16 +46,13 @@ impl Registrar {
 }
 
 /// Returns Registrar PDA seeds
-pub fn get_registrar_seeds<'a>(
-    _realm: &'a Pubkey,
-    _governing_token_mint: &'a Pubkey,
-) -> [&'a [u8]; 1] {
+pub fn get_registrar_seeds<'a>() -> [&'a [u8]; 1] {
     [b"registrar"]
 }
 
 /// Returns Registrar PDA address
-pub fn get_registrar_address(realm: &Pubkey, governing_token_mint: &Pubkey) -> Pubkey {
-    Pubkey::find_program_address(&get_registrar_seeds(realm, governing_token_mint), &id()).0
+pub fn get_registrar_address() -> Pubkey {
+    Pubkey::find_program_address(&get_registrar_seeds(), &id()).0
 }
 
 impl Registrar {
