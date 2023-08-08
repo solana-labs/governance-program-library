@@ -1,0 +1,35 @@
+[package]
+description = "SPL Governance plugin that signs proposals only if they don't transfer tokens"
+edition = "2021"
+license = "Apache-2.0"
+name = "signatory-no-transfers"
+version = "0.0.1"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "no_transfers_signatory"
+
+[features]
+cpi = ["no-entrypoint"]
+default = []
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+
+[dependencies]
+anchor-lang = {version = "0.28.0", features = ["init-if-needed"]}
+matches = "0.1.9"
+spl-governance = {version = "3.1.1", git = "https://github.com/solana-labs/solana-program-library", features = ["no-entrypoint"]}
+spl-token = {version = "3.3.0", features = ["no-entrypoint"]}
+
+[dev-dependencies]
+anchor-spl = {version = "0.28.0"}
+borsh = "0.10"
+solana-program = "1.16.1"
+solana-program-test = "1.16.1"
+solana-sdk = "1.16.1"
+spl-governance-addin-api = {version = "0.1.3", git = "https://github.com/solana-labs/solana-program-library"}
+
+bincode = "1.3.2"
+serde = "^1.0.183"
+spl-governance-addin-mock = {version = "0.1.3", git = "https://github.com/solana-labs/solana-program-library"}

@@ -1,0 +1,19 @@
+anchor_version = "0.26.0"
+solana_version = "1.14.16"
+
+[features]
+seeds = false
+
+[programs.localnet]
+gateway = "GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk"
+solana-gateway-program = "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ../../tsconfig.json -t 1000000 ../../tests/**/*.ts"
