@@ -1,7 +1,7 @@
 pub mod args;
 pub mod cookies;
 
-use std::{str::FromStr, sync::Arc};
+use std::{rc::Rc, str::FromStr};
 
 use solana_program::{
     bpf_loader_upgradeable::{self, UpgradeableLoaderState},
@@ -21,16 +21,14 @@ use solana_sdk::{
 
 use spl_governance::{
     instruction::{
-        add_required_signatory_to_governance, add_signatory, cancel_proposal, cast_vote,
-        create_governance, create_mint_governance, create_native_treasury,
-        create_program_governance, create_proposal, create_realm,
-        create_signatory_record_from_governance, create_token_governance,
-        create_token_owner_record, deposit_governing_tokens, execute_transaction, finalize_vote,
-        flag_transaction_error, insert_transaction, relinquish_vote, remove_signatory,
+        add_required_signatory, add_signatory, cancel_proposal, cast_vote, create_governance,
+        create_mint_governance, create_native_treasury, create_program_governance, create_proposal,
+        create_realm, create_token_governance, create_token_owner_record, deposit_governing_tokens,
+        execute_transaction, finalize_vote, flag_transaction_error, insert_transaction,
         remove_transaction, set_governance_config, set_governance_delegate, set_realm_authority,
         set_realm_config, sign_off_proposal, upgrade_program_metadata, withdraw_governing_tokens,
+        AddSignatoryAuthority,
     },
-    processor::process_instruction,
     state::{
         enums::{
             GovernanceAccountType, InstructionExecutionFlags, MintMaxVoterWeightSource,
@@ -83,7 +81,7 @@ use super::{
 
 pub struct GovernanceTest {
     pub program_id: Pubkey,
-    pub bench: Arc<ProgramTestBench>,
+    pub bench: Rc<ProgramTestBench>,
     pub next_id: u8,
     pub community_voter_weight_addin: Option<Pubkey>,
     pub max_community_voter_weight_addin: Option<Pubkey>,
@@ -111,7 +109,7 @@ impl GovernanceTest {
 
     #[allow(dead_code)]
     pub fn new(
-        bench: Arc<ProgramTestBench>,
+        bench: Rc<ProgramTestBench>,
         community_voter_weight_addin: Option<Pubkey>,
         max_community_voter_weight_addin: Option<Pubkey>,
     ) -> Self {
@@ -952,7 +950,7 @@ impl GovernanceTest {
             None
         };
 
-        let community_voter_weight_addin = if set_realm_config_args
+        if set_realm_config_args
             .realm_config_args
             .community_token_config_args
             .use_voter_weight_addin
@@ -962,7 +960,7 @@ impl GovernanceTest {
             None
         };
 
-        let max_community_voter_weight_addin = if set_realm_config_args
+        if set_realm_config_args
             .realm_config_args
             .community_token_config_args
             .use_max_voter_weight_addin
@@ -1224,7 +1222,7 @@ impl GovernanceTest {
         .await
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code, clippy::too_many_arguments)]
     pub async fn with_governance_impl(
         &mut self,
         realm_cookie: &RealmCookie,
@@ -1251,7 +1249,7 @@ impl GovernanceTest {
             realm: realm_cookie.address,
             governed_account: governed_account_cookie.address,
             config: governance_config.clone(),
-            signatories_count: 0,
+            required_signatories_count: 0,
             reserved1: Default::default(),
             active_proposal_count: 0,
             reserved_v2: Default::default(),
@@ -1293,10 +1291,12 @@ impl GovernanceTest {
         let path_buf = find_file("solana_bpf_rust_upgradeable.so").unwrap();
         let program_data = read_file(path_buf);
 
-        let program_buffer_rent = self
-            .bench
-            .rent
-            .minimum_balance(UpgradeableLoaderState::programdata_len(program_data.len()).unwrap());
+        let program_buffer_rent =
+            self.bench
+                .rent
+                .minimum_balance(UpgradeableLoaderState::size_of_programdata(
+                    program_data.len(),
+                ));
 
         let mut instructions = bpf_loader_upgradeable::create_buffer(
             &self.bench.payer.pubkey(),
@@ -1321,7 +1321,7 @@ impl GovernanceTest {
         let program_account_rent = self
             .bench
             .rent
-            .minimum_balance(UpgradeableLoaderState::program_len().unwrap());
+            .minimum_balance(UpgradeableLoaderState::size_of_program());
 
         let deploy_ixs = bpf_loader_upgradeable::deploy_with_max_program_len(
             &self.bench.payer.pubkey(),
@@ -1418,7 +1418,7 @@ impl GovernanceTest {
             realm: realm_cookie.address,
             governed_account: governed_program_cookie.address,
             config,
-            signatories_count: 0,
+            required_signatories_count: 0,
             reserved1: Default::default(),
             reserved_v2: Default::default(),
             active_proposal_count: 0,
@@ -1540,7 +1540,7 @@ impl GovernanceTest {
             realm: realm_cookie.address,
             governed_account: governed_mint_cookie.address,
             config: governance_config.clone(),
-            signatories_count: 0,
+            required_signatories_count: 0,
             reserved1: Default::default(),
             reserved_v2: Default::default(),
             active_proposal_count: 0,
@@ -1622,7 +1622,7 @@ impl GovernanceTest {
             realm: realm_cookie.address,
             governed_account: governed_token_cookie.address,
             config,
-            signatories_count: 0,
+            required_signatories_count: 0,
             reserved1: Default::default(),
             reserved_v2: Default::default(),
             active_proposal_count: 0,
@@ -1846,9 +1846,13 @@ impl GovernanceTest {
 
         let add_signatory_ix = add_signatory(
             &self.program_id,
+            &proposal_cookie.account.governance,
             &proposal_cookie.address,
-            &token_owner_record_cookie.address,
-            &token_owner_record_cookie.token_owner.pubkey(),
+            &spl_governance::instruction::AddSignatoryAuthority::ProposalOwner {
+                governance_authority: token_owner_record_cookie.token_owner.pubkey(),
+                token_owner_record: token_owner_record_cookie.address,
+            },
+            // &token_owner_record_cookie.token_owner.pubkey(),
             &self.bench.payer.pubkey(),
             &signatory.pubkey(),
         );
@@ -1883,31 +1887,6 @@ impl GovernanceTest {
         Ok(signatory_record_cookie)
     }
 
-    #[allow(dead_code)]
-    pub async fn remove_signatory(
-        &mut self,
-        proposal_cookie: &ProposalCookie,
-        token_owner_record_cookie: &TokenOwnerRecordCookie,
-        signatory_record_cookie: &SignatoryRecordCookie,
-    ) -> Result<(), TransportError> {
-        let remove_signatory_ix = remove_signatory(
-            &self.program_id,
-            &proposal_cookie.address,
-            &token_owner_record_cookie.address,
-            &token_owner_record_cookie.token_owner.pubkey(),
-            &signatory_record_cookie.account.signatory,
-            &token_owner_record_cookie.token_owner.pubkey(),
-        );
-
-        self.bench
-            .process_transaction(
-                &[remove_signatory_ix],
-                Some(&[&token_owner_record_cookie.token_owner]),
-            )
-            .await?;
-
-        Ok(())
-    }
     #[allow(dead_code)]
     pub async fn sign_off_proposal_by_owner(
         &mut self,
@@ -2279,10 +2258,12 @@ impl GovernanceTest {
         let path_buf = find_file("solana_bpf_rust_upgraded.so").unwrap();
         let program_data = read_file(path_buf);
 
-        let program_buffer_rent = self
-            .bench
-            .rent
-            .minimum_balance(UpgradeableLoaderState::programdata_len(program_data.len()).unwrap());
+        let program_buffer_rent =
+            self.bench
+                .rent
+                .minimum_balance(UpgradeableLoaderState::size_of_programdata(
+                    program_data.len(),
+                ));
 
         let mut instructions = bpf_loader_upgradeable::create_buffer(
             &self.bench.payer.pubkey(),
@@ -2376,7 +2357,7 @@ impl GovernanceTest {
         let hold_up_time = hold_up_time.unwrap_or(15);
 
         let instruction_data: InstructionData = instruction.clone().into();
-        let mut yes_option = &mut proposal_cookie.account.options[0];
+        let yes_option = &mut proposal_cookie.account.options[0];
 
         let transaction_index = index.unwrap_or(yes_option.transactions_next_index);
 
@@ -2585,7 +2566,7 @@ impl GovernanceTest {
             .await
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code, clippy::await_holding_refcell_ref)]
     async fn get_packed_account<T: Pack + IsInitialized>(&mut self, address: &Pubkey) -> T {
         self.bench
             .context
@@ -2762,7 +2743,7 @@ impl GovernanceTest {
         governance: &GovernanceCookie,
         signatory: &Pubkey,
     ) -> Result<ProposalTransactionCookie, TransportError> {
-        let mut gwr_ix = add_required_signatory_to_governance(
+        let mut gwr_ix = add_required_signatory(
             &self.program_id,
             &governance.address,
             &self.bench.payer.pubkey(),
@@ -2827,16 +2808,17 @@ impl GovernanceTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_signatory_record_from_governance(
+    pub async fn with_signatory_record_for_required_signatory(
         &mut self,
         proposal_cookie: &ProposalCookie,
         governance: &GovernanceCookie,
         signatory: &Pubkey,
     ) -> Result<SignatoryRecordCookieWithoutKeypair, TransportError> {
-        let create_signatory_record_ix = create_signatory_record_from_governance(
+        let create_signatory_record_ix = add_signatory(
             &self.program_id,
             &governance.address,
             &proposal_cookie.address,
+            &AddSignatoryAuthority::None,
             &self.bench.payer.pubkey(),
             signatory,
         );

@@ -1,7 +1,5 @@
 use anchor_lang::prelude::Pubkey;
-use no_transfers_signatory::{
-    accounts::CheckTransaction, error::TransactionCheckerError, state::TransactionsChecked,
-};
+use no_transfers_signatory::{error::TransactionCheckerError, state::TransactionsChecked};
 use program_test::tools::assert_transaction_checker_err;
 use solana_program_test::tokio;
 use solana_sdk::{signer::Signer, transport::TransportError};
@@ -265,7 +263,7 @@ async fn test_check_two_transactions() -> TestOutcome {
         .await
         .unwrap();
 
-    let checked_transaction_cookie = signatory_test
+    signatory_test
         .check_transaction(
             &realm_cookie,
             &proposal_cookie,
@@ -330,7 +328,7 @@ async fn test_check_transaction_out_of_order_err() -> TestOutcome {
         .await
         .unwrap();
 
-    let proposal_transaction_cookie = signatory_test
+    signatory_test
         .governance
         .with_nop_transaction(&mut proposal_cookie, &token_owner_record_cookie, 0, None)
         .await

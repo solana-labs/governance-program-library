@@ -54,7 +54,7 @@ async fn test_sign() -> TestOutcome {
 
     let signatory_record_cookie = signatory_test
         .governance
-        .with_signatory_record_from_governance(
+        .with_signatory_record_for_required_signatory(
             &proposal_cookie,
             &governance_cookie,
             &signing_authority_address(),
@@ -137,7 +137,7 @@ async fn test_sign_not_fully_verified_err() -> TestOutcome {
 
     let signatory_record_cookie = signatory_test
         .governance
-        .with_signatory_record_from_governance(
+        .with_signatory_record_for_required_signatory(
             &proposal_cookie,
             &governance_cookie,
             &signing_authority_address(),
@@ -151,7 +151,7 @@ async fn test_sign_not_fully_verified_err() -> TestOutcome {
         .await
         .unwrap();
 
-    let proposal_transaction_cookie_2 = signatory_test
+    signatory_test
         .governance
         .with_nop_transaction(&mut proposal_cookie, &token_owner_record_cookie, 0, None)
         .await
@@ -221,7 +221,7 @@ async fn test_sign_bad_transaction_err() -> TestOutcome {
 
     let signatory_record_cookie = signatory_test
         .governance
-        .with_signatory_record_from_governance(
+        .with_signatory_record_for_required_signatory(
             &proposal_cookie,
             &governance_cookie,
             &signing_authority_address(),

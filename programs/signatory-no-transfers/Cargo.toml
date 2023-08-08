@@ -19,7 +19,7 @@ no-log-ix-name = []
 [dependencies]
 anchor-lang = {version = "0.28.0", features = ["init-if-needed"]}
 matches = "0.1.9"
-spl-governance = {version = "3.1.1", git = "https://github.com/wizzeh/solana-program-library", branch = "mandatory-signatories", features = ["no-entrypoint"]}
+spl-governance = {version = "3.1.1", git = "https://github.com/solana-labs/solana-program-library", features = ["no-entrypoint"]}
 spl-token = {version = "3.3.0", features = ["no-entrypoint"]}
 
 [dev-dependencies]
@@ -28,8 +28,8 @@ borsh = "0.10"
 solana-program = "1.16.1"
 solana-program-test = "1.16.1"
 solana-sdk = "1.16.1"
-spl-governance-addin-api = {version = "0.1.3", git = "https://github.com/wizzeh/solana-program-library", branch = "mandatory-signatories"}
+spl-governance-addin-api = {version = "0.1.3", git = "https://github.com/solana-labs/solana-program-library"}
 
 bincode = "1.3.2"
-serde = "1.0.164"
-spl-governance-addin-mock = {version = "0.1.3", git = "https://github.com/wizzeh/solana-program-library", branch = "mandatory-signatories"}
+serde = "^1.0.183"
+spl-governance-addin-mock = {version = "0.1.3", git = "https://github.com/solana-labs/solana-program-library"}

@@ -1,3 +1,4 @@
+#![allow(clippy::await_holding_refcell_ref)]
 use std::{borrow::Borrow, cell::RefCell};
 
 use anchor_lang::{
@@ -6,15 +7,11 @@ use anchor_lang::{
 };
 use bincode::deserialize;
 
-use anchor_spl::{
-    associated_token::get_associated_token_address,
-    token::{spl_token, Token},
-};
-use solana_program::{borsh::try_from_slice_unchecked, system_program};
+use anchor_spl::{associated_token::get_associated_token_address, token::spl_token};
+use solana_program::{borsh0_10::try_from_slice_unchecked, system_program};
 use solana_program_test::{ProgramTest, ProgramTestContext};
 use solana_sdk::{
     account::{Account, AccountSharedData, ReadableAccount, WritableAccount},
-    feature_set::spl_associated_token_account_v1_0_4,
     instruction::Instruction,
     program_pack::Pack,
     signature::Keypair,
@@ -80,7 +77,7 @@ impl ProgramTestBench {
         let mut context = self.context.borrow_mut();
 
         let mut transaction =
-            Transaction::new_with_payer(&instructions, Some(&context.payer.pubkey()));
+            Transaction::new_with_payer(instructions, Some(&context.payer.pubkey()));
 
         let mut all_signers = vec![&context.payer];
 
@@ -123,6 +120,7 @@ impl ProgramTestBench {
             .unwrap()
     }
 
+    #[allow(dead_code)]
     pub async fn get_rent(&self) -> solana_program::rent::Rent {
         self.context
             .borrow_mut()
@@ -150,6 +148,7 @@ impl ProgramTestBench {
             .unwrap();
     }
 
+    #[allow(dead_code)]
     pub async fn set_unix_time(&self, to: i64) {
         let clock = Clock {
             unix_timestamp: to,
@@ -158,6 +157,7 @@ impl ProgramTestBench {
         self.context.borrow_mut().set_sysvar(&clock);
     }
 
+    #[allow(dead_code)]
     pub async fn with_mint(&self) -> Result<MintCookie, TransportError> {
         let mint_keypair = Keypair::new();
         let mint_authority = Keypair::new();
@@ -304,6 +304,7 @@ impl ProgramTestBench {
         .await
     }
 
+    #[allow(dead_code)]
     pub async fn create_associated_token_account(
         &self,
         user: Pubkey,
@@ -375,6 +376,7 @@ impl ProgramTestBench {
             .unwrap()
     }
 
+    #[allow(dead_code)]
     pub async fn get_token_account(&self, address: &Pubkey) -> Option<spl_token::state::Account> {
         let acct = self.get_account_data(*address).await;
         let acct = spl_token::state::Account::unpack(&acct).unwrap();
@@ -410,6 +412,7 @@ impl ProgramTestBench {
         AccountDeserialize::try_deserialize(&mut data_slice).unwrap()
     }
 
+    #[allow(dead_code)]
     pub async fn set_anchor_account<T: AccountSerialize>(
         &self,
         record: &T,
@@ -421,6 +424,7 @@ impl ProgramTestBench {
         self.set_account(data, address, owner).await
     }
 
+    #[allow(dead_code)]
     pub async fn set_borsht_account<T: AnchorSerialize>(
         &self,
         record: &T,
@@ -431,6 +435,7 @@ impl ProgramTestBench {
         self.set_account(data, address, owner).await
     }
 
+    #[allow(dead_code)]
     pub async fn set_account(
         &self,
         data: Vec<u8>,
@@ -449,6 +454,7 @@ impl ProgramTestBench {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn set_executable_account(
         &self,
         data: Vec<u8>,

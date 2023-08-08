@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
 use anchor_lang::prelude::Pubkey;
 
@@ -10,7 +10,7 @@ use solana_sdk::{signer::Signer, transport::TransportError};
 use super::{
     governance_test::{
         cookies::{
-            GovernanceCookie, ProposalCookie, ProposalTransactionCookie, RealmCookie,
+            ProposalCookie, ProposalTransactionCookie, RealmCookie,
             SignatoryRecordCookieWithoutKeypair,
         },
         GovernanceTest,
@@ -20,7 +20,7 @@ use super::{
 
 pub struct NoTransfersSignatoryTest {
     pub program_id: Pubkey,
-    pub bench: Arc<ProgramTestBench>,
+    pub bench: Rc<ProgramTestBench>,
     pub governance: GovernanceTest,
 }
 
@@ -44,7 +44,7 @@ impl NoTransfersSignatoryTest {
         GovernanceTest::add_program(&mut program_test);
 
         let program_id = no_transfers_signatory::id();
-        let bench_rc = Arc::new(ProgramTestBench::start_new(program_test).await);
+        let bench_rc = Rc::new(ProgramTestBench::start_new(program_test).await);
 
         Self {
             program_id,
