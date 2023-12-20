@@ -12,7 +12,7 @@ use crate::program_test::{
     governance_test::RealmCookie,
     program_test_bench::{ProgramTestBench, WalletCookie},
 };
-use solana_program_test::ProgramTest;
+use solana_program_test::{processor, ProgramTest};
 
 pub struct PredecessorPluginTest {
     pub bench: Arc<ProgramTestBench>,
@@ -25,7 +25,11 @@ impl PredecessorPluginTest {
 
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
-        program_test.add_program("spl_governance_addin_mock", Self::program_id(), None);
+        program_test.add_program(
+            "spl_governance_addin_mock",
+            Self::program_id(),
+            processor!(spl_governance_addin_mock::processor::process_instruction),
+        );
     }
 
     #[allow(dead_code)]

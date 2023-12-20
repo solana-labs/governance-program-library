@@ -1,7 +1,7 @@
 use std::{str::FromStr, sync::Arc};
 
 use anchor_lang::prelude::Pubkey;
-use solana_program_test::ProgramTest;
+use solana_program_test::{processor, ProgramTest};
 use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 use spl_governance::{
     instruction::{
@@ -67,7 +67,11 @@ impl GovernanceTest {
 
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
-        program_test.add_program("spl_governance", Self::program_id(), None);
+        program_test.add_program(
+            "spl_governance",
+            Self::program_id(),
+            processor!(spl_governance::processor::process_instruction),
+        );
     }
 
     #[allow(dead_code)]
