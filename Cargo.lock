@@ -1737,12 +1737,12 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "arrayref",
- "borsh",
+ "borsh 0.10.3",
  "enum_dispatch",
  "gpl-shared",
- "itertools",
- "num",
- "num-derive",
+ "itertools 0.12.0",
+ "num 0.4.1",
+ "num-derive 0.4.1",
  "num-traits",
  "solana-program",
  "solana-program-test",
@@ -1751,7 +1751,7 @@ dependencies = [
  "spl-governance-addin-api",
  "spl-governance-addin-mock",
  "spl-governance-tools",
- "spl-token",
+ "spl-token 4.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1776,12 +1776,12 @@ version = "0.1.1"
 dependencies = [
  "anchor-lang",
  "enum_dispatch",
- "num-derive",
+ "num-derive 0.4.1",
  "num-traits",
  "spl-governance",
  "spl-governance-addin-api",
  "spl-governance-tools",
- "spl-token",
+ "spl-token 4.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

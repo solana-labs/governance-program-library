@@ -35,7 +35,7 @@ spl-token = { version = "4.0.0", features = [ "no-entrypoint" ] }
 [dev-dependencies]
 borsh = "0.10.3"
 solana-sdk = "1.17.12"
-# Due to compatibility issues between solana-program-test 1.7.* and anchor 0.29.0, we need to use a fork of solana-program-test
+# Due to compatibility issues between solana-program-test 1.17.* and anchor 0.29.0, we need to use a fork of solana-program-test
 # https://github.com/coral-xyz/anchor/pull/2711
 solana-program-test = { git = "https://github.com/dankelleher/solana.git", branch = "program-test-hack" }
 #solana-program-test = "1.17.12"
