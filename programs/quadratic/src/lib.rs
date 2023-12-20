@@ -6,6 +6,7 @@ mod instructions;
 use instructions::*;
 
 pub mod state;
+use state::*;
 
 declare_id!("quadCSapU8nTdLg73KHDnmdxKnJQsh7GUbu5tZfnRRr");
 
@@ -14,17 +15,19 @@ pub mod quadratic {
     use super::*;
     pub fn create_registrar(
         ctx: Context<CreateRegistrar>,
+        coefficients: QuadraticCoefficients,
         use_previous_voter_weight_plugin: bool,
     ) -> Result<()> {
         log_version();
-        instructions::create_registrar(ctx, use_previous_voter_weight_plugin)
+        instructions::create_registrar(ctx, coefficients, use_previous_voter_weight_plugin)
     }
     pub fn configure_registrar(
         ctx: Context<ConfigureRegistrar>,
+        coefficients: QuadraticCoefficients,
         use_previous_voter_weight_plugin: bool,
     ) -> Result<()> {
         log_version();
-        instructions::configure_registrar(ctx, use_previous_voter_weight_plugin)
+        instructions::configure_registrar(ctx, coefficients, use_previous_voter_weight_plugin)
     }
     pub fn create_voter_weight_record(
         ctx: Context<CreateVoterWeightRecord>,

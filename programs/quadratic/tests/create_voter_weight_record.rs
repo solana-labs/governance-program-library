@@ -1,3 +1,4 @@
+use gpl_quadratic::state::QuadraticCoefficients;
 use program_test::quadratic_voter_test::QuadraticVoterTest;
 use program_test::tools::assert_ix_err;
 use solana_program::instruction::InstructionError;
@@ -14,7 +15,7 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
     let realm_cookie = quadratic_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = quadratic_voter_test
-        .with_registrar(&realm_cookie, None)
+        .with_registrar(&realm_cookie, &QuadraticCoefficients::default(), None)
         .await?;
 
     let voter_cookie = quadratic_voter_test.bench.with_wallet().await;
@@ -43,7 +44,7 @@ async fn test_create_voter_weight_record_with_already_exists_error() -> Result<(
     let realm_cookie = quadratic_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = quadratic_voter_test
-        .with_registrar(&realm_cookie, None)
+        .with_registrar(&realm_cookie, &QuadraticCoefficients::default(), None)
         .await?;
 
     let voter_cookie = quadratic_voter_test.bench.with_wallet().await;

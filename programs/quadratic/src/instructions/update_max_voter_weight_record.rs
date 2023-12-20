@@ -54,9 +54,10 @@ pub fn update_max_voter_weight_record(ctx: Context<UpdateMaxVoterWeightRecord>) 
     let output_max_voter_weight =
         (input_max_voter_weight_record.get_max_voter_weight() as f64).sqrt() as u64;
     msg!(
-        "input weight: {}. output weight {}.",
+        "input weight: {}. output weight {}. coefficients: {:?}",
         input_max_voter_weight_record.get_max_voter_weight(),
-        output_max_voter_weight
+        output_max_voter_weight,
+        ctx.accounts.registrar.quadratic_coefficients
     );
     max_voter_weight_record.max_voter_weight = output_max_voter_weight;
 

@@ -1,22 +1,18 @@
-use std::str::FromStr;
 use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
 use itertools::Either;
 use solana_program::instruction::AccountMeta;
-use solana_program::log::sol_log;
-use solana_program::msg;
 
 use gpl_quadratic::state::{get_registrar_address, Registrar, *};
-use solana_sdk::{
-    instruction::Instruction, signature::Keypair, signer::Signer
-};
+use solana_sdk::{instruction::Instruction, signature::Keypair, signer::Signer};
 use spl_governance::{
     instruction::cast_vote,
     state::vote_record::{Vote, VoteChoice},
 };
 
-use solana_program_test::{BanksClientError, processor, ProgramTest};
+use gpl_quadratic::state::quadratic_coefficients::QuadraticCoefficients;
+use solana_program_test::{processor, BanksClientError, ProgramTest};
 
 use crate::program_test::program_test_bench::MintCookie;
 use crate::program_test::tools::extract_max_voting_weight_address;
@@ -105,12 +101,14 @@ impl QuadraticVoterTest {
     pub async fn with_registrar(
         &mut self,
         realm_cookie: &RealmCookie,
+        coefficients: &QuadraticCoefficients,
         previous_plugin_program_id: Option<Pubkey>,
     ) -> Result<RegistrarCookie, BanksClientError> {
         self.with_registrar_using_ix(
             realm_cookie,
             previous_plugin_program_id,
             previous_plugin_program_id.is_some(),
+            coefficients,
             &gpl_quadratic::id(),
             NopOverride,
             None,
@@ -124,6 +122,7 @@ impl QuadraticVoterTest {
         realm_cookie: &RealmCookie,
         previous_plugin_program_id: Option<Pubkey>,
         use_previous_voter_weight_plugin: bool,
+        coefficients: &QuadraticCoefficients,
         program_id: &Pubkey,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
@@ -133,6 +132,7 @@ impl QuadraticVoterTest {
 
         let data =
             anchor_lang::InstructionData::data(&gpl_quadratic::instruction::CreateRegistrar {
+                coefficients: *coefficients,
                 use_previous_voter_weight_plugin,
             });
 
@@ -173,6 +173,7 @@ impl QuadraticVoterTest {
             previous_voter_weight_plugin_program_id: previous_plugin_program_id,
             realm: realm_cookie.address,
             governing_token_mint: realm_cookie.account.community_mint,
+            quadratic_coefficients: *coefficients,
             reserved: [0; 128],
         };
 
@@ -187,6 +188,7 @@ impl QuadraticVoterTest {
     pub async fn setup(
         &mut self,
         with_predecessor: bool,
+        coefficients: &QuadraticCoefficients,
     ) -> Result<(RealmCookie, RegistrarCookie, WalletCookie), BanksClientError> {
         let realm_cookie = self.governance.with_realm().await?;
 
@@ -198,7 +200,7 @@ impl QuadraticVoterTest {
         };
 
         let registrar_cookie = self
-            .with_registrar(&realm_cookie, predecessor_program_id)
+            .with_registrar(&realm_cookie, coefficients, predecessor_program_id)
             .await?;
 
         let voter_cookie = self.bench.with_wallet().await;
@@ -433,6 +435,7 @@ impl QuadraticVoterTest {
     ) -> Result<(), BanksClientError> {
         let data =
             anchor_lang::InstructionData::data(&gpl_quadratic::instruction::ConfigureRegistrar {
+                coefficients: QuadraticCoefficients::default(),
                 use_previous_voter_weight_plugin,
             });
 

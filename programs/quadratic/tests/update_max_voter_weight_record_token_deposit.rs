@@ -1,6 +1,7 @@
 use crate::program_test::quadratic_voter_test::QuadraticVoterTest;
 use crate::Either::Right;
 use gpl_quadratic::error::QuadraticError;
+use gpl_quadratic::state::QuadraticCoefficients;
 use itertools::Either;
 use program_test::tools::*;
 use solana_program_test::*;
@@ -17,8 +18,9 @@ async fn test_update_max_voter_weight_record_with_mint_as_predecessor() -> Resul
     // Arrange
     let mut quadratic_max_voter_test = QuadraticVoterTest::start_new().await;
 
-    let (realm_cookie, registrar_cookie, voter_cookie) =
-        quadratic_max_voter_test.setup(false).await?;
+    let (realm_cookie, registrar_cookie, voter_cookie) = quadratic_max_voter_test
+        .setup(false, &QuadraticCoefficients::default())
+        .await?;
 
     let mut max_voter_weight_record_cookie = quadratic_max_voter_test
         .with_max_voter_weight_record(&registrar_cookie, &voter_cookie)

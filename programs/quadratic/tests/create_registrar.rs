@@ -5,6 +5,7 @@ use anchor_lang::prelude::Pubkey;
 
 use gpl_quadratic::error::QuadraticError;
 use gpl_quadratic::quadratic;
+use gpl_quadratic::state::QuadraticCoefficients;
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, transport::TransportError};
@@ -24,7 +25,7 @@ async fn test_create_registrar() -> Result<(), TransportError> {
 
     // Act
     let registrar_cookie = quadratic_voter_test
-        .with_registrar(&realm_cookie, None)
+        .with_registrar(&realm_cookie, &QuadraticCoefficients::default(), None)
         .await?;
 
     // Assert
@@ -47,7 +48,11 @@ async fn test_configure_registrar_new_previous_plugin() -> Result<(), TransportE
     // Act
     let predecessor_program_id = PredecessorPluginTest::program_id();
     let registrar_cookie = quadratic_voter_test
-        .with_registrar(&realm_cookie, Some(predecessor_program_id))
+        .with_registrar(
+            &realm_cookie,
+            &QuadraticCoefficients::default(),
+            Some(predecessor_program_id),
+        )
         .await?;
 
     // Assert
@@ -73,6 +78,7 @@ async fn test_configure_registrar_missing_previous_plugin_error() -> Result<(), 
             &realm_cookie,
             None,
             true, // This causes the error
+            &QuadraticCoefficients::default(),
             &gpl_quadratic::id(),
             NopOverride,
             None,
@@ -97,7 +103,7 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
 
     // Act
     let err = quadratic_voter_test
-        .with_registrar(&realm_cookie, None)
+        .with_registrar(&realm_cookie, &QuadraticCoefficients::default(), None)
         .await
         .err()
         .unwrap();
@@ -122,6 +128,7 @@ async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<
             &realm_cookie,
             None,
             false,
+            &QuadraticCoefficients::default(),
             &gpl_quadratic::id(),
             |i| i.accounts[4].is_signer = false, // realm_authority
             Some(&[]),
@@ -153,6 +160,7 @@ async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result
             &realm_cookie,
             None,
             false,
+            &QuadraticCoefficients::default(),
             &gpl_quadratic::id(),
             |i| i.accounts[1].pubkey = governance_program_id, //governance_program_id
             None,
@@ -180,6 +188,7 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), Transpor
             &realm_cookie,
             None,
             false,
+            &QuadraticCoefficients::default(),
             &gpl_quadratic::id(),
             |i| i.accounts[2].pubkey = Pubkey::new_unique(), // realm
             None,
@@ -211,6 +220,7 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
             &realm_cookie,
             None,
             false,
+            &QuadraticCoefficients::default(),
             &gpl_quadratic::id(),
             |i| i.accounts[3].pubkey = mint_cookie.address, // governing_token_mint
             None,

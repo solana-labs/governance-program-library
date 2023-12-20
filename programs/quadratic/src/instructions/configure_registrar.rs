@@ -1,4 +1,5 @@
 use crate::error::QuadraticError;
+use crate::state::quadratic_coefficients::QuadraticCoefficients;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use spl_governance::state::realm;
@@ -6,7 +7,7 @@ use spl_governance::state::realm;
 /// Configures the quadratic Registrar,
 /// allowing the gatekeeper network or previous plugin to be updated
 #[derive(Accounts)]
-#[instruction(use_previous_voter_weight_plugin:bool)]
+#[instruction(coefficients: QuadraticCoefficients, use_previous_voter_weight_plugin:bool)]
 pub struct ConfigureRegistrar<'info> {
     /// The quadratic Plugin Registrar to be updated
     #[account(mut)]
@@ -31,9 +32,12 @@ pub struct ConfigureRegistrar<'info> {
 /// Configures a Registrar, setting a new previous voter weight plugin
 pub fn configure_registrar(
     ctx: Context<ConfigureRegistrar>,
+    coefficients: QuadraticCoefficients,
     use_previous_voter_weight_plugin: bool,
 ) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
+
+    registrar.quadratic_coefficients = coefficients;
 
     let remaining_accounts = &ctx.remaining_accounts;
 

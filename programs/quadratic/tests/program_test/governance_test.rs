@@ -3,6 +3,9 @@ use std::{str::FromStr, sync::Arc};
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::{signature::Keypair, signer::Signer};
+use spl_governance::state::realm::GoverningTokenConfigAccountArgs;
+use spl_governance::state::realm_config::GoverningTokenType;
+use spl_governance::state::token_owner_record::TOKEN_OWNER_RECORD_LAYOUT_VERSION;
 use spl_governance::{
     instruction::{
         create_governance, create_proposal, create_realm, create_token_owner_record,
@@ -19,9 +22,6 @@ use spl_governance::{
         token_owner_record::{get_token_owner_record_address, TokenOwnerRecordV2},
     },
 };
-use spl_governance::state::realm::GoverningTokenConfigAccountArgs;
-use spl_governance::state::realm_config::GoverningTokenType;
-use spl_governance::state::token_owner_record::TOKEN_OWNER_RECORD_LAYOUT_VERSION;
 
 use crate::program_test::{
     program_test_bench::{MintCookie, ProgramTestBench, WalletCookie},

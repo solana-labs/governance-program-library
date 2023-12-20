@@ -1,4 +1,5 @@
 use crate::error::QuadraticError;
+use crate::state::quadratic_coefficients::QuadraticCoefficients;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use gpl_shared::compose::{resolve_input_voter_weight, VoterWeightRecordBase};
@@ -41,6 +42,15 @@ pub struct UpdateVoterWeightRecord<'info> {
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 }
 
+fn convert_vote(input_voter_weight: u64, coefficients: &QuadraticCoefficients) -> f64 {
+    let input_voter_weight = input_voter_weight as f64;
+    let a = coefficients.a;
+    let b = coefficients.b;
+    let c = coefficients.c;
+
+    a * input_voter_weight.powf(0.5) + b * input_voter_weight + c
+}
+
 /// Adapts the weight of from the predecessor
 pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
@@ -54,11 +64,15 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
         &ctx.accounts.registrar,
     )?;
 
-    let output_voter_weight = (input_voter_weight_record.get_voter_weight() as f64).sqrt() as u64;
+    let coefficients = &ctx.accounts.registrar.quadratic_coefficients;
+
+    let output_voter_weight =
+        convert_vote(input_voter_weight_record.get_voter_weight(), coefficients) as u64;
     msg!(
-        "input weight: {}. output weight {}.",
+        "input weight: {}. output weight {}. coefficients: {:?}",
         input_voter_weight_record.get_voter_weight(),
-        output_voter_weight
+        output_voter_weight,
+        coefficients
     );
     voter_weight_record.voter_weight = output_voter_weight;
 

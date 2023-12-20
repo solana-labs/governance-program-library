@@ -1,4 +1,5 @@
 use crate::id;
+use crate::state::quadratic_coefficients::QuadraticCoefficients;
 use anchor_lang::prelude::*;
 use gpl_shared::{
     anchor::{DISCRIMINATOR_SIZE, PUBKEY_SIZE},
@@ -25,13 +26,20 @@ pub struct Registrar {
     /// If set, then update_voter_weight_record will expect a voter_weight_record owned by this program
     pub previous_voter_weight_plugin_program_id: Option<Pubkey>,
 
+    /// A set of coefficients to be used when calculating the voter weight
+    pub quadratic_coefficients: QuadraticCoefficients,
+
     /// Reserved for future upgrades
     pub reserved: [u8; 128],
 }
 
 impl Registrar {
     pub fn get_space() -> usize {
-        DISCRIMINATOR_SIZE + PUBKEY_SIZE * 3 + (PUBKEY_SIZE + 1) + 128
+        DISCRIMINATOR_SIZE
+            + PUBKEY_SIZE * 3
+            + (PUBKEY_SIZE + 1)
+            + QuadraticCoefficients::SPACE
+            + 128
     }
 }
 
@@ -63,6 +71,7 @@ mod test {
             previous_voter_weight_plugin_program_id: Pubkey::default().into(),
             realm: Pubkey::default(),
             governing_token_mint: Pubkey::default(),
+            quadratic_coefficients: QuadraticCoefficients::default(),
             reserved: [0; 128],
         };
 

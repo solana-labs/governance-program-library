@@ -6,3 +6,6 @@ pub mod voter_weight_record;
 
 pub use max_voter_weight_record::*;
 pub mod max_voter_weight_record;
+
+pub use quadratic_coefficients::*;
+pub mod quadratic_coefficients;

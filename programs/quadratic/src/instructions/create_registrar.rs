@@ -1,4 +1,5 @@
 use crate::error::QuadraticError;
+use crate::state::quadratic_coefficients::QuadraticCoefficients;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
@@ -54,6 +55,7 @@ pub struct CreateRegistrar<'info> {
 /// Creates a new Registrar that contains the properties of the plugin
 pub fn create_registrar(
     ctx: Context<CreateRegistrar>,
+    coefficients: QuadraticCoefficients,
     use_previous_voter_weight_plugin: bool,
 ) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
@@ -74,6 +76,8 @@ pub fn create_registrar(
         })
         .transpose()?
         .copied();
+
+    registrar.quadratic_coefficients = coefficients;
 
     // Verify that realm_authority is the expected authority of the Realm
     // and that the mint matches one of the realm mints.
