@@ -8,7 +8,8 @@ use anchor_lang::prelude::ERROR_CODE_OFFSET;
 use gpl_quadratic::error::QuadraticError;
 use itertools::Either;
 use solana_program::{instruction::InstructionError, pubkey::Pubkey};
-use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
+use solana_program_test::BanksClientError;
+use solana_sdk::{signature::Keypair, transaction::TransactionError};
 use spl_governance_tools::error::GovernanceToolsError;
 
 pub fn clone_keypair(source: &Keypair) -> Keypair {
@@ -20,7 +21,7 @@ pub fn clone_keypair(source: &Keypair) -> Keypair {
 pub fn NopOverride<T>(_: &mut T) {}
 
 #[allow(dead_code)]
-pub fn assert_quadratic_err(banks_client_error: TransportError, quadratic_error: QuadraticError) {
+pub fn assert_quadratic_err(banks_client_error: BanksClientError, quadratic_error: QuadraticError) {
     let tx_error = banks_client_error.unwrap();
 
     match tx_error {
@@ -36,7 +37,7 @@ pub fn assert_quadratic_err(banks_client_error: TransportError, quadratic_error:
 
 #[allow(dead_code)]
 pub fn assert_gov_tools_err(
-    banks_client_error: TransportError,
+    banks_client_error: BanksClientError,
     gov_tools_error: GovernanceToolsError,
 ) {
     let tx_error = banks_client_error.unwrap();
@@ -54,7 +55,7 @@ pub fn assert_gov_tools_err(
 
 #[allow(dead_code)]
 pub fn assert_anchor_err(
-    banks_client_error: TransportError,
+    banks_client_error: BanksClientError,
     anchor_error: anchor_lang::error::ErrorCode,
 ) {
     let tx_error = banks_client_error.unwrap();
@@ -71,7 +72,7 @@ pub fn assert_anchor_err(
 }
 
 #[allow(dead_code)]
-pub fn assert_ix_err(banks_client_error: TransportError, ix_error: InstructionError) {
+pub fn assert_ix_err(banks_client_error: BanksClientError, ix_error: InstructionError) {
     let tx_error = banks_client_error.unwrap();
 
     match tx_error {

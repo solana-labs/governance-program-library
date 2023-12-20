@@ -1,5 +1,6 @@
 mod program_test;
 
+use anchor_lang::error::ErrorCode;
 use anchor_lang::prelude::Pubkey;
 
 use gpl_quadratic::error::QuadraticError;
@@ -187,8 +188,8 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), Transpor
         .err()
         .unwrap();
 
-    // PDA doesn't match and hence the error is PrivilegeEscalation
-    assert_ix_err(err, InstructionError::PrivilegeEscalation);
+    // PDA doesn't match and hence the error is ConstraintSeeds
+    assert_anchor_err(err, ErrorCode::ConstraintSeeds);
 
     Ok(())
 }
@@ -218,8 +219,8 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
         .err()
         .unwrap();
 
-    // PDA doesn't match and hence the error is PrivilegeEscalation
-    assert_ix_err(err, InstructionError::PrivilegeEscalation);
+    // PDA doesn't match and hence the error is ConstraintSeeds
+    assert_anchor_err(err, ErrorCode::ConstraintSeeds);
 
     Ok(())
 }

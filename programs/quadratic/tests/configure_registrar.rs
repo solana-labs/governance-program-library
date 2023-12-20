@@ -5,7 +5,7 @@ use anchor_lang::prelude::Pubkey;
 use gpl_quadratic::error::QuadraticError;
 use solana_program::instruction::{Instruction, InstructionError};
 use solana_program_test::*;
-use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
+use solana_sdk::{signature::Keypair, signer::Signer};
 
 use crate::program_test::quadratic_voter_test::QuadraticVoterTest;
 use crate::program_test::tools::NopOverride;
@@ -16,7 +16,7 @@ use crate::{
 };
 
 #[tokio::test]
-async fn test_configure_registrar_new_previous_plugin() -> Result<(), TransportError> {
+async fn test_configure_registrar_new_previous_plugin() -> Result<(), BanksClientError> {
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
@@ -46,7 +46,7 @@ async fn test_configure_registrar_new_previous_plugin() -> Result<(), TransportE
 }
 
 #[tokio::test]
-async fn test_configure_registrar_missing_previous_plugin_error() -> Result<(), TransportError> {
+async fn test_configure_registrar_missing_previous_plugin_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
@@ -73,7 +73,7 @@ async fn test_configure_registrar_missing_previous_plugin_error() -> Result<(), 
 }
 
 #[tokio::test]
-async fn test_configure_registrar_with_invalid_realm_authority_error() -> Result<(), TransportError>
+async fn test_configure_registrar_with_invalid_realm_authority_error() -> Result<(), BanksClientError>
 {
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
@@ -108,7 +108,7 @@ async fn test_configure_registrar_with_invalid_realm_authority_error() -> Result
 
 #[tokio::test]
 async fn test_configure_registrar_with_realm_authority_must_sign_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
@@ -136,7 +136,7 @@ async fn test_configure_registrar_with_realm_authority_must_sign_error(
 
 #[tokio::test]
 async fn test_configure_registrar_with_invalid_spl_gov_program_id_error(
-) -> Result<(), TransportError> {
+) -> Result<(), BanksClientError> {
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 
@@ -166,7 +166,7 @@ async fn test_configure_registrar_with_invalid_spl_gov_program_id_error(
 }
 
 #[tokio::test]
-async fn test_configure_registrar_with_invalid_realm_error() -> Result<(), TransportError> {
+async fn test_configure_registrar_with_invalid_realm_error() -> Result<(), BanksClientError> {
     // Arrange
     let mut quadratic_voter_test = QuadraticVoterTest::start_new().await;
 

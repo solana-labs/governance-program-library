@@ -4,17 +4,19 @@ use std::sync::Arc;
 use anchor_lang::prelude::Pubkey;
 use itertools::Either;
 use solana_program::instruction::AccountMeta;
+use solana_program::log::sol_log;
+use solana_program::msg;
 
 use gpl_quadratic::state::{get_registrar_address, Registrar, *};
 use solana_sdk::{
-    instruction::Instruction, signature::Keypair, signer::Signer, transport::TransportError,
+    instruction::Instruction, signature::Keypair, signer::Signer
 };
 use spl_governance::{
     instruction::cast_vote,
     state::vote_record::{Vote, VoteChoice},
 };
 
-use solana_program_test::ProgramTest;
+use solana_program_test::{BanksClientError, processor, ProgramTest};
 
 use crate::program_test::program_test_bench::MintCookie;
 use crate::program_test::tools::extract_max_voting_weight_address;
@@ -66,6 +68,11 @@ impl QuadraticVoterTest {
     #[allow(dead_code)]
     pub fn add_programs(program_test: &mut ProgramTest) {
         program_test.add_program("gpl_quadratic", gpl_quadratic::id(), None);
+        program_test.add_program(
+            "gpl_quadratic",
+            gpl_quadratic::id(),
+            processor!(gpl_quadratic::entry),
+        );
     }
 
     #[allow(dead_code)]
@@ -99,7 +106,7 @@ impl QuadraticVoterTest {
         &mut self,
         realm_cookie: &RealmCookie,
         previous_plugin_program_id: Option<Pubkey>,
-    ) -> Result<RegistrarCookie, TransportError> {
+    ) -> Result<RegistrarCookie, BanksClientError> {
         self.with_registrar_using_ix(
             realm_cookie,
             previous_plugin_program_id,
@@ -120,7 +127,7 @@ impl QuadraticVoterTest {
         program_id: &Pubkey,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<RegistrarCookie, TransportError> {
+    ) -> Result<RegistrarCookie, BanksClientError> {
         let registrar_key =
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
@@ -180,7 +187,7 @@ impl QuadraticVoterTest {
     pub async fn setup(
         &mut self,
         with_predecessor: bool,
-    ) -> Result<(RealmCookie, RegistrarCookie, WalletCookie), TransportError> {
+    ) -> Result<(RealmCookie, RegistrarCookie, WalletCookie), BanksClientError> {
         let realm_cookie = self.governance.with_realm().await?;
 
         // register the quadratic plugin registrar with a predecessor (the dummy voter weight plugin) if requested
@@ -204,7 +211,7 @@ impl QuadraticVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         self.with_voter_weight_record_using_ix(registrar_cookie, voter_cookie, NopOverride)
             .await
     }
@@ -215,7 +222,7 @@ impl QuadraticVoterTest {
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
         instruction_override: F,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         let governing_token_owner = voter_cookie.address;
 
         let (voter_weight_record_key, _) = Pubkey::find_program_address(
@@ -275,7 +282,7 @@ impl QuadraticVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
-    ) -> Result<MaxVoterWeightRecordCookie, TransportError> {
+    ) -> Result<MaxVoterWeightRecordCookie, BanksClientError> {
         self.with_max_voter_weight_record_using_ix(registrar_cookie, voter_cookie, NopOverride)
             .await
     }
@@ -286,7 +293,7 @@ impl QuadraticVoterTest {
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
         instruction_override: F,
-    ) -> Result<MaxVoterWeightRecordCookie, TransportError> {
+    ) -> Result<MaxVoterWeightRecordCookie, BanksClientError> {
         let governing_token_owner = voter_cookie.address;
 
         let (max_voter_weight_record_key, _) = Pubkey::find_program_address(
@@ -344,7 +351,7 @@ impl QuadraticVoterTest {
         registrar_cookie: &RegistrarCookie,
         input_voter_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
         output_voter_weight_record_cookie: &mut VoterWeightRecordCookie,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_quadratic::instruction::UpdateVoterWeightRecord {},
         );
@@ -372,7 +379,7 @@ impl QuadraticVoterTest {
         registrar_cookie: &RegistrarCookie,
         input_max_voter_weight_cookie: &mut Either<&MaxVoterWeightRecordCookie, &MintCookie>,
         output_max_voter_weight_record_cookie: &mut MaxVoterWeightRecordCookie,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_quadratic::instruction::UpdateMaxVoterWeightRecord {},
         );
@@ -402,7 +409,7 @@ impl QuadraticVoterTest {
         realm_cookie: &RealmCookie,
         registrar_cookie: &RegistrarCookie,
         predecessor_program_id: Option<Pubkey>,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         self.configure_registrar_using_ix(
             realm_cookie,
             registrar_cookie,
@@ -423,7 +430,7 @@ impl QuadraticVoterTest {
         use_previous_voter_weight_plugin: bool,
         instruction_override: F,
         signers_override: Option<Option<&[&Keypair]>>,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let data =
             anchor_lang::InstructionData::data(&gpl_quadratic::instruction::ConfigureRegistrar {
                 use_previous_voter_weight_plugin,
@@ -469,7 +476,7 @@ impl QuadraticVoterTest {
         voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
         input_voter_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
         args: Option<CastVoteArgs>,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let args = args.unwrap_or_default();
 
         let data = anchor_lang::InstructionData::data(

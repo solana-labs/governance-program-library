@@ -13,7 +13,7 @@ use crate::program_test::{
     quadratic_voter_test::VoterWeightRecordCookie,
 };
 use gpl_quadratic::state::VoterWeightRecord;
-use solana_program_test::ProgramTest;
+use solana_program_test::{BanksClientError, ProgramTest};
 
 pub struct PredecessorPluginTest {
     pub bench: Arc<ProgramTestBench>,
@@ -40,7 +40,7 @@ impl PredecessorPluginTest {
         realm_cookie: &RealmCookie,
         voter_cookie: &WalletCookie,
         voter_weight: u64,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         let governing_token_owner = voter_cookie.address;
         let voter_weight_record_account = Keypair::new();
 
