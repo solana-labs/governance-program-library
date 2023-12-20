@@ -65,10 +65,13 @@ pub fn configure_collection(
         NftVoterError::InvalidRealmAuthority
     );
 
+    // spl-gov doesn't track voting_proposal_count any longer and we can't enforce the check here
+    // It's not ideal but acceptable. The proper solution would require proposal queuing in spl-gov
+    //
     // Changes to the collections config can accidentally tip the scales for outstanding proposals and hence we disallow it
-    if realm.voting_proposal_count > 0 {
-        return err!(NftVoterError::CannotConfigureCollectionWithVotingProposals);
-    }
+    // if realm.voting_proposal_count > 0 {
+    //     return err!(NftVoterError::CannotConfigureCollectionWithVotingProposals);
+    // }
 
     let collection = &ctx.accounts.collection;
 

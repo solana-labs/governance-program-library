@@ -6,17 +6,20 @@ use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 use spl_governance::{
     instruction::{
         create_governance, create_proposal, create_realm, create_token_owner_record,
-        deposit_governing_tokens, relinquish_vote, sign_off_proposal,
+        deposit_governing_tokens, relinquish_vote, set_governance_delegate, sign_off_proposal,
     },
     state::{
         enums::{
-            GovernanceAccountType, MintMaxVoteWeightSource, ProposalState, VoteThresholdPercentage,
+            GovernanceAccountType, MintMaxVoterWeightSource, ProposalState, VoteThreshold,
             VoteTipping,
         },
         governance::get_governance_address,
         proposal::{get_proposal_address, ProposalV2},
-        realm::{get_realm_address, RealmConfig, RealmV2},
-        token_owner_record::{get_token_owner_record_address, TokenOwnerRecordV2},
+        realm::{get_realm_address, GoverningTokenConfigAccountArgs, RealmConfig, RealmV2},
+        realm_config::GoverningTokenType,
+        token_owner_record::{
+            get_token_owner_record_address, TokenOwnerRecordV2, TOKEN_OWNER_RECORD_LAYOUT_VERSION,
+        },
     },
 };
 
@@ -93,9 +96,15 @@ impl GovernanceTest {
         let realm_name = format!("Realm #{}", self.next_id).to_string();
 
         let min_community_weight_to_create_governance = 1;
-        let community_mint_max_vote_weight_source = MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION;
+        let community_mint_max_voter_weight_source = MintMaxVoterWeightSource::FULL_SUPPLY_FRACTION;
 
         let realm_key = get_realm_address(&self.program_id, &realm_name);
+
+        let community_token_config_args = GoverningTokenConfigAccountArgs {
+            voter_weight_addin: self.community_voter_weight_addin,
+            max_voter_weight_addin: self.max_community_voter_weight_addin,
+            token_type: GoverningTokenType::default(),
+        };
 
         let create_realm_ix = create_realm(
             &self.program_id,
@@ -103,11 +112,11 @@ impl GovernanceTest {
             &community_mint_cookie.address,
             &self.bench.payer.pubkey(),
             Some(council_mint_cookie.address),
-            self.community_voter_weight_addin,
-            self.max_community_voter_weight_addin,
+            Some(community_token_config_args),
+            None,
             realm_name.clone(),
             min_community_weight_to_create_governance,
-            community_mint_max_vote_weight_source.clone(),
+            community_mint_max_voter_weight_source.clone(),
         );
 
         self.bench
@@ -125,12 +134,12 @@ impl GovernanceTest {
                 council_mint: Some(council_mint_cookie.address),
                 reserved: [0; 6],
                 min_community_weight_to_create_governance,
-                community_mint_max_vote_weight_source,
-                use_community_voter_weight_addin: false,
-                use_max_community_voter_weight_addin: false,
+                community_mint_max_voter_weight_source,
+                legacy1: 0,
+                legacy2: 0,
             },
-            voting_proposal_count: 0,
             reserved_v2: [0; 128],
+            legacy1: 0,
         };
 
         Ok(RealmCookie {
@@ -208,13 +217,19 @@ impl GovernanceTest {
             &realm_cookie.realm_authority.pubkey(),
             None,
             spl_governance::state::governance::GovernanceConfig {
-                vote_threshold_percentage: VoteThresholdPercentage::YesVote(60),
                 min_community_weight_to_create_proposal: 1,
                 min_transaction_hold_up_time: 0,
-                max_voting_time: 600,
-                vote_tipping: VoteTipping::Disabled,
-                proposal_cool_off_time: 0,
+
                 min_council_weight_to_create_proposal: 1,
+                community_vote_threshold: VoteThreshold::YesVotePercentage(60),
+                voting_base_time: 600,
+                community_vote_tipping: VoteTipping::Strict,
+                council_vote_threshold: VoteThreshold::YesVotePercentage(60),
+                council_veto_vote_threshold: VoteThreshold::Disabled,
+                council_vote_tipping: VoteTipping::Disabled,
+                community_veto_vote_threshold: VoteThreshold::Disabled,
+                voting_cool_off_time: 0,
+                deposit_exempt_proposal_count: 10,
             },
         );
 
@@ -225,14 +240,14 @@ impl GovernanceTest {
             )
             .await?;
 
-        let proposal_index: u32 = 0;
         let proposal_governing_token_mint = realm_cookie.account.community_mint;
+        let proposal_seed = Pubkey::new_unique();
 
         let proposal_key = get_proposal_address(
             &self.program_id,
             &governance_key,
             &proposal_governing_token_mint,
-            &proposal_index.to_le_bytes(),
+            &proposal_seed,
         );
 
         let create_proposal_ix = create_proposal(
@@ -249,7 +264,7 @@ impl GovernanceTest {
             spl_governance::state::proposal::VoteType::SingleChoice,
             vec!["Yes".to_string()],
             true,
-            0_u32,
+            &proposal_seed,
         );
 
         let sign_off_proposal_ix = sign_off_proposal(
@@ -276,7 +291,7 @@ impl GovernanceTest {
             vote_type: spl_governance::state::proposal::VoteType::SingleChoice,
             options: vec![],
             deny_vote_weight: Some(1),
-            veto_vote_weight: None,
+            veto_vote_weight: 0,
             abstain_vote_weight: None,
             start_voting_at: None,
             draft_at: 1,
@@ -289,10 +304,11 @@ impl GovernanceTest {
             execution_flags: spl_governance::state::enums::InstructionExecutionFlags::None,
             max_vote_weight: None,
             max_voting_time: None,
-            vote_threshold_percentage: None,
             reserved: [0; 64],
             name: String::from("Proposal #1"),
             description_link: String::from("Proposal #1 link"),
+            reserved1: 0,
+            vote_threshold: None,
         };
 
         Ok(ProposalCookie {
@@ -333,11 +349,11 @@ impl GovernanceTest {
             governing_token_owner: token_owner_cookie.address,
             governing_token_deposit_amount: 0,
             unrelinquished_votes_count: 0,
-            total_votes_count: 0,
             outstanding_proposal_count: 0,
-            reserved: [0; 7],
+            reserved: [0; 6],
             governance_delegate: None,
             reserved_v2: [0; 128],
+            version: TOKEN_OWNER_RECORD_LAYOUT_VERSION,
         };
 
         Ok(TokenOwnerRecordCookie {
@@ -355,6 +371,7 @@ impl GovernanceTest {
     ) -> Result<(), TransportError> {
         let relinquish_vote_ix = relinquish_vote(
             &self.program_id,
+            &token_owner_record_cookie.account.realm,
             &proposal_cookie.account.governance,
             &proposal_cookie.address,
             &token_owner_record_cookie.address,
@@ -368,6 +385,32 @@ impl GovernanceTest {
             .await?;
 
         Ok(())
+    }
+
+    #[allow(dead_code)]
+    pub async fn set_governance_delegate(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        token_owner_record_cookie: &TokenOwnerRecordCookie,
+        token_owner_authority_cookie: &WalletCookie,
+        new_governance_delegate: &Option<Pubkey>,
+    ) {
+        let set_governance_delegate_ix = set_governance_delegate(
+            &self.program_id,
+            &token_owner_authority_cookie.address,
+            &realm_cookie.address,
+            &token_owner_record_cookie.account.governing_token_mint,
+            &token_owner_record_cookie.account.governing_token_owner,
+            new_governance_delegate,
+        );
+
+        self.bench
+            .process_transaction(
+                &[set_governance_delegate_ix],
+                Some(&[&token_owner_authority_cookie.signer]),
+            )
+            .await
+            .unwrap();
     }
 
     #[allow(dead_code)]

@@ -1,5 +1,5 @@
-anchor_version = "0.24.2"
-solana_version = "1.10.24"
+anchor_version = "0.29.0"
+solana_version = "1.17.12"
 
 [features]
 seeds = false
@@ -8,7 +8,7 @@ seeds = false
 nft_voter = "GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw"
 gateway = "GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk"
 quadratic = "quadCSapU8nTdLg73KHDnmdxKnJQsh7GUbu5tZfnRRr"
-solana-gateway-program = "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
+solana-gateway = "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
 
 [registry]
 url = "https://anchor.projectserum.com"

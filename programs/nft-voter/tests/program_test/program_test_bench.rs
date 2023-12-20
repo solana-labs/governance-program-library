@@ -6,7 +6,7 @@ use anchor_lang::{
 };
 
 use solana_program::{borsh::try_from_slice_unchecked, system_program};
-use solana_program_test::{ProgramTest, ProgramTestContext};
+use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
     account::{Account, ReadableAccount},
     instruction::Instruction,
@@ -67,7 +67,7 @@ impl ProgramTestBench {
         &self,
         instructions: &[Instruction],
         signers: Option<&[&Keypair]>,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let mut context = self.context.borrow_mut();
 
         let mut transaction =
@@ -111,10 +111,14 @@ impl ProgramTestBench {
     pub async fn with_mint(&self) -> Result<MintCookie, TransportError> {
         let mint_keypair = Keypair::new();
         let mint_authority = Keypair::new();
-        let freeze_authority = Keypair::new();
+        let freeze_authority = clone_keypair(&mint_authority);
 
-        self.create_mint(&mint_keypair, &mint_authority.pubkey(), None)
-            .await?;
+        self.create_mint(
+            &mint_keypair,
+            &mint_authority.pubkey(),
+            Some(&freeze_authority.pubkey()),
+        )
+        .await?;
 
         Ok(MintCookie {
             address: mint_keypair.pubkey(),
@@ -129,7 +133,7 @@ impl ProgramTestBench {
         mint_keypair: &Keypair,
         mint_authority: &Pubkey,
         freeze_authority: Option<&Pubkey>,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let mint_rent = self.rent.minimum_balance(spl_token::state::Mint::LEN);
 
         let instructions = [
@@ -199,7 +203,7 @@ impl ProgramTestBench {
         token_mint_authority: &Keypair,
         token_account: &Pubkey,
         amount: u64,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let mint_instruction = spl_token::instruction::mint_to(
             &spl_token::id(),
             token_mint,
@@ -220,7 +224,7 @@ impl ProgramTestBench {
         token_account_keypair: &Keypair,
         token_mint: &Pubkey,
         owner: &Pubkey,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let rent = self
             .context
             .borrow_mut()

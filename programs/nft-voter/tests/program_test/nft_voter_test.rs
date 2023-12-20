@@ -6,7 +6,7 @@ use gpl_nft_voter::state::max_voter_weight_record::{
     get_max_voter_weight_record_address, MaxVoterWeightRecord,
 };
 use gpl_nft_voter::state::*;
-use solana_sdk::transport::TransportError;
+
 use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{self, Vote, VoteChoice};
 
@@ -14,7 +14,7 @@ use gpl_nft_voter::state::{
     get_nft_vote_record_address, get_registrar_address, CollectionConfig, NftVoteRecord, Registrar,
 };
 
-use solana_program_test::ProgramTest;
+use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
@@ -121,7 +121,7 @@ impl NftVoterTest {
     pub async fn with_registrar(
         &mut self,
         realm_cookie: &RealmCookie,
-    ) -> Result<RegistrarCookie, TransportError> {
+    ) -> Result<RegistrarCookie, BanksClientError> {
         self.with_registrar_using_ix(realm_cookie, NopOverride, None)
             .await
     }
@@ -132,7 +132,7 @@ impl NftVoterTest {
         realm_cookie: &RealmCookie,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<RegistrarCookie, TransportError> {
+    ) -> Result<RegistrarCookie, BanksClientError> {
         let registrar_key =
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
@@ -192,7 +192,7 @@ impl NftVoterTest {
         &self,
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         self.with_voter_weight_record_using_ix(registrar_cookie, voter_cookie, NopOverride)
             .await
     }
@@ -203,7 +203,7 @@ impl NftVoterTest {
         registrar_cookie: &RegistrarCookie,
         voter_cookie: &WalletCookie,
         instruction_override: F,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         let governing_token_owner = voter_cookie.address;
 
         let (voter_weight_record_key, _) = Pubkey::find_program_address(
@@ -264,7 +264,7 @@ impl NftVoterTest {
     pub async fn with_max_voter_weight_record(
         &mut self,
         registrar_cookie: &RegistrarCookie,
-    ) -> Result<MaxVoterWeightRecordCookie, TransportError> {
+    ) -> Result<MaxVoterWeightRecordCookie, BanksClientError> {
         self.with_max_voter_weight_record_using_ix(registrar_cookie, NopOverride)
             .await
     }
@@ -274,7 +274,7 @@ impl NftVoterTest {
         &mut self,
         registrar_cookie: &RegistrarCookie,
         instruction_override: F,
-    ) -> Result<MaxVoterWeightRecordCookie, TransportError> {
+    ) -> Result<MaxVoterWeightRecordCookie, BanksClientError> {
         let max_voter_weight_record_key = get_max_voter_weight_record_address(
             &registrar_cookie.account.realm,
             &registrar_cookie.account.governing_token_mint,
@@ -326,7 +326,7 @@ impl NftVoterTest {
         voter_weight_record_cookie: &mut VoterWeightRecordCookie,
         voter_weight_action: VoterWeightAction,
         nft_cookies: &[&NftCookie],
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
                 voter_weight_action,
@@ -363,7 +363,7 @@ impl NftVoterTest {
         voter_cookie: &WalletCookie,
         voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
         nft_vote_record_cookies: &Vec<NftVoteRecordCookie>,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let data =
             anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::RelinquishNftVote {});
 
@@ -378,9 +378,10 @@ impl NftVoterTest {
             voter_weight_record: voter_weight_record_cookie.address,
             governance: proposal_cookie.account.governance,
             proposal: proposal_cookie.address,
-            governing_token_owner: voter_cookie.address,
             vote_record: vote_record_key,
             beneficiary: self.bench.payer.pubkey(),
+            voter_token_owner_record: voter_token_owner_record_cookie.address,
+            voter_authority: voter_cookie.address,
         };
 
         let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
@@ -409,7 +410,7 @@ impl NftVoterTest {
         nft_collection_cookie: &NftCollectionCookie,
         max_voter_weight_record_cookie: &MaxVoterWeightRecordCookie,
         args: Option<ConfigureCollectionArgs>,
-    ) -> Result<CollectionConfigCookie, TransportError> {
+    ) -> Result<CollectionConfigCookie, BanksClientError> {
         self.with_collection_using_ix(
             registrar_cookie,
             nft_collection_cookie,
@@ -430,7 +431,7 @@ impl NftVoterTest {
         args: Option<ConfigureCollectionArgs>,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
-    ) -> Result<CollectionConfigCookie, TransportError> {
+    ) -> Result<CollectionConfigCookie, BanksClientError> {
         let args = args.unwrap_or_default();
 
         let data =
@@ -484,7 +485,7 @@ impl NftVoterTest {
         voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
         nft_cookies: &[&NftCookie],
         args: Option<CastNftVoteArgs>,
-    ) -> Result<Vec<NftVoteRecordCookie>, TransportError> {
+    ) -> Result<Vec<NftVoteRecordCookie>, BanksClientError> {
         let args = args.unwrap_or_default();
 
         let data = anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CastNftVote {
@@ -494,7 +495,8 @@ impl NftVoterTest {
         let accounts = gpl_nft_voter::accounts::CastNftVote {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            governing_token_owner: nft_voter_cookie.address,
+            voter_token_owner_record: voter_token_owner_record_cookie.address,
+            voter_authority: nft_voter_cookie.address,
             payer: self.bench.payer.pubkey(),
             system_program: solana_sdk::system_program::id(),
         };
@@ -572,7 +574,7 @@ impl NftVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn get_nf_vote_record_account(&mut self, nft_vote_record: &Pubkey) -> NftVoteRecord {
+    pub async fn get_nft_vote_record_account(&mut self, nft_vote_record: &Pubkey) -> NftVoteRecord {
         self.bench
             .get_borsh_account::<NftVoteRecord>(nft_vote_record)
             .await

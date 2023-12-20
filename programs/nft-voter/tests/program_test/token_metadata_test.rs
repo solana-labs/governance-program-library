@@ -1,7 +1,7 @@
 use std::{str::FromStr, sync::Arc};
 
 use anchor_lang::prelude::Pubkey;
-use mpl_token_metadata::state::Collection;
+use mpl_token_metadata::types::Collection;
 use solana_program_test::ProgramTest;
 use solana_sdk::{signer::Signer, transport::TransportError};
 
@@ -79,23 +79,24 @@ impl TokenMetadataTest {
         let coll_symbol = "NFT_C".to_string();
         let coll_uri = "URI".to_string();
 
-        let create_coll_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v2(
-            self.program_id,
-            coll_metadata_key,
-            coll_mint_cookie.address,
-            coll_mint_cookie.mint_authority.pubkey(),
-            payer.clone(),
-            update_authority.clone(),
-            coll_name,
-            coll_symbol,
-            coll_uri,
-            None,
-            10,
-            false,
-            false,
-            None,
-            None,
-        );
+        let create_coll_metadata_ix =
+            mpl_token_metadata::instructions::CreateMetadataAccountV3Builder::new()
+                .metadata(coll_metadata_key)
+                .is_mutable(true)
+                .mint(coll_mint_cookie.address)
+                .mint_authority(coll_mint_cookie.mint_authority.pubkey())
+                .payer(payer)
+                .update_authority(update_authority, true)
+                .data(mpl_token_metadata::types::DataV2 {
+                    name: coll_name.clone(),
+                    symbol: coll_symbol.clone(),
+                    uri: coll_uri.clone(),
+                    seller_fee_basis_points: 10,
+                    creators: None,
+                    collection: None,
+                    uses: None,
+                })
+                .instruction();
 
         self.bench
             .process_transaction(
@@ -113,16 +114,16 @@ impl TokenMetadataTest {
         let (master_edition_key, _) =
             Pubkey::find_program_address(master_edition_seeds, &self.program_id);
 
-        let create_master_edition_ix = mpl_token_metadata::instruction::create_master_edition_v3(
-            self.program_id,
-            master_edition_key,
-            coll_mint_cookie.address,
-            update_authority,
-            coll_mint_cookie.mint_authority.pubkey(),
-            coll_metadata_key,
-            payer,
-            Some(0),
-        );
+        let create_master_edition_ix =
+            mpl_token_metadata::instructions::CreateMasterEditionV3Builder::new()
+                .metadata(coll_metadata_key)
+                .edition(master_edition_key)
+                .mint(coll_mint_cookie.address)
+                .update_authority(update_authority)
+                .mint_authority(coll_mint_cookie.mint_authority.pubkey())
+                .payer(payer)
+                .max_supply(0)
+                .instruction();
 
         self.bench
             .process_transaction(
@@ -173,39 +174,39 @@ impl TokenMetadataTest {
             key: nft_collection_cookie.mint,
         };
 
-        let create_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v2(
-            self.program_id,
-            metadata_key,
-            mint_cookie.address,
-            mint_cookie.mint_authority.pubkey(),
-            self.bench.payer.pubkey(),
-            self.bench.payer.pubkey(),
-            name,
-            symbol,
-            uri,
-            None,
-            10,
-            false,
-            false,
-            Some(collection),
-            None,
-        );
+        let create_metadata_ix =
+            mpl_token_metadata::instructions::CreateMetadataAccountV3Builder::new()
+                .metadata(metadata_key)
+                .is_mutable(true)
+                .mint(mint_cookie.address)
+                .mint_authority(mint_cookie.mint_authority.pubkey())
+                .payer(self.bench.payer.pubkey())
+                .update_authority(self.bench.payer.pubkey(), false)
+                .data(mpl_token_metadata::types::DataV2 {
+                    name: name.clone(),
+                    symbol: symbol.clone(),
+                    uri: uri.clone(),
+                    seller_fee_basis_points: 10,
+                    creators: None,
+                    collection: Some(collection.clone()),
+                    uses: None,
+                })
+                .instruction();
 
         self.bench
             .process_transaction(&[create_metadata_ix], Some(&[&mint_cookie.mint_authority]))
             .await?;
 
         if verify_collection {
-            let verify_collection = mpl_token_metadata::instruction::verify_collection(
-                self.program_id,
-                metadata_key,
-                self.bench.payer.pubkey(),
-                self.bench.payer.pubkey(),
-                nft_collection_cookie.mint,
-                nft_collection_cookie.metadata,
-                nft_collection_cookie.master_edition,
-                None,
-            );
+            let verify_collection =
+                mpl_token_metadata::instructions::VerifyCollectionBuilder::new()
+                    .metadata(metadata_key)
+                    .collection_mint(nft_collection_cookie.mint)
+                    .collection(nft_collection_cookie.metadata)
+                    .collection_master_edition_account(nft_collection_cookie.master_edition)
+                    .payer(self.bench.payer.pubkey())
+                    .collection_authority(self.bench.payer.pubkey())
+                    .instruction();
 
             self.bench
                 .process_transaction(&[verify_collection], None)

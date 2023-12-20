@@ -40,11 +40,16 @@ pub struct RelinquishNftVote<'info> {
     #[account(owner = registrar.governance_program_id)]
     pub proposal: UncheckedAccount<'info>,
 
-    /// The token owner who cast the original vote
+    /// TokenOwnerRecord of the voter who cast the original vote
     #[account(
-        address = voter_weight_record.governing_token_owner  @ NftVoterError::InvalidTokenOwnerForVoterWeightRecord
-    )]
-    pub governing_token_owner: Signer<'info>,
+            owner = registrar.governance_program_id
+         )]
+    /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
+    voter_token_owner_record: UncheckedAccount<'info>,
+
+    /// Authority of the voter who cast the original vote
+    /// It can be either governing_token_owner or its delegate and must sign this instruction
+    pub voter_authority: Signer<'info>,
 
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     /// The account is used to validate that it doesn't exist and if it doesn't then Anchor owner check throws error
@@ -59,6 +64,14 @@ pub struct RelinquishNftVote<'info> {
 
 pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
+    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
+
+    let governing_token_owner = resolve_governing_token_owner(
+        registrar,
+        &ctx.accounts.voter_token_owner_record,
+        &ctx.accounts.voter_authority,
+        voter_weight_record,
+    )?;
 
     // Ensure the Governance belongs to Registrar.realm and is owned by Registrar.governance_program_id
     let _governance = governance::get_governance_data_for_realm(
@@ -87,7 +100,7 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
             &registrar.governance_program_id,
             &registrar.realm,
             &registrar.governing_token_mint,
-            &ctx.accounts.governing_token_owner.key(),
+            &governing_token_owner,
             &ctx.accounts.proposal.key(),
         );
 
@@ -102,8 +115,6 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
             NftVoterError::VoteRecordMustBeWithdrawn
         );
     }
-
-    let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     // Prevent relinquishing NftVoteRecords within the VoterWeightRecord expiration period
     // It's needed when multiple stacked voter-weight plugins are used
@@ -122,10 +133,10 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
         let _nft_vote_record = get_nft_vote_record_data_for_proposal_and_token_owner(
             nft_vote_record_info,
             &ctx.accounts.proposal.key(),
-            &ctx.accounts.governing_token_owner.key(),
+            &governing_token_owner,
         )?;
 
-        dispose_account(nft_vote_record_info, &ctx.accounts.beneficiary);
+        dispose_account(nft_vote_record_info, &ctx.accounts.beneficiary)?;
     }
 
     // Reset VoterWeightRecord and set expiry to expired to prevent it from being used

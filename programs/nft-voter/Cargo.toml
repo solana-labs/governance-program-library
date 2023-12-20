@@ -1,6 +1,6 @@
 [package]
 name = "gpl-nft-voter"
-version = "0.1.1"
+version = "0.2.2"
 description = "SPL Governance addin implementing NFT based governance"
 license = "Apache-2.0"
 edition = "2018"
@@ -18,16 +18,17 @@ default = []
 
 [dependencies]
 arrayref = "0.3.6"
-anchor-lang = { version = "0.24.2", features = ["init-if-needed"] }
-anchor-spl = "0.24.2"
-itertools = "0.10.2"
-mpl-token-metadata = { version = "1.1.0", features = ["no-entrypoint"] }
-solana-program = "1.9.13"
-spl-governance = { version = "2.2.2", features = ["no-entrypoint"] }
-spl-governance-tools=  "0.1.2"
-spl-token = { version = "3.3", features = [ "no-entrypoint" ] }
+anchor-lang = { version = "0.29.0", features = ["init-if-needed"] }
+anchor-spl = { version = "0.29.0", features = ["token"] }
+itertools = "0.12.0"
+mpl-token-metadata = "3.2.3"
+solana-program = "1.17.12"
+spl-governance = { git = "https://github.com/solana-labs/solana-program-library.git", features = ["no-entrypoint"] }
+spl-governance-tools=  { git = "https://github.com/solana-labs/solana-program-library.git" }
+spl-token = { version = "4.0.0", features = [ "no-entrypoint" ] }
 
 [dev-dependencies]
-borsh = "0.9.1"
-solana-sdk = "1.9.5"
-solana-program-test = "1.9.13"
+borsh = "0.10.3"
+solana-sdk = "1.17.12"
+solana-program-test = { git = "https://github.com/dankelleher/solana.git", branch = "program-test-hack" }
+#solana-program-test = "1.17.9"
