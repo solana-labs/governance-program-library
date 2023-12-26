@@ -8,7 +8,7 @@ use spl_governance::state::realm;
 /// Creates a Plugin Registrar for spl-gov Realm
 /// This instruction should only be executed once per realm/governing_token_mint to create the account
 #[derive(Accounts)]
-#[instruction(use_previous_voter_weight_plugin:bool)]
+#[instruction(coefficients: QuadraticCoefficients, use_previous_voter_weight_plugin:bool)]
 pub struct CreateRegistrar<'info> {
     /// The quadratic Registrar
     /// There can only be a single registrar per governance Realm and governing mint of the Realm
