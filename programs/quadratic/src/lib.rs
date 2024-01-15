@@ -6,6 +6,8 @@ mod instructions;
 use instructions::*;
 
 pub mod state;
+mod util;
+
 use state::*;
 
 declare_id!("quadCSapU8nTdLg73KHDnmdxKnJQsh7GUbu5tZfnRRr");

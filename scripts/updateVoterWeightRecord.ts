@@ -69,6 +69,9 @@ const loadClient = (plugin: typeof PLUGIN_NAMES[number], provider: Provider) => 
 
   const { voterWeightPk } = client.getVoterWeightRecordPDA(realmPk, communityMintPk, voterPk);
   console.log("Voter weight record", voterWeightPk.toBase58());
+
+  const { maxVoterWeightPk } = client.getMaxVoterWeightRecordPDA(realmPk, communityMintPk);
+  console.log("Max voter weight record", maxVoterWeightPk.toBase58());
 })().catch((err) => {
   console.error(err);
   process.exit(1);

@@ -105,31 +105,29 @@ fn get_generic_max_voter_weight_record_data<
     registrar: &'a Account<R>,
 ) -> Result<GenericMaxVoterWeightEnum> {
     match registrar.get_previous_voter_weight_plugin_program_id() {
-        None => {
-            parse_input_max_voter_weight_as_mint(input_account)
-        }
+        None => parse_input_max_voter_weight_as_mint(input_account),
         Some(predecessor) => {
             // If there is a predecessor plugin registrar, then the input account may be either a VoterWeightRecord or a Mint.
             // Try to parse it as a VoterWeightRecord first.
             // if that fails, try to parse it as a Mint.
 
-            let record: core::result::Result<spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord, ProgramError> =
-                get_account_data(predecessor, input_account);
+            let record: core::result::Result<
+                spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord,
+                ProgramError,
+            > = get_account_data(predecessor, input_account);
 
-            return match record {
-                Ok(record) => {
-                    Ok(GenericMaxVoterWeightEnum::MaxVoterWeightRecord(record))
-                }
-                Err(_) => {
-                    parse_input_max_voter_weight_as_mint(input_account)
-                }
+            match record {
+                Ok(record) => Ok(GenericMaxVoterWeightEnum::MaxVoterWeightRecord(record)),
+                Err(_) => parse_input_max_voter_weight_as_mint(input_account),
             }
         }
     }
 }
 
-fn parse_input_max_voter_weight_as_mint(input_account: &AccountInfo) -> Result<GenericMaxVoterWeightEnum> {
-// If there is no predecessor plugin registrar, then the input account must be a Mint
+fn parse_input_max_voter_weight_as_mint(
+    input_account: &AccountInfo,
+) -> Result<GenericMaxVoterWeightEnum> {
+    // If there is no predecessor plugin registrar, then the input account must be a Mint
     let src = input_account.try_borrow_data().unwrap();
     let data: &[u8] = *src;
     let mint = Mint::unpack_from_slice(data)

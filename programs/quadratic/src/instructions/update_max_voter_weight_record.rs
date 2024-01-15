@@ -1,5 +1,6 @@
 use crate::error::QuadraticError;
 use crate::state::*;
+use crate::util::convert_vote;
 use anchor_lang::prelude::*;
 use gpl_shared::compose::{resolve_input_max_voter_weight, MaxVoterWeightRecordBase};
 use gpl_shared::generic_max_voter_weight::GenericMaxVoterWeight;
@@ -50,9 +51,12 @@ pub fn update_max_voter_weight_record(ctx: Context<UpdateMaxVoterWeightRecord>) 
         &clone_record,
         &ctx.accounts.registrar,
     )?;
+    let coefficients = &ctx.accounts.registrar.quadratic_coefficients;
 
-    let output_max_voter_weight =
-        (input_max_voter_weight_record.get_max_voter_weight() as f64).sqrt() as u64;
+    let output_max_voter_weight = convert_vote(
+        input_max_voter_weight_record.get_max_voter_weight(),
+        coefficients,
+    ) as u64;
     msg!(
         "input weight: {}. output weight {}. coefficients: {:?}",
         input_max_voter_weight_record.get_max_voter_weight(),
