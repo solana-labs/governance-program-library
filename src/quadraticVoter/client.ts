@@ -8,6 +8,19 @@ export const QUADRATIC_PLUGIN_ID = new PublicKey(
   'quadCSapU8nTdLg73KHDnmdxKnJQsh7GUbu5tZfnRRr'
 );
 
+export type Coefficients = [ a: number, b: number, c: number ];
+
+const toAnchorType = (coefficients: Coefficients) => ({
+  a: coefficients[0],
+  b: coefficients[1],
+  c: coefficients[2],
+});
+
+
+// By default, the quadratic plugin will use a function ax-2 + bx - c
+// resulting in a vote weight that is the square root of the token balance
+export const DEFAULT_COEFFICIENTS: Coefficients = [ 1, 0, 0 ];
+
 export class QuadraticClient extends Client<Quadratic> {
   constructor(public program: Program<Quadratic>, public devnet?: boolean, readonly governanceProgramId = DEFAULT_GOVERNANCE_PROGRAM_ID) {
     super(program, devnet);
@@ -21,6 +34,29 @@ export class QuadraticClient extends Client<Quadratic> {
       new Program<Quadratic>(IDL, QUADRATIC_PLUGIN_ID, provider),
       devnet,
     );
+  }
+
+  async configureRegistrar(realm: PublicKey, mint: PublicKey, previousVoterWeightPluginProgramId?: PublicKey, coefficients = DEFAULT_COEFFICIENTS) {
+    const { registrar, registrarBump } = this.getRegistrarPDA(realm, mint);
+
+    const methodsBuilder = this.program.methods
+      .configureRegistrar(toAnchorType(coefficients), !!previousVoterWeightPluginProgramId)
+      .accounts({
+        registrar,
+        realm,
+        realmAuthority: this.program.provider.publicKey,
+      });
+
+    if (previousVoterWeightPluginProgramId) {
+      methodsBuilder.remainingAccounts([{
+        pubkey: previousVoterWeightPluginProgramId,
+        isSigner: false,
+        isWritable: false
+      }])
+    }
+
+    return methodsBuilder
+      .instruction();
   }
 
   async createVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction> {
@@ -37,7 +73,6 @@ export class QuadraticClient extends Client<Quadratic> {
   }
 
   async createMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey) {
-    const { registrar } = this.getRegistrarPDA(realm, mint);
     const { maxVoterWeightPk } = this.getMaxVoterWeightRecordPDA(realm, mint);
 
     return this.program.methods
