@@ -73,17 +73,7 @@ export class QuadraticClient extends Client<Quadratic> {
   }
 
   async createMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey) {
-    const { maxVoterWeightPk } = this.getMaxVoterWeightRecordPDA(realm, mint);
-
-    return this.program.methods
-      .createMaxVoterWeightRecord()
-      .accounts({
-        maxVoterWeightRecord: maxVoterWeightPk,
-        governanceProgramId: this.governanceProgramId,
-        realm,
-        realmGoverningTokenMint: mint,
-      })
-      .instruction();
+    return null;
   }
 
   async updateVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey) {
@@ -108,30 +98,6 @@ export class QuadraticClient extends Client<Quadratic> {
   }
 
   async updateMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey) {
-    const { registrar } = this.getRegistrarPDA(realm, mint);
-    const { maxVoterWeightPk } = this.getMaxVoterWeightRecordPDA(realm, mint);
-    const inputMaxVoterWeight = await this.getPredecessorMaxVoterWeightRecordPDA(realm, mint);
-
-    let inputMaxVoterWeightPk = inputMaxVoterWeight?.maxVoterWeightPk;
-
-    // Check if that predecessor max voter weight actually exists
-    const hasPredecessorMaxVoterWeightRecord = !!inputMaxVoterWeightPk && !!(await this.program.provider.connection.getAccountInfo(inputMaxVoterWeightPk));
-
-    if (!hasPredecessorMaxVoterWeightRecord || !inputMaxVoterWeightPk) {
-      // if there is no max voter weight from the predecessor (or no predecessor), then the mint is passed,
-      // as the total supply (stored on the mint account) is the maximum voter weight by default.
-      inputMaxVoterWeightPk = mint;
-    }
-
-    console.log("inputMaxVoterWeightPk", inputMaxVoterWeightPk.toBase58());
-
-    return this.program.methods
-      .updateMaxVoterWeightRecord()
-      .accounts({
-        registrar,
-        inputMaxVoterWeight: inputMaxVoterWeightPk,
-        maxVoterWeightRecord: maxVoterWeightPk,
-      })
-      .instruction();
+    return null;
   }
 }

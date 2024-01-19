@@ -1,5 +1,4 @@
 use crate::program_test::program_test_bench::MintCookie;
-use crate::program_test::quadratic_voter_test::MaxVoterWeightRecordCookie;
 use crate::{
     program_test::governance_test::TokenOwnerRecordCookie,
     program_test::quadratic_voter_test::VoterWeightRecordCookie,
@@ -85,15 +84,6 @@ pub fn assert_ix_err(banks_client_error: BanksClientError, ix_error: Instruction
 
 pub fn extract_voting_weight_address(
     account: &Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
-) -> Pubkey {
-    account
-        .map_left(|cookie| cookie.address)
-        .map_right(|cookie| cookie.address)
-        .into_inner()
-}
-
-pub fn extract_max_voting_weight_address(
-    account: &Either<&MaxVoterWeightRecordCookie, &MintCookie>,
 ) -> Pubkey {
     account
         .map_left(|cookie| cookie.address)

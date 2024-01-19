@@ -1,4 +1,7 @@
 [workspace]
 members = [
-    "programs/*"
+    "programs/gateway",
+    "programs/quadratic",
+    "programs/realm-voter",
+    "programs/nft-voter",
 ]
