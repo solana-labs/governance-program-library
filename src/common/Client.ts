@@ -1,5 +1,5 @@
 import { PublicKey, TransactionInstruction } from '@solana/web3.js';
-import { Idl, Program } from '@coral-xyz/anchor';
+import { BN, Idl, Program } from '@coral-xyz/anchor';
 import { IsPluginIdl, PluginProgramAccounts } from './types';
 import { IdlAccounts } from '@coral-xyz/anchor/dist/cjs/program/namespace/types';
 
@@ -12,6 +12,34 @@ export abstract class Client<T extends Idl, U extends IsPluginIdl<T> = IsPluginI
   abstract createMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction | null>;
   abstract updateVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction>;
   abstract updateMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction | null>;
+
+  /**
+   * Preview what this voter weight plugin does to a voter's vote weight.
+   * This can be used by clients to show the voter weight on the UI before a vote.
+   * This function should try its best not to throw an error. A return value of null (as opposed to zero)
+   * means "something is preventing this user from voting". This could be a missing registrar or some
+   * other invalid status.
+   *
+   * Since the function does not expect any voter weights to be registered on chain yet (or up-to-date)
+   * @param voter
+   * @param realm
+   * @param mint
+   * @param inputVoterWeight
+   */
+  abstract calculateVoterWeight(voter: PublicKey, realm: PublicKey, mint: PublicKey, inputVoterWeight: BN): Promise<BN | null>;
+
+  /**
+   * Preview what this voter weight plugin does to the max voter's vote weight.
+   * This is equivalent to calculateVoterWeight, but it has a default implementation,
+   * that just returns the inputMaxVoterWeight, because plugins that set the max voter weight
+   * are rarer.
+   * @param _realm
+   * @param _mint
+   * @param inputMaxVoterWeight
+   */
+  async calculateMaxVoterWeight(_realm: PublicKey, _mint: PublicKey, inputMaxVoterWeight: BN): Promise<BN | null> {
+    return inputMaxVoterWeight;
+  }
 
   async getRegistrarAccount(realm: PublicKey, mint: PublicKey) {
     const { registrar } = this.getRegistrarPDA(

@@ -1,8 +1,8 @@
-import { Program, Provider } from '@coral-xyz/anchor';
-import { PublicKey, TransactionInstruction } from '@solana/web3.js';
+import { BN, Program, Provider } from '@coral-xyz/anchor';
+import { PublicKey } from '@solana/web3.js';
 import { Gateway, IDL } from './gateway';
 import { Client, DEFAULT_GOVERNANCE_PROGRAM_ID } from '../common/Client';
-import { getGatewayTokenAddressForOwnerAndGatekeeperNetwork } from '@identity.com/solana-gateway-ts';
+import { getGatewayTokenAddressForOwnerAndGatekeeperNetwork, getGatewayToken } from '@identity.com/solana-gateway-ts';
 import { getTokenOwnerRecordAddress } from '@solana/spl-governance';
 
 export const GATEWAY_PLUGIN_ID = new PublicKey(
@@ -27,6 +27,23 @@ export class GatewayClient extends Client<Gateway> {
     );
   }
 
+  async calculateVoterWeight(voter: PublicKey, realm: PublicKey, mint: PublicKey, inputVoterWeight: BN): Promise<BN | null> {
+    try {
+      const gatewayTokenPDA = await this.getGatewayTokenPDA(voter, realm, mint);
+
+      const gatewayToken = await getGatewayToken(this.program.provider.connection, gatewayTokenPDA);
+
+      // fail out if the token is not valid
+      if (!gatewayToken || !gatewayToken.isValid()) return null;
+
+      // otherwise, the input voter weight is passed through
+      return inputVoterWeight;
+    } catch (e) {
+      console.log('Error fetching gateway token PDA', e);
+      return null; // fail out if we can't get the registrar or gateway token PDA
+    }
+  }
+
   async getGatewayTokenPDA(voter: PublicKey, realm: PublicKey, mint: PublicKey) {
     const registrar = await this.getRegistrarAccount(realm, mint);
     if (!registrar) {
@@ -40,11 +57,6 @@ export class GatewayClient extends Client<Gateway> {
   async createVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey) {
     const { registrar } = this.getRegistrarPDA(realm, mint);
     const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, voter);
-
-    console.log({
-      registrar: registrar.toBase58(),
-      voterWeightRecord: voterWeightPk.toBase58(),
-    });
 
     return this.program.methods
       .createVoterWeightRecord(voter)

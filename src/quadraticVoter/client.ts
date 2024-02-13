@@ -1,4 +1,4 @@
-import { Program, Provider } from '@coral-xyz/anchor';
+import { BN, Program, Provider } from '@coral-xyz/anchor';
 import { PublicKey, TransactionInstruction } from '@solana/web3.js';
 import { Quadratic, IDL } from './quadratic';
 import { Client, DEFAULT_GOVERNANCE_PROGRAM_ID } from '../common/Client';
@@ -57,6 +57,38 @@ export class QuadraticClient extends Client<Quadratic> {
 
     return methodsBuilder
       .instruction();
+  }
+
+  async calculateVoterWeight(voter: PublicKey, realm: PublicKey, mint: PublicKey, inputVoterWeight: BN): Promise<BN | null> {
+    const registrar = await this.getRegistrarAccount(realm, mint);
+
+    // No registrar yet, QV weight cannot be calculated
+    if (!registrar) return null;
+
+    const coefficients = registrar.quadraticCoefficients;
+
+    // otherwise, the input voter weight is passed through
+    return QuadraticClient.applyCoefficients(
+      inputVoterWeight,
+      QuadraticClient.convertCoefficientsFromAnchorType(coefficients)
+    );
+  }
+
+  public static convertCoefficientsFromAnchorType(coefficients: { a: number, b: number, c: number }): Coefficients {
+    return [ coefficients.a, coefficients.b, coefficients.c ];
+  }
+
+  public static applyCoefficients(inputVoterWeight: BN, coefficients: Coefficients): BN {
+    const [ a, b, c ] = coefficients
+
+    const number = inputVoterWeight.toNumber();
+    const rootX = Math.sqrt(inputVoterWeight.toNumber());
+
+    return new BN(
+      Math.floor(
+        a * rootX + b * number + c
+      )
+    )
   }
 
   async createVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction> {
