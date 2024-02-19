@@ -22,6 +22,7 @@ const toAnchorType = (coefficients: Coefficients) => ({
 export const DEFAULT_COEFFICIENTS: Coefficients = [ 1, 0, 0 ];
 
 export class QuadraticClient extends Client<Quadratic> {
+  readonly requiresInputVoterWeight = true;
   constructor(public program: Program<Quadratic>, public devnet?: boolean, readonly governanceProgramId = DEFAULT_GOVERNANCE_PROGRAM_ID) {
     super(program, devnet);
   }
@@ -119,7 +120,7 @@ export class QuadraticClient extends Client<Quadratic> {
       inputVoterWeightPk = await getTokenOwnerRecordAddress(this.governanceProgramId, realm, mint, voter);
     }
 
-    return this.program.methods
+    const ix = await this.program.methods
       .updateVoterWeightRecord()
       .accounts({
         registrar,
@@ -127,6 +128,8 @@ export class QuadraticClient extends Client<Quadratic> {
         voterWeightRecord: voterWeightPk,
       })
       .instruction();
+
+    return { pre: [ix] }
   }
 
   async updateMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey) {

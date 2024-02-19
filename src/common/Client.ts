@@ -1,17 +1,19 @@
 import { PublicKey, TransactionInstruction } from '@solana/web3.js';
 import { BN, Idl, Program } from '@coral-xyz/anchor';
-import { IsPluginIdl, PluginProgramAccounts } from './types';
+import { PluginProgramAccounts } from './types';
 import { IdlAccounts } from '@coral-xyz/anchor/dist/cjs/program/namespace/types';
+import { VoterWeightAction } from '@solana/spl-governance';
 
 export const DEFAULT_GOVERNANCE_PROGRAM_ID = new PublicKey("GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw");
 
-export abstract class Client<T extends Idl, U extends IsPluginIdl<T> = IsPluginIdl<T>> {
-  protected constructor(public program: Program<U>, public devnet?: boolean) {}
+export abstract class Client<T extends Idl> {
+  abstract readonly requiresInputVoterWeight: boolean;
+  protected constructor(public program: Program<T>, public devnet?: boolean) {}
 
-  abstract createVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction>;
+  abstract createVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction | null>;
   abstract createMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction | null>;
-  abstract updateVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction>;
-  abstract updateMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction | null>;
+  abstract updateVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey, action?: VoterWeightAction): Promise<{ pre: TransactionInstruction[], post?: TransactionInstruction[] }>;
+  abstract updateMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey, action?: VoterWeightAction): Promise<TransactionInstruction | null>;
 
   /**
    * Preview what this voter weight plugin does to a voter's vote weight.
@@ -46,31 +48,37 @@ export abstract class Client<T extends Idl, U extends IsPluginIdl<T> = IsPluginI
       realm,
       mint,
     );
-    const registrarObject = await (this.program.account as PluginProgramAccounts<U>).registrar.fetchNullable(
+    const registrarObject = await (this.program.account as PluginProgramAccounts<T>).registrar.fetchNullable(
       registrar
     )
     // previousVoterWeightPluginProgramId should be added to the object automatically by the type inference from IsPluginIdl
     // but Typescript does not seem to be that clever yet
-    return registrarObject as IdlAccounts<U>['registrar'] & { previousVoterWeightPluginProgramId: PublicKey } | null;
+    return registrarObject as IdlAccounts<T>['registrar'] & { previousVoterWeightPluginProgramId: PublicKey } | null;
   }
 
-  async getVoterWeightRecord (realm: PublicKey, mint: PublicKey, walletPk: PublicKey) {
+  /**
+   * If this plugin uses a persistent voter weight record, get it
+   * @param realm
+   * @param mint
+   * @param walletPk
+   */
+  async getVoterWeightRecord (realm: PublicKey, mint: PublicKey, walletPk: PublicKey): Promise<IdlAccounts<T>['voterWeightRecord'] | null>  {
     const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, walletPk);
-    const voterWeightRecord = await (this.program.account as PluginProgramAccounts<U>).voterWeightRecord.fetchNullable(voterWeightPk);
+    const voterWeightRecord = await (this.program.account as PluginProgramAccounts<T>).voterWeightRecord.fetchNullable(voterWeightPk);
 
-    return voterWeightRecord as IdlAccounts<U>['voterWeightRecord'];
+    return voterWeightRecord as IdlAccounts<T>['voterWeightRecord'];
   }
 
   async getMaxVoterWeightRecord (realm: PublicKey, mint: PublicKey) {
     const { maxVoterWeightPk } = this.getMaxVoterWeightRecordPDA(realm, mint);
-    const maxVoterWeightRecordAccount = (this.program.account as PluginProgramAccounts<U>).maxVoterWeightRecord;
+    const maxVoterWeightRecordAccount = (this.program.account as PluginProgramAccounts<T>).maxVoterWeightRecord;
 
     // TODO handle this at the type-level with a better PluginProgramAccounts type.
     if (!maxVoterWeightRecordAccount) return null;
 
     const maxVoterWeightRecord = await maxVoterWeightRecordAccount.fetchNullable(maxVoterWeightPk);
 
-    return maxVoterWeightRecord as IdlAccounts<U>['maxVoterWeightRecord'];
+    return maxVoterWeightRecord as IdlAccounts<T>['maxVoterWeightRecord'];
   }
 
   getRegistrarPDA(realm: PublicKey, mint: PublicKey):{

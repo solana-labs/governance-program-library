@@ -10,6 +10,7 @@ export const GATEWAY_PLUGIN_ID = new PublicKey(
 );
 
 export class GatewayClient extends Client<Gateway> {
+  readonly requiresInputVoterWeight = true;
   constructor(public program: Program<Gateway>, public devnet?: boolean, readonly governanceProgramId = DEFAULT_GOVERNANCE_PROGRAM_ID) {
     super(program, devnet);
   }
@@ -86,7 +87,7 @@ export class GatewayClient extends Client<Gateway> {
       inputVoterWeightPk = await getTokenOwnerRecordAddress(this.governanceProgramId, realm, mint, voter);
     }
 
-    return this.program.methods
+    const ix = await this.program.methods
       .updateVoterWeightRecord()
       .accounts({
         registrar,
@@ -95,6 +96,8 @@ export class GatewayClient extends Client<Gateway> {
         voterWeightRecord: voterWeightPk,
       })
       .instruction();
+
+    return { pre: [ix] }
   }
 
   async updateMaxVoterWeightRecord() {

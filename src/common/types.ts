@@ -44,16 +44,11 @@ type HasRegistrar<T extends IdlAccountDef[]> =
         : never
     : never;
 
-// A type function that checks if an IDL has a registrar account
-export type IsPluginIdl<T extends Idl> = T['accounts'] extends HasRegistrar<NonNullable<T['accounts']>> ? T : never;
 
 // A type function that defines a program that uses a plugin IDL
-// This is needed because typescript is not yet clever enough to infer that
-// since an Idl of type IsPluginIdl has an account, the program's account namespace
-// will have an account client with the same name.
-export type PluginProgramAccounts<T extends Idl, U extends IsPluginIdl<T> = IsPluginIdl<T>> = Program<U>['account'] extends {
-  registrar: AccountClient<U,'registrar'>,
-  voterWeightRecord: AccountClient<U,'voterWeightRecord'>,
+export type PluginProgramAccounts<T extends Idl> = Program<T>['account'] extends {
+  registrar: AccountClient<T,'registrar'>,
+  voterWeightRecord: AccountClient<T,'voterWeightRecord'>,
   // may be undefined if the plugin does not support maxVoterWeightRecord - should be inferrable from T
-  maxVoterWeightRecord: AccountClient<U,'maxVoterWeightRecord'>,
-} ? Program<U>['account'] : never;
+  maxVoterWeightRecord: AccountClient<T,'maxVoterWeightRecord'>,
+} ? Program<T>['account'] : never;
