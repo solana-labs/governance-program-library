@@ -2,7 +2,7 @@ import { PublicKey, TransactionInstruction } from '@solana/web3.js';
 import { BN, Idl, Program } from '@coral-xyz/anchor';
 import { PluginProgramAccounts } from './types';
 import { IdlAccounts } from '@coral-xyz/anchor/dist/cjs/program/namespace/types';
-import { VoterWeightAction } from '@solana/spl-governance';
+import { getTokenOwnerRecordAddress, VoterWeightAction } from '@solana/spl-governance';
 
 export const DEFAULT_GOVERNANCE_PROGRAM_ID = new PublicKey("GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw");
 
@@ -12,8 +12,8 @@ export abstract class Client<T extends Idl> {
 
   abstract createVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction | null>;
   abstract createMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction | null>;
-  abstract updateVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey, action?: VoterWeightAction): Promise<{ pre: TransactionInstruction[], post?: TransactionInstruction[] }>;
-  abstract updateMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey, action?: VoterWeightAction): Promise<TransactionInstruction | null>;
+  abstract updateVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey, action?: VoterWeightAction, inputRecordCallback?: () => Promise<PublicKey>): Promise<{ pre: TransactionInstruction[], post?: TransactionInstruction[] }>;
+  abstract updateMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey, action?: VoterWeightAction, inputRecordCallback?: () => Promise<PublicKey>): Promise<TransactionInstruction | null>;
 
   /**
    * Preview what this voter weight plugin does to a voter's vote weight.
@@ -107,7 +107,21 @@ export abstract class Client<T extends Idl> {
     return null;
   }
 
-  protected static getVoterWeightRecordPDAForProgram(realm: PublicKey, mint: PublicKey, walletPk: PublicKey, programId: PublicKey): {
+  protected async getPredecessorVoterWeightRecordPDA(realm: PublicKey, mint: PublicKey, voter: PublicKey, inputRecordCallback?: () => Promise<PublicKey>) : Promise<PublicKey> {
+    // if the previous plugin has a specific way of deriving the input voter weight, use it
+    // otherwise derive it the default way.
+    if (inputRecordCallback) {
+      return inputRecordCallback();
+    }
+    const inputVoterWeight = await this.derivePredecessorVoterWeightRecordPDA(realm, mint, voter);
+
+    if (inputVoterWeight) return inputVoterWeight.voterWeightPk;
+
+    // no predecessor voter weight record found - pass the token owner record
+    return getTokenOwnerRecordAddress(DEFAULT_GOVERNANCE_PROGRAM_ID, realm, mint, voter);
+  }
+
+  protected static deriveVoterWeightRecordPDAForProgram(realm: PublicKey, mint: PublicKey, walletPk: PublicKey, programId: PublicKey): {
     voterWeightPk: PublicKey;
     voterWeightRecordBump: number;
   } {
@@ -155,17 +169,17 @@ export abstract class Client<T extends Idl> {
     voterWeightPk: PublicKey;
     voterWeightRecordBump: number;
   } {
-    return Client.getVoterWeightRecordPDAForProgram(realm, mint, walletPk, this.program.programId)
+    return Client.deriveVoterWeightRecordPDAForProgram(realm, mint, walletPk, this.program.programId)
   }
 
-  async getPredecessorVoterWeightRecordPDA(realm: PublicKey, mint: PublicKey, walletPk: PublicKey): Promise<{
+  async derivePredecessorVoterWeightRecordPDA(realm: PublicKey, mint: PublicKey, walletPk: PublicKey): Promise<{
     voterWeightPk: PublicKey;
     voterWeightRecordBump: number;
   } | undefined> {
     const predecessorProgramId = await this.getPredecessorProgramId(realm, mint);
 
     if (!predecessorProgramId) return undefined;
-    return Client.getVoterWeightRecordPDAForProgram(realm, mint, walletPk, predecessorProgramId);
+    return Client.deriveVoterWeightRecordPDAForProgram(realm, mint, walletPk, predecessorProgramId);
   }
 
   /**
@@ -174,7 +188,7 @@ export abstract class Client<T extends Idl> {
    * @param realm
    * @param mint
    */
-  async getPredecessorMaxVoterWeightRecordPDA(realm: PublicKey, mint: PublicKey): Promise<{
+  async derivePredecessorMaxVoterWeightRecordPDA(realm: PublicKey, mint: PublicKey): Promise<{
     maxVoterWeightPk: PublicKey;
     maxVoterWeightRecordBump: number;
   } | undefined> {
@@ -186,10 +200,6 @@ export abstract class Client<T extends Idl> {
 
   async getPredecessorProgramId(realm: PublicKey, mint: PublicKey): Promise<PublicKey | undefined> {
     // Get the registrar for the realm
-    const { registrar } = this.getRegistrarPDA(
-      realm,
-      mint,
-    );
     const registrarObject = await this.getRegistrarAccount(realm, mint);
 
     // Find the gatekeeper network from the registrar

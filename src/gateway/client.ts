@@ -3,7 +3,7 @@ import { PublicKey } from '@solana/web3.js';
 import { Gateway, IDL } from './gateway';
 import { Client, DEFAULT_GOVERNANCE_PROGRAM_ID } from '../common/Client';
 import { getGatewayTokenAddressForOwnerAndGatekeeperNetwork, getGatewayToken } from '@identity.com/solana-gateway-ts';
-import { getTokenOwnerRecordAddress } from '@solana/spl-governance';
+import { getTokenOwnerRecordAddress, VoterWeightAction } from '@solana/spl-governance';
 
 export const GATEWAY_PLUGIN_ID = new PublicKey(
   'GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk'
@@ -72,20 +72,22 @@ export class GatewayClient extends Client<Gateway> {
     return null;
   }
 
-  async updateVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey) {
+  async updateVoterWeightRecord(
+    voter: PublicKey,
+    realm: PublicKey,
+    mint: PublicKey,
+    action?: VoterWeightAction,
+    inputRecordCallback?: () => Promise<PublicKey>
+  ) {
     const { registrar } = this.getRegistrarPDA(realm, mint);
     const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, voter);
 
-    const [inputVoterWeight, gatewayToken] = await Promise.all([
-      this.getPredecessorVoterWeightRecordPDA(realm, mint, voter),
+    // if the previous plugin has a specific way of deriving the input voter weight, use it
+    // otherwise derive it the default way.
+    const [inputVoterWeightPk, gatewayToken] = await Promise.all([
+      this.getPredecessorVoterWeightRecordPDA(realm, mint, voter, inputRecordCallback),
       this.getGatewayTokenPDA(voter, realm, mint)
-    ]);
-
-    let inputVoterWeightPk = inputVoterWeight?.voterWeightPk;
-    if (!inputVoterWeightPk) {
-      // no predecessor voter weight record found - pass the token owner record
-      inputVoterWeightPk = await getTokenOwnerRecordAddress(this.governanceProgramId, realm, mint, voter);
-    }
+    ])
 
     const ix = await this.program.methods
       .updateVoterWeightRecord()

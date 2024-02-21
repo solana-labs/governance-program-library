@@ -2,7 +2,7 @@ import { BN, Program, Provider } from '@coral-xyz/anchor';
 import { PublicKey, TransactionInstruction } from '@solana/web3.js';
 import { Quadratic, IDL } from './quadratic';
 import { Client, DEFAULT_GOVERNANCE_PROGRAM_ID } from '../common/Client';
-import { getTokenOwnerRecordAddress } from '@solana/spl-governance';
+import { getTokenOwnerRecordAddress, VoterWeightAction } from '@solana/spl-governance';
 
 export const QUADRATIC_PLUGIN_ID = new PublicKey(
   'quadCSapU8nTdLg73KHDnmdxKnJQsh7GUbu5tZfnRRr'
@@ -109,16 +109,16 @@ export class QuadraticClient extends Client<Quadratic> {
     return null;
   }
 
-  async updateVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey) {
+  async updateVoterWeightRecord(
+    voter: PublicKey,
+    realm: PublicKey,
+    mint: PublicKey,
+    action?: VoterWeightAction,
+    inputRecordCallback?: () => Promise<PublicKey>
+  ) {
     const { registrar } = this.getRegistrarPDA(realm, mint);
     const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, voter);
-    const inputVoterWeight = await this.getPredecessorVoterWeightRecordPDA(realm, mint, voter);
-
-    let inputVoterWeightPk = inputVoterWeight?.voterWeightPk;
-    if (!inputVoterWeightPk) {
-      // no predecessor voter weight record found - pass the token owner record
-      inputVoterWeightPk = await getTokenOwnerRecordAddress(this.governanceProgramId, realm, mint, voter);
-    }
+    const inputVoterWeightPk = await this.getPredecessorVoterWeightRecordPDA(realm, mint, voter, inputRecordCallback);
 
     const ix = await this.program.methods
       .updateVoterWeightRecord()
