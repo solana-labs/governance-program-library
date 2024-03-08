@@ -1,4 +1,4 @@
-import { Program, Provider } from '@project-serum/anchor';
+import { Program, Provider } from '@coral-xyz/anchor';
 import { PublicKey } from '@solana/web3.js';
 import { RealmVoter, IDL } from './realm_voter';
 

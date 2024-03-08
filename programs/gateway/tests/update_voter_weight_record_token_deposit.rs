@@ -10,7 +10,8 @@ mod program_test;
 const EXPECTED_VOTES: u64 = 1000000;
 
 #[tokio::test]
-async fn test_update_voter_weight_record_with_predecessor() -> Result<(), TransportError> {
+async fn test_update_voter_weight_record_with_token_owner_record_as_input(
+) -> Result<(), TransportError> {
     // Arrange
     let mut gateway_voter_test = GatewayVoterTest::start_new().await;
 
