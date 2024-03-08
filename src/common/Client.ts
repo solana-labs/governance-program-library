@@ -64,7 +64,12 @@ export abstract class Client<T extends Idl> {
    */
   async getVoterWeightRecord (realm: PublicKey, mint: PublicKey, walletPk: PublicKey): Promise<IdlAccounts<T>['voterWeightRecord'] | null>  {
     const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, walletPk);
-    const voterWeightRecord = await (this.program.account as PluginProgramAccounts<T>).voterWeightRecord.fetchNullable(voterWeightPk);
+    const voterWeightRecordAccount = (this.program.account as PluginProgramAccounts<T>).voterWeightRecord;
+
+    // TODO handle this at the type-level with a better PluginProgramAccounts type.
+    if (!voterWeightRecordAccount) return null;
+
+    const voterWeightRecord = await voterWeightRecordAccount.fetchNullable(voterWeightPk);
 
     return voterWeightRecord as IdlAccounts<T>['voterWeightRecord'];
   }
