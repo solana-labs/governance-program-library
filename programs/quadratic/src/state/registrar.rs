@@ -6,7 +6,7 @@ use gpl_shared::{
     compose::RegistrarBase,
 };
 
-/// Registrar which stores Civic Pass voting configuration for the given Realm
+/// Registrar which stores Quadratic voting configuration for the given Realm
 #[account]
 #[derive(Debug, PartialEq)]
 pub struct Registrar {
