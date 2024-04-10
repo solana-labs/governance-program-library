@@ -1,4 +1,4 @@
-use crate::program_test::realm_voter_test::RealmVoterTest;
+use crate::program_test::token_haver_test::RealmVoterTest;
 use gpl_realm_voter::{error::TokenHaverError, state::CollectionItemChangeType};
 use program_test::tools::*;
 use solana_program_test::*;
@@ -24,27 +24,15 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 
     let governance_program_cookie = realm_voter_test.with_governance_program(None).await;
 
-    realm_voter_test
-        .configure_governance_program(
-            &registrar_cookie,
-            &governance_program_cookie,
-            CollectionItemChangeType::Upsert,
-        )
-        .await?;
-
     let mut voter_weight_record_cookie = realm_voter_test
         .with_voter_weight_record(&registrar_cookie, &token_owner_cookie)
-        .await?;
-
-    let mut max_voter_weight_record_cookie = realm_voter_test
-        .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
     realm_voter_test
         .configure_voter_weights(
             &registrar_cookie,
             &mut max_voter_weight_record_cookie,
-            10,
+            10, // realm_member_voter_weight
             110,
         )
         .await?;

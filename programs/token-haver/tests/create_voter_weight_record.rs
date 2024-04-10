@@ -1,4 +1,4 @@
-use crate::program_test::realm_voter_test::RealmVoterTest;
+use crate::program_test::token_haver_test::RealmVoterTest;
 use program_test::tools::assert_ix_err;
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;

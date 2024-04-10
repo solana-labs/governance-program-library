@@ -2,7 +2,7 @@ mod program_test;
 
 use anchor_lang::prelude::{ErrorCode, Pubkey};
 use gpl_realm_voter::error::TokenHaverError;
-use program_test::realm_voter_test::RealmVoterTest;
+use program_test::token_haver_test::RealmVoterTest;
 
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;

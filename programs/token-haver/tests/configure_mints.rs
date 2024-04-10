@@ -1,5 +1,5 @@
 use gpl_realm_voter::{error::TokenHaverError, state::CollectionItemChangeType};
-use program_test::realm_voter_test::RealmVoterTest;
+use program_test::token_haver_test::RealmVoterTest;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 mod program_test;
