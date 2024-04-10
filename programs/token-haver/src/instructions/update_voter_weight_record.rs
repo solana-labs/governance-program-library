@@ -1,6 +1,7 @@
-use crate::error::RealmVoterError;
+use crate::error::TokenHaverError;
 use crate::state::*;
 use anchor_lang::prelude::*;
+use anchor_spl::token::TokenAccount;
 use spl_governance::state::token_owner_record;
 
 /// Updates VoterWeightRecord based on Realm DAO membership
@@ -16,10 +17,10 @@ pub struct UpdateVoterWeightRecord<'info> {
     #[account(
         mut,
         constraint = voter_weight_record.realm == registrar.realm
-        @ RealmVoterError::InvalidVoterWeightRecordRealm,
+        @ TokenHaverError::InvalidVoterWeightRecordRealm,
 
         constraint = voter_weight_record.governing_token_mint == registrar.governing_token_mint
-        @ RealmVoterError::InvalidVoterWeightRecordMint,
+        @ TokenHaverError::InvalidVoterWeightRecordMint,
     )]
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 
@@ -34,16 +35,6 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
 
     let governance_program_id = ctx.accounts.token_owner_record.owner;
 
-    // Note: We only verify a valid TokenOwnerRecord account exists for one of the configured spl-governance instances
-    // The existence of the account proofs the governing_token_owner has interacted with spl-governance Realm at least once in the past
-    if !registrar
-        .governance_program_configs
-        .iter()
-        .any(|cc| cc.program_id == governance_program_id.key())
-    {
-        return err!(RealmVoterError::GovernanceProgramNotConfigured);
-    };
-
     let token_owner_record = token_owner_record::get_token_owner_record_data(
         governance_program_id,
         &ctx.accounts.token_owner_record,
@@ -53,18 +44,36 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
     require_eq!(
         token_owner_record.governing_token_owner,
         voter_weight_record.governing_token_owner,
-        RealmVoterError::GoverningTokenOwnerMustMatch
+        TokenHaverError::GoverningTokenOwnerMustMatch
     );
 
-    // Membership of the Realm the plugin is configured for is not allowed as a source of governance power
-    require_neq!(
-        token_owner_record.realm,
-        registrar.realm,
-        RealmVoterError::TokenOwnerRecordFromOwnRealmNotAllowed
-    );
+    let nonzero_token_accounts: Vec<Account<TokenAccount>> = ctx
+        .remaining_accounts
+        .iter()
+        .filter(|account| !account.data_is_empty()) // filter out empty accounts, so we don't need to check them in UI
+        .map(|account| Account::<TokenAccount>::try_from(account).unwrap())
+        .filter(|account| account.amount > 0) // filter out zero balance accounts
+        .collect();
+
+    // Throw an error if a token account's owner doesnt match token_owner_record.governing_token_owner
+    for account in nonzero_token_accounts.iter() {
+        require_eq!(
+            account.owner,
+            token_owner_record.governing_token_owner,
+            TokenHaverError::TokenAccountWrongOwner
+        );
+    }
+
+    // Throw an error if a token account's mint isn't in registrar.mints
+    for account in nonzero_token_accounts.iter() {
+        require!(
+            registrar.mints.contains(&account.mint),
+            TokenHaverError::TokenAccountWrongMint
+        );
+    }
 
     // Setup voter_weight
-    voter_weight_record.voter_weight = registrar.realm_member_voter_weight;
+    voter_weight_record.voter_weight = nonzero_token_accounts.len() as u64;
 
     // Record is only valid as of the current slot
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);

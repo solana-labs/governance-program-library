@@ -1,4 +1,4 @@
-use gpl_realm_voter::{error::RealmVoterError, state::CollectionItemChangeType};
+use gpl_realm_voter::{error::TokenHaverError, state::CollectionItemChangeType};
 use program_test::realm_voter_test::RealmVoterTest;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
@@ -18,7 +18,7 @@ async fn test_configure_governance_program() -> Result<(), TransportError> {
 
     // Act
     let governance_program_config_cookie = realm_voter_test
-        .configure_governance_program(
+        .configure_mints(
             &registrar_cookie,
             &governance_program_cookie,
             CollectionItemChangeType::Upsert,
@@ -156,7 +156,7 @@ async fn test_configure_governance_program_with_invalid_realm_error() -> Result<
 
     // Assert
 
-    assert_realm_voter_err(err, RealmVoterError::InvalidRealmForRegistrar);
+    assert_realm_voter_err(err, TokenHaverError::InvalidRealmForRegistrar);
 
     Ok(())
 }
@@ -222,7 +222,7 @@ async fn test_configure_governance_program_with_invalid_realm_authority_error(
 
     // Assert
 
-    assert_realm_voter_err(err, RealmVoterError::InvalidRealmAuthority);
+    assert_realm_voter_err(err, TokenHaverError::InvalidRealmAuthority);
 
     Ok(())
 }
@@ -291,7 +291,7 @@ async fn test_remove_governance_program_configuration_with_program_not_configure
 
     // // Assert
 
-    assert_realm_voter_err(err, RealmVoterError::GovernanceProgramNotConfigured);
+    assert_realm_voter_err(err, TokenHaverError::GovernanceProgramNotConfigured);
 
     Ok(())
 }

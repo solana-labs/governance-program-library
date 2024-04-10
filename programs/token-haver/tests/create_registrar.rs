@@ -1,7 +1,7 @@
 mod program_test;
 
 use anchor_lang::prelude::{ErrorCode, Pubkey};
-use gpl_realm_voter::error::RealmVoterError;
+use gpl_realm_voter::error::TokenHaverError;
 use program_test::realm_voter_test::RealmVoterTest;
 
 use solana_program::instruction::InstructionError;
@@ -45,7 +45,7 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
         .err()
         .unwrap();
 
-    assert_realm_voter_err(err, RealmVoterError::InvalidRealmAuthority);
+    assert_realm_voter_err(err, TokenHaverError::InvalidRealmAuthority);
 
     Ok(())
 }

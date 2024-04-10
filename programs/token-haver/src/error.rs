@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
-pub enum RealmVoterError {
+pub enum TokenHaverError {
     #[msg("Invalid Realm Authority")]
     InvalidRealmAuthority,
 
@@ -14,12 +14,12 @@ pub enum RealmVoterError {
     #[msg("Invalid VoterWeightRecord Mint")]
     InvalidVoterWeightRecordMint,
 
-    #[msg("TokenOwnerRecord from own realm is not allowed")]
-    TokenOwnerRecordFromOwnRealmNotAllowed,
-
-    #[msg("Governance program not configured")]
-    GovernanceProgramNotConfigured,
-
     #[msg("Governing TokenOwner must match")]
     GoverningTokenOwnerMustMatch,
+
+    #[msg("All token accounts must be owned by the governing token owner")]
+    TokenAccountWrongOwner,
+
+    #[msg("All token accounts' mints must be included in the registrar")]
+    TokenAccountWrongMint,
 }

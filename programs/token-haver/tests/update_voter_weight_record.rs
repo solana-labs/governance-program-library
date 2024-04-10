@@ -1,5 +1,5 @@
 use crate::program_test::realm_voter_test::RealmVoterTest;
-use gpl_realm_voter::{error::RealmVoterError, state::CollectionItemChangeType};
+use gpl_realm_voter::{error::TokenHaverError, state::CollectionItemChangeType};
 use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
@@ -116,7 +116,7 @@ async fn test_update_voter_weight_record_with_token_owner_record_from_own_realm_
         .unwrap();
 
     // Assert
-    assert_realm_voter_err(err, RealmVoterError::TokenOwnerRecordFromOwnRealmNotAllowed);
+    assert_realm_voter_err(err, TokenHaverError::TokenOwnerRecordFromOwnRealmNotAllowed);
 
     Ok(())
 }
@@ -156,7 +156,7 @@ async fn test_update_voter_weight_record_for_member_from_not_configured_governan
 
     // Assert
 
-    assert_realm_voter_err(err, RealmVoterError::GovernanceProgramNotConfigured);
+    assert_realm_voter_err(err, TokenHaverError::GovernanceProgramNotConfigured);
 
     Ok(())
 }
@@ -208,7 +208,7 @@ async fn test_update_voter_weight_record_with_token_owner_record_must_match_erro
 
     // Assert
 
-    assert_realm_voter_err(err, RealmVoterError::GoverningTokenOwnerMustMatch);
+    assert_realm_voter_err(err, TokenHaverError::GoverningTokenOwnerMustMatch);
 
     Ok(())
 }

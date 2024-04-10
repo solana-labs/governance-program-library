@@ -6,3 +6,6 @@ mod create_voter_weight_record;
 
 pub use update_voter_weight_record::*;
 mod update_voter_weight_record;
+
+pub use configure_mints::*;
+mod configure_mints;

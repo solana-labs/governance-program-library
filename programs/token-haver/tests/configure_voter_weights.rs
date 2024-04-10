@@ -1,6 +1,6 @@
-use gpl_realm_voter::error::RealmVoterError;
+use gpl_realm_voter::error::TokenHaverError;
 use gpl_realm_voter::state::CollectionItemChangeType;
-use program_test::realm_voter_test::RealmVoterTest;
+use program_test::token_haver_test::RealmVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::signature::Keypair;
@@ -99,7 +99,7 @@ async fn test_configure_voter_weights_with_invalid_realm_error() -> Result<(), T
 
     // Assert
 
-    assert_realm_voter_err(err, RealmVoterError::InvalidRealmForRegistrar);
+    assert_realm_voter_err(err, TokenHaverError::InvalidRealmForRegistrar);
 
     Ok(())
 }
@@ -171,7 +171,7 @@ async fn test_configure_voter_weights_with_invalid_realm_authority_error(
 
     // Assert
 
-    assert_realm_voter_err(err, RealmVoterError::InvalidRealmAuthority);
+    assert_realm_voter_err(err, TokenHaverError::InvalidRealmAuthority);
 
     Ok(())
 }

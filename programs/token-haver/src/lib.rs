@@ -16,12 +16,9 @@ pub mod realm_voter {
 
     use super::*;
 
-    pub fn create_registrar(
-        ctx: Context<CreateRegistrar>,
-        max_governance_programs: u8,
-    ) -> Result<()> {
+    pub fn create_registrar(ctx: Context<CreateRegistrar>, mints: Vec<Pubkey>) -> Result<()> {
         log_version();
-        instructions::create_registrar(ctx, max_governance_programs)
+        instructions::create_registrar(ctx, mints)
     }
     pub fn create_voter_weight_record(
         ctx: Context<CreateVoterWeightRecord>,
@@ -30,29 +27,13 @@ pub mod realm_voter {
         log_version();
         instructions::create_voter_weight_record(ctx, governing_token_owner)
     }
-    pub fn create_max_voter_weight_record(ctx: Context<CreateMaxVoterWeightRecord>) -> Result<()> {
-        log_version();
-        instructions::create_max_voter_weight_record(ctx)
-    }
     pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
         log_version();
         instructions::update_voter_weight_record(ctx)
     }
-    pub fn configure_voter_weights(
-        ctx: Context<ConfigureVoterWeights>,
-        realm_member_voter_weight: u64,
-        max_voter_weight: u64,
-    ) -> Result<()> {
+    pub fn configure_mints(ctx: Context<ConfigureMints>, mints: Vec<Pubkey>) -> Result<()> {
         log_version();
-        instructions::configure_voter_weights(ctx, realm_member_voter_weight, max_voter_weight)
-    }
-
-    pub fn configure_governance_program(
-        ctx: Context<ConfigureGovernanceProgram>,
-        change_type: crate::state::CollectionItemChangeType,
-    ) -> Result<()> {
-        log_version();
-        instructions::configure_governance_program(ctx, change_type)
+        instructions::configure_mints(ctx, mints)
     }
 }
 
