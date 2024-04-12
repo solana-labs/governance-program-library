@@ -2,9 +2,7 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
 
-use gpl_realm_voter::state::max_voter_weight_record::{
-    get_max_voter_weight_record_address, MaxVoterWeightRecord,
-};
+use gpl_realm_voter::state::max_voter_weight_record::MaxVoterWeightRecord;
 use gpl_realm_voter::state::*;
 
 use solana_program_test::{BanksClientError, ProgramTest};
