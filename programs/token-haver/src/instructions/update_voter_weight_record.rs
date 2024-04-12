@@ -55,21 +55,20 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
         .filter(|account| account.amount > 0) // filter out zero balance accounts
         .collect();
 
-    // Throw an error if a token account's owner doesnt match token_owner_record.governing_token_owner
     for account in nonzero_token_accounts.iter() {
+        // Throw an error if a token account's owner doesnt match token_owner_record.governing_token_owner
         require_eq!(
             account.owner,
             token_owner_record.governing_token_owner,
             TokenHaverError::TokenAccountWrongOwner
         );
-    }
-
-    // Throw an error if a token account's mint isn't in registrar.mints
-    for account in nonzero_token_accounts.iter() {
+        // Throw an error if a token account's mint isn't in registrar.mints
         require!(
             registrar.mints.contains(&account.mint),
             TokenHaverError::TokenAccountWrongMint
         );
+        // Throw an error if a token account is not frozen
+        require!(account.is_frozen(), TokenHaverError::TokenAccountWrongMint);
     }
 
     // Setup voter_weight
