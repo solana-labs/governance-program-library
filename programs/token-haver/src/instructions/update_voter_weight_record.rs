@@ -68,7 +68,7 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
             TokenHaverError::TokenAccountWrongMint
         );
         // Throw an error if a token account is not frozen
-        require!(account.is_frozen(), TokenHaverError::TokenAccountWrongMint);
+        require!(account.is_frozen(), TokenHaverError::TokenAccountNotLocked);
     }
 
     // Setup voter_weight
