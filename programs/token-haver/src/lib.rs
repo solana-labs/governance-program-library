@@ -12,7 +12,7 @@ pub mod tools;
 declare_id!("vo65JQC6U8HCDPfoJxRrr17n7RZ5fKdfyjHm3erHJ2V");
 
 #[program]
-pub mod realm_voter {
+pub mod token_haver {
 
     use super::*;
 
