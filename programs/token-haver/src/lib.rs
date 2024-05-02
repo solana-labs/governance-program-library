@@ -9,7 +9,7 @@ pub mod state;
 
 pub mod tools;
 
-declare_id!("GRmVtfLq2BPeWs5EDoQoZc787VYkhdkA11k63QM1Xemz");
+declare_id!("vo65JQC6U8HCDPfoJxRrr17n7RZ5fKdfyjHm3erHJ2V");
 
 #[program]
 pub mod realm_voter {
