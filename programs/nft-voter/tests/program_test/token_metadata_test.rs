@@ -139,7 +139,7 @@ impl TokenMetadataTest {
             payer: payer,
             update_authority: payer,
             system_program: system_program::ID,
-            token_program: self.program_id,
+            token_program: spl_token::id(),
             rent: None,
         };
 
