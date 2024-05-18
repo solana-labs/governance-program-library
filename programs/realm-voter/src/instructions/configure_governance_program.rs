@@ -1,9 +1,3 @@
-use anchor_lang::{
-    account,
-    prelude::{Context, Signer},
-    Accounts,
-};
-
 use anchor_lang::prelude::*;
 use spl_governance::state::realm;
 
@@ -19,8 +13,8 @@ pub struct ConfigureGovernanceProgram<'info> {
     pub registrar: Account<'info, Registrar>,
 
     #[account(
-       address = registrar.realm @ RealmVoterError::InvalidRealmForRegistrar,
-       owner = registrar.governance_program_id
+       owner = registrar.governance_program_id,
+       constraint = realm.key() == registrar.realm @ RealmVoterError::InvalidRealmForRegistrar,
     )]
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     pub realm: UncheckedAccount<'info>,

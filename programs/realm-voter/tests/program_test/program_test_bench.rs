@@ -5,20 +5,12 @@ use anchor_lang::{
     AccountDeserialize,
 };
 
-use solana_program::{borsh::try_from_slice_unchecked, system_program};
+use borsh::BorshDeserialize;
+use solana_program::system_program;
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
-    account::{Account, ReadableAccount},
-    instruction::Instruction,
-    program_pack::Pack,
-    signature::Keypair,
-    signer::Signer,
-    system_instruction,
-    transaction::Transaction,
-    transport::TransportError,
+    account::{Account, ReadableAccount}, borsh0_10::{try_from_slice_unchecked}, instruction::Instruction, program_pack::Pack, signature::Keypair, signer::Signer, system_instruction, transaction::Transaction, transport::TransportError
 };
-
-use borsh::BorshDeserialize;
 
 use crate::program_test::tools::clone_keypair;
 

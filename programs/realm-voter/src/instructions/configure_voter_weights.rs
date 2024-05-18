@@ -14,8 +14,8 @@ pub struct ConfigureVoterWeights<'info> {
     pub registrar: Account<'info, Registrar>,
 
     #[account(
-        address = registrar.realm @ RealmVoterError::InvalidRealmForRegistrar,
-        owner = registrar.governance_program_id
+        owner = registrar.governance_program_id,
+        constraint = realm.key() == registrar.realm @ RealmVoterError::InvalidRealmForRegistrar,
      )]
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     pub realm: UncheckedAccount<'info>,

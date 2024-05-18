@@ -19,8 +19,8 @@ pub struct ConfigureRegistrar<'info> {
     /// - realm_authority is realm.authority
     /// CHECK: Owned by spl-governance instance specified in governance_program_id
     #[account(
-        address = registrar.realm @ GatewayError::InvalidRealmForRegistrar,
-        owner = registrar.governance_program_id.key()
+        owner = registrar.governance_program_id.key(),
+        constraint = realm.key() == registrar.realm @ GatewayError::InvalidRealmForRegistrar,
     )]
     pub realm: UncheckedAccount<'info>,
 

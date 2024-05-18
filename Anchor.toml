@@ -1,8 +1,11 @@
-anchor_version = "0.26.0"
-solana_version = "1.14.16"
+anchor_version = "0.30.0"
+solana_version = "1.18.12"
 
 [features]
 seeds = false
+
+[toolchain]
+anchor_version = "0.30.0"
 
 [programs.localnet]
 nft_voter = "GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw"

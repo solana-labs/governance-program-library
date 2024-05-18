@@ -1,0 +1,42 @@
+[package]
+name = "token-voter"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "token_voter"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = { version = "0.30.0", features = ["init-if-needed"] }
+anchor-spl = "0.30.0"
+arrayref = "0.3.7"
+solana-program = "1.18.12"
+# spl-governance = { version = "4.0.0", features = ["no-entrypoint"] }
+spl-governance = { git = "https://github.com/crypt0miester/solana-program-library.git", branch = "gib-bounty-jlFb5", default-features = false, features = ["no-entrypoint"] }
+spl-governance-tools = "0.1.4"
+spl-token = { version = "3.5", features = [ "no-entrypoint" ] }
+spl-token-2022 = { version = "3.0.2", features = [ "no-entrypoint" ] }
+spl-transfer-hook-interface = { version = "0.6.3" }
+ahash = "=0.8.7"
+static_assertions = "1.1"
+spl-governance-addin-api = "0.1.4"
+
+
+[dev-dependencies]
+borsh = "0.10.3"
+spl-associated-token-account = { version = "^3.0.2", features = ["no-entrypoint"] }
+solana-sdk = "1.18.12"
+solana-program-test = "1.18.12"
+log = "0.4.14"
+env_logger = "0.9.0"
+spl-token-client = "0.10.0"

@@ -38,7 +38,7 @@
         "trailingComma": "all"
     },
     "dependencies": {
-        "@project-serum/anchor": "^0.24.2",
-        "@project-serum/serum": "^0.13.61"
-    }
+        "@coral-xyz/anchor": "^0.30.0"
+    },
+    "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
 }
