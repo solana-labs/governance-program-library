@@ -1,5 +1,5 @@
 use {
-    crate::{error::*, state::*, tools::spl_token::transfer_checked_spl_tokens},
+    crate::{error::*, state::*, tools::spl_token::{transfer_checked_spl_tokens, get_current_mint_fee}},
     anchor_lang::{prelude::*, solana_program::sysvar::instructions as tx_instructions},
     anchor_spl::{associated_token::AssociatedToken, token_interface::{Mint, TokenAccount, TokenInterface}}, spl_governance::state::token_owner_record,
 };
@@ -106,6 +106,8 @@ pub fn deposit<'key, 'accounts, 'remaining, 'info>(
         }
     };
 
+    let deposit_amount = amount.checked_sub(get_current_mint_fee(&ctx.accounts.mint.to_account_info(), amount)?).unwrap();
+    
     // Get the exchange rate entry associated with this deposit.
     // fails if registrat.voting_mint_configs does not exist.
     let mint_idx = registrar.voting_mint_config_index(ctx.accounts.deposit_token.mint)?;
@@ -122,7 +124,7 @@ pub fn deposit<'key, 'accounts, 'remaining, 'info>(
     match d_entry {
         Some(d_entry) => {
 
-            d_entry.amount_deposited_native = d_entry.amount_deposited_native.checked_add(amount).unwrap();
+            d_entry.amount_deposited_native = d_entry.amount_deposited_native.checked_add(deposit_amount).unwrap();
         
             // Deposit is only valid as of the current slot
             d_entry.deposit_slot_hash = current_slot_hash;
@@ -131,7 +133,7 @@ pub fn deposit<'key, 'accounts, 'remaining, 'info>(
         None => {
             let deposit_entry = DepositEntry {
                 deposit_slot_hash: current_slot_hash,
-                amount_deposited_native: amount,
+                amount_deposited_native: deposit_amount,
                 voting_mint_config_idx: mint_idx as u8,
                 is_used: true,
                 reserved: [0;38]

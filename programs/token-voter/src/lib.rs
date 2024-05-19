@@ -15,6 +15,7 @@ extern crate static_assertions;
 
 declare_id!("3JhBg9bSPcfWGFa3t8LH7ooVtrjm45yCkHpxYXMXstUM");
 
+
 #[program]
 pub mod token_voter {
     use super::*;
@@ -23,6 +24,7 @@ pub mod token_voter {
         log_version();
         instructions::create_registrar(ctx, max_mints)
     }
+
     pub fn create_voter_weight_record(ctx: Context<CreateVoterWeightRecord>) -> Result<()> {
         log_version();
         instructions::create_voter_weight_record(ctx)
@@ -46,6 +48,7 @@ pub mod token_voter {
         deposit_entry_index: u8,
         amount: u64,
     ) -> Result<()> {
+        log_version();
         instructions::deposit(ctx, deposit_entry_index, amount)
     }
 
@@ -54,12 +57,14 @@ pub mod token_voter {
         deposit_entry_index: u8,
         amount: u64,
     ) -> Result<()> {
+        log_version();
         instructions::withdraw(ctx, deposit_entry_index, amount)
     }
 
     pub fn close_voter<'key, 'accounts, 'remaining, 'info>(
         ctx: Context<'key, 'accounts, 'remaining, 'info, CloseVoter<'info>>,
     ) -> Result<()> {
+        log_version();
         instructions::close_voter(ctx)
     }
 }

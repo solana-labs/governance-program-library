@@ -2,18 +2,21 @@ use std::sync::{Arc, RwLock};
 
 use anchor_lang::{prelude::Pubkey, system_program::System, Id};
 
-use anchor_spl::{associated_token::{self, AssociatedToken}, token_interface::TokenAccount};
-use solana_sdk::sysvar::instructions;
+use anchor_spl::{
+    associated_token::{self, AssociatedToken},
+    token_interface::TokenAccount,
+};
+use solana_sdk::{instruction::AccountMeta, sysvar::instructions};
 use token_voter::state::*;
 
+use crate::program_test::governance_test::GovernanceTest;
+use crate::program_test::program_test_bench::ProgramTestBench;
+use anchor_lang::ToAccountMetas;
+use solana_program::program_pack::Pack;
 use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
-
-
-use crate::program_test::governance_test::GovernanceTest;
-use crate::program_test::program_test_bench::ProgramTestBench;
 
 use crate::program_test::governance_test::RealmCookie;
 
@@ -21,7 +24,10 @@ use crate::program_test::tools::NopOverride;
 
 use crate::program_test::governance_test::TokenOwnerRecordCookie;
 
-use super::{program_test_bench::{MintCookie, MintType}, LoggerWrapper, ProgramOutput};
+use super::{
+    program_test_bench::{MintCookie, MintType},
+    LoggerWrapper, ProgramOutput,
+};
 
 #[derive(Debug, PartialEq)]
 pub struct RegistrarCookie {
@@ -75,7 +81,10 @@ impl TokenVoterTest {
     #[allow(dead_code)]
     pub async fn start_new() -> Self {
         let mut program_test = ProgramTest::new("token_voter", token_voter::id(), None);
-        let (mints, users) = ProgramTestBench::add_mints_and_user_cookies_spl_token(&mut program_test, MintType::SplToken);
+        let (mints, users) = ProgramTestBench::add_mints_and_user_cookies_spl_token(
+            &mut program_test,
+            MintType::SplToken,
+        );
 
         GovernanceTest::add_program(&mut program_test);
         let program_id = token_voter::id();
@@ -114,7 +123,10 @@ impl TokenVoterTest {
     #[allow(dead_code)]
     pub async fn start_new_token_extensions() -> Self {
         let mut program_test = ProgramTest::new("token_voter", token_voter::id(), None);
-        let (mints, users) = ProgramTestBench::add_mints_and_user_cookies_spl_token(&mut program_test, MintType::SplTokenExtensions);
+        let (mints, users) = ProgramTestBench::add_mints_and_user_cookies_spl_token(
+            &mut program_test,
+            MintType::SplTokenExtensions,
+        );
 
         GovernanceTest::add_program(&mut program_test);
         let program_id = token_voter::id();
@@ -614,6 +626,84 @@ impl TokenVoterTest {
     }
 
     #[allow(dead_code)]
+    pub async fn close_voter_account(
+        &self,
+        registrar_cookie: &RegistrarCookie,
+        voter_cookie: &VoterCookie,
+        user_cookie: &UserCookie,
+        mint_cookies: &Vec<MintCookie>,
+        token_program: &Pubkey,
+    ) -> Result<(), BanksClientError> {
+        self.close_voter_account_using_ix(
+            registrar_cookie,
+            voter_cookie,
+            user_cookie,
+            mint_cookies,
+            token_program,
+            NopOverride,
+            None,
+        )
+        .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn close_voter_account_using_ix<F: Fn(&mut Instruction)>(
+        &self,
+        registrar_cookie: &RegistrarCookie,
+        voter_cookie: &VoterCookie,
+        user_cookie: &UserCookie,
+        mint_cookies: &Vec<MintCookie>,
+        token_program: &Pubkey,
+        instruction_override: F,
+        signers_override: Option<&[&Keypair]>,
+    ) -> Result<(), BanksClientError> {
+        let data = anchor_lang::InstructionData::data(&token_voter::instruction::CloseVoter {});
+
+        let accounts = token_voter::accounts::CloseVoter {
+            registrar: registrar_cookie.address,
+            voter: voter_cookie.address,
+            sol_destination: user_cookie.key.pubkey(),
+            voter_authority: user_cookie.key.pubkey(),
+            token_program: *token_program,
+        };
+
+        let remaining_accounts: Vec<_> = mint_cookies
+            .iter()
+            .map(|mint_cookie| {
+                let user_mint_ata = associated_token::get_associated_token_address_with_program_id(
+                    &voter_cookie.address,
+                    &mint_cookie.address,
+                    token_program,
+                );
+                AccountMeta::new(user_mint_ata, false)
+            })
+            .collect();
+
+        let all_accounts: Vec<_> = accounts
+            .to_account_metas(None)
+            .into_iter()
+            .chain(remaining_accounts.into_iter())
+            .collect();
+
+        let mut configure_mint_config_ix = Instruction {
+            program_id: token_voter::id(),
+            accounts: all_accounts,
+            data,
+        };
+
+        instruction_override(&mut configure_mint_config_ix);
+
+        let default_signers = &[&user_cookie.key];
+        let signers = signers_override.unwrap_or(default_signers);
+
+        self.bench
+            .process_transaction(&[configure_mint_config_ix], Some(signers))
+            .await?;
+
+        Ok(())
+    }
+
+    #[allow(dead_code)]
     pub async fn get_registrar_account(&self, registrar: &Pubkey) -> Registrar {
         self.bench.get_anchor_account::<Registrar>(*registrar).await
     }
@@ -639,8 +729,8 @@ impl TokenVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn vault_balance(&self, voter: &VoterCookie, mint: &MintCookie) -> u64 {
-        let vault = self.vault_address(voter.address, mint);
+    pub async fn vault_balance(&self, voter: &VoterCookie, mint: &MintCookie, token_program_id: &Pubkey) -> u64 {
+        let vault = self.associated_token_address(voter.address, mint, token_program_id);
         self.bench
             .get_anchor_account::<TokenAccount>(vault)
             .await
@@ -656,7 +746,14 @@ impl TokenVoterTest {
             .amount_deposited_native
     }
 
-    pub fn vault_address(&self, address: Pubkey, mint: &MintCookie) -> Pubkey {
-        spl_associated_token_account::get_associated_token_address(&address, &&mint.address)
+    #[allow(dead_code)]
+    pub async fn token_balance(&self, token_account: &Pubkey) -> u64 {
+        let token_account_data = self.bench.get_account(token_account).await.unwrap();
+        let account_info: spl_token::state::Account =
+            spl_token::state::Account::unpack_from_slice(token_account_data.data.as_slice()).unwrap();
+        account_info.amount
+    }
+    pub fn associated_token_address(&self, address: Pubkey, mint: &MintCookie, token_program_id: &Pubkey,) -> Pubkey {
+        spl_associated_token_account::get_associated_token_address_with_program_id(&address, &&mint.address, token_program_id)
     }
 }

@@ -5,6 +5,7 @@ use anchor_lang::{
     AccountDeserialize,
 };
 
+use anchor_spl::associated_token;
 use borsh::BorshDeserialize;
 use solana_program::system_program;
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
@@ -21,7 +22,7 @@ use solana_sdk::{
     transport::TransportError,
 };
 use spl_associated_token_account::get_associated_token_address_with_program_id;
-use spl_token_2022::extension::{BaseStateWithExtensions, ExtensionType, StateWithExtensionsOwned};
+use spl_token_2022::extension::ExtensionType;
 use spl_token_client::token::ExtensionInitializationParams;
 
 use crate::program_test::tools::clone_keypair;
@@ -470,23 +471,25 @@ impl ProgramTestBench {
 
         let mint_rent = self.rent.minimum_balance(space);
 
-        let instructions = [
-            system_instruction::create_account(
-                &self.context.borrow().payer.pubkey(),
-                &mint_keypair.pubkey(),
-                mint_rent,
-                space as u64,
-                &spl_token_2022::id(),
-            ),
-            spl_token_2022::instruction::initialize_mint(
-                &spl_token_2022::id(),
-                &mint_keypair.pubkey(),
-                mint_authority,
-                freeze_authority,
-                0,
-            )
-            .unwrap(),
-        ];
+        let mut instructions = vec![system_instruction::create_account(
+            &self.context.borrow().payer.pubkey(),
+            &mint_keypair.pubkey(),
+            mint_rent,
+            space as u64,
+            &spl_token_2022::id(),
+        )];
+
+        for params in extension_initialization_params {
+            instructions.push(params.instruction(&spl_token_2022::id(), &mint_keypair.pubkey()).unwrap());
+        }
+
+        instructions.push(spl_token_2022::instruction::initialize_mint(
+            &spl_token_2022::id(),
+            &mint_keypair.pubkey(),
+            mint_authority,
+            freeze_authority,
+            0,
+        ).unwrap());
 
         self.process_transaction(&instructions, Some(&[mint_keypair]))
             .await
@@ -574,6 +577,7 @@ impl ProgramTestBench {
         amount: u64,
         mint_type: &MintType,
     ) -> Result<TokenAccountCookie, TransportError> {
+
         let token_account_keypair = Keypair::new();
 
         self.create_token_account(
@@ -590,6 +594,7 @@ impl ProgramTestBench {
             &token_account_keypair.pubkey(),
             amount,
             mint_type,
+            owner,
         )
         .await?;
         Ok(TokenAccountCookie {
@@ -604,29 +609,44 @@ impl ProgramTestBench {
         token_account: &Pubkey,
         amount: u64,
         mint_type: &MintType,
+        owner: &Pubkey,
     ) -> Result<(), BanksClientError> {
 
-        let token_program_id = match mint_type {
+        match mint_type {
             MintType::SplToken => {
-                spl_token::id()
+                let mint_instruction = spl_token_2022::instruction::mint_to(
+                    &spl_token::id(),
+                    token_mint,
+                    token_account,
+                    &token_mint_authority.pubkey(),
+                    &[],
+                    amount,
+                )
+                .unwrap();
+
+                self.process_transaction(&[mint_instruction], Some(&[token_mint_authority]))
+                    .await
             }
             _ => {
-                spl_token_2022::id()
+                let associated_token_account_pubkey = associated_token::get_associated_token_address_with_program_id(
+                    &owner,
+                    &token_mint,
+                    &spl_token_2022::id(),
+                );
+                let mint_instruction = spl_token_2022::instruction::mint_to(
+                    &spl_token_2022::id(),
+                    token_mint,
+                    &associated_token_account_pubkey,
+                    &token_mint_authority.pubkey(),
+                    &[],
+                    amount,
+                )
+                .unwrap();
+
+                self.process_transaction(&[mint_instruction], Some(&[token_mint_authority]))
+                    .await
             }
-        };
-
-        let mint_instruction = spl_token_2022::instruction::mint_to(
-            &token_program_id,
-            token_mint,
-            token_account,
-            &token_mint_authority.pubkey(),
-            &[],
-            amount,
-        )
-        .unwrap();
-
-        self.process_transaction(&[mint_instruction], Some(&[token_mint_authority]))
-            .await
+        }
     }
 
     #[allow(dead_code)]
@@ -637,7 +657,7 @@ impl ProgramTestBench {
         owner: &Pubkey,
         mint_type: &MintType,
     ) -> Result<(), BanksClientError> {
-        let instructions = match mint_type {
+         match mint_type {
             MintType::SplToken => {
                 let create_account_instruction = system_instruction::create_account(
                     &self.context.borrow().payer.pubkey(),
@@ -654,43 +674,22 @@ impl ProgramTestBench {
                     owner,
                 )
                 .unwrap();
-                vec![create_account_instruction, initialize_account_instruction]
+                
+                self.process_transaction(&[create_account_instruction, initialize_account_instruction], Some(&[token_account_keypair]))
+                    .await
             }
             _ => {
-                let mint_account = self.get_account(token_mint).await;
-                let mint_info = StateWithExtensionsOwned::<spl_token_2022::state::Mint>::unpack(
-                    mint_account.unwrap().data,
-                )
-                .unwrap();
-                let extension_types = mint_info.get_extension_types().unwrap();
-                let space =
-                    ExtensionType::try_calculate_account_len::<spl_token_2022::state::Mint>(
-                        &extension_types,
-                    )
-                    .unwrap();
-                let mint_rent = self.rent.minimum_balance(space);
-
-                let create_account_instruction = system_instruction::create_account(
+                let create_ata_account = spl_associated_token_account::instruction::create_associated_token_account(
                     &self.context.borrow().payer.pubkey(),
-                    &token_account_keypair.pubkey(),
-                    mint_rent,
-                    space as u64,
-                    &spl_token::id(),
-                );
-
-                let initialize_account_instruction = spl_token::instruction::initialize_account(
-                    &spl_token::id(),
-                    &token_account_keypair.pubkey(),
-                    token_mint,
                     owner,
-                )
-                .unwrap();
-                vec![create_account_instruction, initialize_account_instruction]
+                    token_mint,
+                    &spl_token_2022::id(),
+                );
+                self.process_transaction(&[create_ata_account], None)
+                    .await
             }
-        };
+        }
 
-        self.process_transaction(&instructions, Some(&[token_account_keypair]))
-            .await
     }
 
     #[allow(dead_code)]
@@ -812,7 +811,6 @@ impl ProgramTestBench {
     #[allow(dead_code)]
     pub async fn get_anchor_account<T: AccountDeserialize>(&self, address: Pubkey) -> T {
         let data = self.get_account_data(address).await;
-        // println!("{:?}", data);
         let mut data_slice: &[u8] = &data;
         AccountDeserialize::try_deserialize(&mut data_slice).unwrap()
     }

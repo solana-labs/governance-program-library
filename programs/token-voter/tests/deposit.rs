@@ -3,10 +3,12 @@ use program_test::token_voter_test::TokenVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::instruction::InstructionError;
+use solana_sdk::signer::Signer;
 use solana_sdk::transport::TransportError;
 use token_voter::error::TokenVoterError;
-
+use crate::program_test::program_test_bench::MintType;
 mod program_test;
+
 
 #[tokio::test]
 async fn test_deposit_entry_with_token_extension() -> Result<(), TransportError> {
@@ -87,6 +89,66 @@ async fn test_deposit_entry_with_token_extension() -> Result<(), TransportError>
         max_voter_weight_record.governing_token_mint,
         realm_cookie.account.community_mint
     );
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_deposit_entry_with_token_extension_transfer_fees() -> Result<(), TransportError> {
+    // Arrange
+    let mut token_voter_test = TokenVoterTest::start_new_token_extensions().await;
+
+    let realm_cookie = token_voter_test.governance.with_realm_token_extension().await?;
+
+    let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
+    let governance_program_cookie = token_voter_test.with_governance_program(None).await;
+
+    let first_user_cookie = token_voter_test.users.first().unwrap();
+    let first_mint_cookie_transfer_fees = token_voter_test.bench.with_mint(&MintType::SplTokenExtensionsWithTransferFees, None).await.unwrap();
+    let _first_user_cookie_token_account = token_voter_test.bench.with_tokens(&first_mint_cookie_transfer_fees, &first_user_cookie.key.pubkey(), 100, &MintType::SplTokenExtensionsWithTransferFees).await;
+
+    let voter_cookie = token_voter_test
+        .with_voter(&registrar_cookie, first_user_cookie)
+        .await?;
+
+    let max_voter_weight_record_cookie = token_voter_test
+        .with_max_voter_weight_record(&registrar_cookie)
+        .await?;
+
+    let _voting_mint_config = token_voter_test
+        .configure_mint_config(
+            &registrar_cookie,
+            &governance_program_cookie,
+            &max_voter_weight_record_cookie,
+            &first_mint_cookie_transfer_fees,
+            0, // no digit shift
+        )
+        .await?;
+
+    let token_owner_record_cookie = token_voter_test
+        .governance
+        .with_token_owner_record_using_user_cookie(&realm_cookie, &first_user_cookie).await?;
+    let amount_deposited = 100_u64;
+    token_voter_test
+        .deposit_entry(
+            &registrar_cookie,
+            &voter_cookie,
+            &first_user_cookie,
+            &token_owner_record_cookie,
+            &first_mint_cookie_transfer_fees,
+            &spl_token_2022::id(),
+            0,
+            amount_deposited,
+        )
+        .await?;
+    token_voter_test.bench.advance_clock().await;
+
+    // Assert
+    let voter_data = token_voter_test.get_voter(&voter_cookie.address).await;
+
+    let vault_balance = token_voter_test.vault_balance(&voter_cookie, &first_mint_cookie_transfer_fees, &spl_token_2022::id()).await;
+    assert_eq!(voter_data.registrar, registrar_cookie.address);
+    assert_eq!(voter_data.deposits.first().unwrap().amount_deposited_native, vault_balance);
 
     Ok(())
 }
@@ -394,9 +456,9 @@ async fn test_deposit_entry_multi_token() -> Result<(), TransportError> {
     assert_eq!(second_deposit_entry.amount_deposited_native, amount_deposited);
     assert_eq!(voter_data.deposits.len(), 2);
 
-    let first_vault_balance = token_voter_test.vault_balance(&voter_cookie, &first_mint_cookie).await;
+    let first_vault_balance = token_voter_test.vault_balance(&voter_cookie, &first_mint_cookie, &spl_token::id()).await;
     assert_eq!(first_vault_balance, amount_deposited);
-    let second_vault_balance = token_voter_test.vault_balance(&voter_cookie, &second_mint_cookie).await;
+    let second_vault_balance = token_voter_test.vault_balance(&voter_cookie, &second_mint_cookie, &spl_token::id()).await;
     assert_eq!(second_vault_balance, amount_deposited);
 
 
