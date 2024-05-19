@@ -52,7 +52,7 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
     }
 
     // Setup voter_weight
-    voter_weight_record.voter_weight = nonzero_token_accounts.len() as u64;
+    voter_weight_record.voter_weight = (nonzero_token_accounts.len() as u64) * 1_000_000_000;
 
     // Record is only valid as of the current slot
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
