@@ -11,6 +11,7 @@ anchor_version = "0.30.0"
 nft_voter = "GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw"
 gateway = "GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk"
 solana-gateway-program = "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
+token_voter = "3JhBg9bSPcfWGFa3t8LH7ooVtrjm45yCkHpxYXMXstUM"
 
 [registry]
 url = "https://anchor.projectserum.com"
