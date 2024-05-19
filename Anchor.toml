@@ -8,7 +8,7 @@ seeds = false
 nft_voter = "GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw"
 gateway = "GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk"
 solana-gateway-program = "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
-token-haver = "vo65JQC6U8HCDPfoJxRrr17n7RZ5fKdfyjHm3erHJ2V"
+token-haver = "7gobfUihgoxA14RUnVaseoah89ggCgYAzgz1JoaPAXam"
 
 [registry]
 url = "https://anchor.projectserum.com"
