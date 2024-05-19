@@ -64,7 +64,7 @@ pub fn configure_mint_config(
     );
 
     let token_supply = mint.supply;
-    let supply_with_digit_shift = digit_shift_native(digit_shift, token_supply)?;
+    let supply_with_digit_shift = VotingMintConfig::compute_digit_shift_native(digit_shift, token_supply)?;
     let voting_mint_config = VotingMintConfig {
         mint: mint.key(),
         digit_shift,
@@ -93,19 +93,4 @@ pub fn configure_mint_config(
     max_voter_weight_record.max_voter_weight_expiry = None;
 
     Ok(())
-}
-
-/// Converts an amount in this voting mints's native currency
-/// to the base vote weight
-/// by applying the digit_shift factor.
-pub fn digit_shift_native(digit_shift: i8, amount_native: u64) -> Result<u64> {
-    let compute = || -> Option<u64> {
-        let val = if digit_shift < 0 {
-            (amount_native as u128).checked_div(10u128.pow((-digit_shift) as u32))?
-        } else {
-            (amount_native as u128).checked_mul(10u128.pow(digit_shift as u32))?
-        };
-        u64::try_from(val).ok()
-    };
-    compute().ok_or_else(|| error!(TokenVoterError::VoterWeightOverflow))
 }

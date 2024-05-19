@@ -25,6 +25,11 @@ pub mod token_voter {
         instructions::create_registrar(ctx, max_mints)
     }
 
+    pub fn resize_registrar(ctx: Context<ResizeRegistrar>, max_mints: u8) -> Result<()> {
+        log_version();
+        instructions::resize_registrar(ctx, max_mints)
+    }
+
     pub fn create_voter_weight_record(ctx: Context<CreateVoterWeightRecord>) -> Result<()> {
         log_version();
         instructions::create_voter_weight_record(ctx)
