@@ -13,7 +13,7 @@ use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
 use anchor_lang::ToAccountMetas;
 use solana_program::program_pack::Pack;
-use solana_program_test::{BanksClientError, ProgramTest};
+use solana_program_test::{processor, BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
@@ -85,7 +85,6 @@ impl TokenVoterTest {
             &mut program_test,
             MintType::SplToken,
         );
-
         GovernanceTest::add_program(&mut program_test);
         let program_id = token_voter::id();
 
@@ -120,13 +119,24 @@ impl TokenVoterTest {
         }
     }
 
+
     #[allow(dead_code)]
-    pub async fn start_new_token_extensions() -> Self {
+    pub async fn start_new_token_extensions(
+        transfer_hook_program_id: Option<&Pubkey>,) -> Self {
         let mut program_test = ProgramTest::new("token_voter", token_voter::id(), None);
         let (mints, users) = ProgramTestBench::add_mints_and_user_cookies_spl_token(
             &mut program_test,
             MintType::SplTokenExtensions,
         );
+
+        if transfer_hook_program_id.is_some() {
+            program_test.set_compute_max_units(500_000);
+            program_test.add_program(
+                "spl_transfer_hook_example",
+                *transfer_hook_program_id.unwrap(),
+                processor!(spl_transfer_hook_example::processor::process),
+            );
+        };
 
         GovernanceTest::add_program(&mut program_test);
         let program_id = token_voter::id();
@@ -462,6 +472,8 @@ impl TokenVoterTest {
         token_program: &Pubkey,
         deposit_entry_index: u8,
         amount: u64,
+        // additional accounts for transfer_hooks to work
+        additional_account_meta: Option<Vec<AccountMeta>>,
     ) -> Result<(), BanksClientError> {
         self.deposit_entry_using_ix(
             registrar_cookie,
@@ -474,6 +486,7 @@ impl TokenVoterTest {
             amount,
             NopOverride,
             None,
+            additional_account_meta
         )
         .await
     }
@@ -491,6 +504,8 @@ impl TokenVoterTest {
         amount: u64,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
+        // additional accounts for transfer_hooks to work
+        additional_account_meta: Option<Vec<AccountMeta>>,
     ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(&token_voter::instruction::Deposit {
             deposit_entry_index,
@@ -506,7 +521,7 @@ impl TokenVoterTest {
             &mint_cookie.address,
             token_program,
         );
-        let accounts = token_voter::accounts::Deposit {
+        let mut accounts = token_voter::accounts::Deposit {
             registrar: registrar_cookie.address,
             voter: voter_cookie.address,
             voter_weight_record: voter_cookie.voter_weight_record,
@@ -519,21 +534,28 @@ impl TokenVoterTest {
             instructions: instructions::id(),
             system_program: System::id(),
             associated_token_program: AssociatedToken::id(),
+        }
+        .to_account_metas(None);
+        
+        if let Some(additional_account_meta) = additional_account_meta {
+                accounts = accounts
+                .into_iter()
+                .chain(additional_account_meta.into_iter())
+                .collect();
         };
-
-        let mut configure_mint_config_ix = Instruction {
+        let mut deposit_ix = Instruction {
             program_id: token_voter::id(),
-            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            accounts,
             data,
         };
 
-        instruction_override(&mut configure_mint_config_ix);
+        instruction_override(&mut deposit_ix);
 
         let default_signers = &[&user_cookie.key];
         let signers = signers_override.unwrap_or(default_signers);
 
         self.bench
-            .process_transaction(&[configure_mint_config_ix], Some(signers))
+            .process_transaction(&[deposit_ix], Some(signers))
             .await?;
 
         Ok(())
@@ -550,6 +572,8 @@ impl TokenVoterTest {
         token_program: &Pubkey,
         deposit_entry_index: u8,
         amount: u64,
+        // additional accounts for transfer_hooks to work
+        additional_account_meta: Option<Vec<AccountMeta>>,
     ) -> Result<(), BanksClientError> {
         self.withdraw_deposit_entry_using_ix(
             registrar_cookie,
@@ -562,6 +586,7 @@ impl TokenVoterTest {
             amount,
             NopOverride,
             None,
+            additional_account_meta
         )
         .await
     }
@@ -579,6 +604,8 @@ impl TokenVoterTest {
         amount: u64,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
+        // additional accounts for transfer_hooks to work
+        additional_account_meta: Option<Vec<AccountMeta>>,
     ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(&token_voter::instruction::Withdraw {
             deposit_entry_index,
@@ -594,7 +621,7 @@ impl TokenVoterTest {
             &mint_cookie.address,
             token_program,
         );
-        let accounts = token_voter::accounts::Withdraw {
+        let mut accounts = token_voter::accounts::Withdraw {
             registrar: registrar_cookie.address,
             voter: voter_cookie.address,
             voter_weight_record: voter_cookie.voter_weight_record,
@@ -606,20 +633,29 @@ impl TokenVoterTest {
             token_program: *token_program,
             system_program: System::id(),
             associated_token_program: AssociatedToken::id(),
+        }
+        .to_account_metas(None);
+        
+        if let Some(additional_account_meta) = additional_account_meta {
+                accounts = accounts
+                .into_iter()
+                .chain(additional_account_meta.into_iter())
+                .collect();
         };
-        let mut configure_mint_config_ix = Instruction {
+
+        let mut withdraw_ix = Instruction {
             program_id: token_voter::id(),
-            accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
+            accounts: accounts,
             data,
         };
 
-        instruction_override(&mut configure_mint_config_ix);
+        instruction_override(&mut withdraw_ix);
 
         let default_signers = &[&user_cookie.key];
         let signers = signers_override.unwrap_or(default_signers);
 
         self.bench
-            .process_transaction(&[configure_mint_config_ix], Some(signers))
+            .process_transaction(&[withdraw_ix], Some(signers))
             .await?;
 
         Ok(())

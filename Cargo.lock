@@ -6451,9 +6451,11 @@ dependencies = [
  "spl-governance 4.0.0 (git+https://github.com/crypt0miester/solana-program-library.git?branch=gib-bounty-jlFb5)",
  "spl-governance-addin-api 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "spl-governance-tools 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "spl-tlv-account-resolution 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "spl-token 3.5.0",
  "spl-token-2022 3.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "spl-token-client",
+ "spl-transfer-hook-example",
  "spl-transfer-hook-interface 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "static_assertions",
 ]

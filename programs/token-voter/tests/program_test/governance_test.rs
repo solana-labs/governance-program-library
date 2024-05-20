@@ -28,7 +28,7 @@ use crate::program_test::{
     tools::clone_keypair,
 };
 
-use super::{program_test_bench::MintType, token_voter_test::UserCookie};
+use super::{program_test_bench::{MintType, TokenAccountCookie}, token_voter_test::{UserCookie, VoterCookie}};
 
 #[allow(dead_code)]
 pub struct RealmCookie {
@@ -390,6 +390,168 @@ impl GovernanceTest {
         })
     }
 
+    // #[allow(dead_code)]
+    // pub async fn with_proposal_with_token_voter(
+    //     &mut self,
+    //     realm_cookie: &RealmCookie,
+    //     token_voter_mint: &MintCookie,
+    //     voter_cookie: &VoterCookie,
+    //     governing_token_account_cookie: &TokenAccountCookie,
+    // ) -> Result<ProposalCookie, TransportError> {
+    //     let token_account_cookie = self
+    //         .bench
+    //         .with_token_account(&realm_cookie.account.community_mint, &MintType::SplToken)
+    //         .await?;
+
+    //     let council_mint_cookie = realm_cookie.council_mint_cookie.as_ref().unwrap();
+    //     let governing_token_mint = council_mint_cookie.address;
+
+    //     let proposal_owner_record_key = get_token_owner_record_address(
+    //         &self.program_id,
+    //         &realm_cookie.address,
+    //         &governing_token_mint,
+    //         &token_owner,
+    //     );
+
+    //     let create_tor_ix = create_token_owner_record(
+    //         &self.program_id,
+    //         &realm_cookie.address,
+    //         &self.bench.payer.pubkey(),
+    //         &governing_token_mint,
+    //         &self.bench.payer.pubkey(),
+    //     );
+
+    //     self.bench
+    //         .process_transaction(&[create_tor_ix], None)
+    //         .await?;
+
+    //     let deposit_ix = deposit_governing_tokens(
+    //         &self.program_id,
+    //         &realm_cookie.address,
+    //         &governing_token_account_cookie.address,
+    //         &token_owner,
+    //         &token_owner,
+    //         &self.bench.payer.pubkey(),
+    //         1,
+    //         &governing_token_mint,
+    //         false,
+    //     );
+
+    //     self.bench.process_transaction(&[deposit_ix], None).await?;
+
+    //     let governance_key = get_governance_address(
+    //         &self.program_id,
+    //         &realm_cookie.address,
+    //         &token_account_cookie.address,
+    //     );
+
+    //     let create_governance_ix = create_governance(
+    //         &self.program_id,
+    //         &realm_cookie.address,
+    //         &token_account_cookie.address,
+    //         &proposal_owner_record_key,
+    //         &self.bench.payer.pubkey(),
+    //         &realm_cookie.realm_authority.pubkey(),
+    //         None,
+    //         spl_governance::state::governance::GovernanceConfig {
+    //             min_community_weight_to_create_proposal: 1,
+    //             transactions_hold_up_time: 10,
+    //             min_council_weight_to_create_proposal: 1,
+    //             community_vote_threshold: VoteThreshold::YesVotePercentage(60),
+    //             voting_base_time: 600,
+    //             community_vote_tipping: VoteTipping::Strict,
+    //             council_vote_threshold: VoteThreshold::YesVotePercentage(60),
+    //             council_veto_vote_threshold: VoteThreshold::Disabled,
+    //             council_vote_tipping: VoteTipping::Disabled,
+    //             community_veto_vote_threshold: VoteThreshold::Disabled,
+    //             voting_cool_off_time: 0,
+    //             deposit_exempt_proposal_count: 10,
+    //         },
+    //     );
+
+    //     self.bench
+    //         .process_transaction(
+    //             &[create_governance_ix],
+    //             Some(&[&realm_cookie.realm_authority]),
+    //         )
+    //         .await?;
+
+    //     let proposal_governing_token_mint = realm_cookie.account.community_mint;
+    //     let proposal_seed = Pubkey::new_unique();
+
+    //     let proposal_key = get_proposal_address(
+    //         &self.program_id,
+    //         &governance_key,
+    //         &proposal_governing_token_mint,
+    //         &proposal_seed,
+    //     );
+
+    //     let create_proposal_ix = create_proposal(
+    //         &self.program_id,
+    //         &governance_key,
+    //         &proposal_owner_record_key,
+    //         &token_owner,
+    //         &self.bench.payer.pubkey(),
+    //         None,
+    //         &realm_cookie.address,
+    //         String::from("Proposal #1"),
+    //         String::from("Proposal #1 link"),
+    //         &proposal_governing_token_mint,
+    //         spl_governance::state::proposal::VoteType::SingleChoice,
+    //         vec!["Yes".to_string()],
+    //         true,
+    //         &proposal_seed,
+    //     );
+
+    //     let sign_off_proposal_ix = sign_off_proposal(
+    //         &self.program_id,
+    //         &realm_cookie.address,
+    //         &governance_key,
+    //         &proposal_key,
+    //         &token_owner,
+    //         Some(&proposal_owner_record_key),
+    //     );
+
+    //     self.bench
+    //         .process_transaction(&[create_proposal_ix, sign_off_proposal_ix], None)
+    //         .await?;
+
+    //     let account = ProposalV2 {
+    //         account_type: GovernanceAccountType::GovernanceV2,
+    //         governing_token_mint: proposal_governing_token_mint,
+    //         state: ProposalState::Voting,
+    //         governance: governance_key,
+    //         token_owner_record: proposal_owner_record_key,
+    //         signatories_count: 1,
+    //         signatories_signed_off_count: 1,
+    //         vote_type: spl_governance::state::proposal::VoteType::SingleChoice,
+    //         options: vec![],
+    //         deny_vote_weight: Some(1),
+    //         veto_vote_weight: 0,
+    //         abstain_vote_weight: None,
+    //         start_voting_at: None,
+    //         draft_at: 1,
+    //         signing_off_at: None,
+    //         voting_at: None,
+    //         voting_at_slot: None,
+    //         voting_completed_at: None,
+    //         executing_at: None,
+    //         closed_at: None,
+    //         execution_flags: spl_governance::state::enums::InstructionExecutionFlags::None,
+    //         max_vote_weight: None,
+    //         max_voting_time: None,
+    //         reserved: [0; 64],
+    //         name: String::from("Proposal #1"),
+    //         description_link: String::from("Proposal #1 link"),
+    //         reserved1: 0,
+    //         vote_threshold: None,
+    //     };
+
+    //     Ok(ProposalCookie {
+    //         address: proposal_key,
+    //         account,
+    //     })
+    // }
     #[allow(dead_code)]
     pub async fn with_token_owner_record(
         &mut self,

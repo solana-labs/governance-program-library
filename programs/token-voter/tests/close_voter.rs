@@ -11,7 +11,7 @@ mod program_test;
 #[tokio::test]
 async fn test_close_with_token_extensions() -> Result<(), TransportError> {
     // Arrange
-    let mut token_voter_test = TokenVoterTest::start_new_token_extensions().await;
+    let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
 
     let realm_cookie = token_voter_test
         .governance
@@ -72,6 +72,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
             &spl_token_2022::id(),
             0,
             amount_deposited,
+            None
         )
         .await?;
 
@@ -87,6 +88,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
             &spl_token_2022::id(),
             1,
             amount_deposited,
+            None
         )
         .await?;
 
@@ -115,6 +117,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
             &spl_token_2022::id(),
             0,
             amount_deposited,
+            None
         )
         .await?;
 
@@ -143,6 +146,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
             &spl_token_2022::id(),
             1,
             amount_deposited,
+            None
         )
         .await?;
     token_voter_test.bench.advance_clock().await;

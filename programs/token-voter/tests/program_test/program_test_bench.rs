@@ -1,29 +1,19 @@
 use std::cell::RefCell;
 
-use anchor_lang::{
-    prelude::{Pubkey, Rent},
-    AccountDeserialize,
-};
+use anchor_lang::{prelude::{Pubkey, Rent}, AccountDeserialize};
 
 use anchor_spl::associated_token;
 use borsh::BorshDeserialize;
 use solana_program::system_program;
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
-    account::{Account, ReadableAccount},
-    borsh1::try_from_slice_unchecked,
-    instruction::Instruction,
-    program_option::COption,
-    program_pack::Pack,
-    signature::Keypair,
-    signer::Signer,
-    system_instruction,
-    transaction::Transaction,
-    transport::TransportError,
+    account::{Account, ReadableAccount}, borsh1::try_from_slice_unchecked, instruction::{AccountMeta, Instruction}, program_option::COption, program_pack::Pack, signature::Keypair, signer::Signer, system_instruction, sysvar, transaction::Transaction, transport::TransportError
 };
 use spl_associated_token_account::get_associated_token_address_with_program_id;
+use spl_tlv_account_resolution::{account::ExtraAccountMeta, seeds::Seed, state::ExtraAccountMetaList};
 use spl_token_2022::extension::ExtensionType;
 use spl_token_client::token::ExtensionInitializationParams;
+use spl_transfer_hook_interface::{get_extra_account_metas_address, instruction::{initialize_extra_account_meta_list, update_extra_account_meta_list}};
 
 use crate::program_test::tools::clone_keypair;
 
@@ -493,6 +483,203 @@ impl ProgramTestBench {
 
         self.process_transaction(&instructions, Some(&[mint_keypair]))
             .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn initialize_transfer_hook_account_metas(
+        &self,
+        mint_address: &Pubkey,
+        mint_authority: &Keypair,
+        payer: &Keypair,
+        program_id: &Pubkey,
+        source: &Pubkey,
+        destination: &Pubkey,
+        writable_pubkey: &Pubkey,
+        amount: u64,
+    ) -> Vec<AccountMeta> {
+        let extra_account_metas_address =
+            get_extra_account_metas_address(&mint_address, &program_id);
+
+        let init_extra_account_metas = [
+            ExtraAccountMeta::new_with_pubkey(&sysvar::instructions::id(), false, false).unwrap(),
+            ExtraAccountMeta::new_with_pubkey(&mint_authority.pubkey(), false, false).unwrap(),
+            ExtraAccountMeta::new_with_seeds(
+                &[
+                    Seed::Literal {
+                        bytes: b"seed-prefix".to_vec(),
+                    },
+                    Seed::AccountKey { index: 0 },
+                ],
+                false,
+                true,
+            )
+            .unwrap(),
+            ExtraAccountMeta::new_with_seeds(
+                &[
+                    Seed::InstructionData {
+                        index: 8,  // After instruction discriminator
+                        length: 8, // `u64` (amount)
+                    },
+                    Seed::AccountKey { index: 2 },
+                ],
+                false,
+                true,
+            )
+            .unwrap(),
+            ExtraAccountMeta::new_with_pubkey(&writable_pubkey, false, true).unwrap(),
+        ];
+
+        let extra_pda_1 = Pubkey::find_program_address(
+            &[
+                b"seed-prefix",  // Literal prefix
+                source.as_ref(), // Account at index 0
+            ],
+            &program_id,
+        )
+        .0;
+        let extra_pda_2 = Pubkey::find_program_address(
+            &[
+                &amount.to_le_bytes(), // Instruction data bytes 8 to 16
+                destination.as_ref(),  // Account at index 2
+            ],
+            &program_id,
+        )
+        .0;
+
+        let extra_account_metas = [
+            AccountMeta::new(extra_account_metas_address, false),
+            AccountMeta::new(*program_id, false),
+            AccountMeta::new_readonly(sysvar::instructions::id(), false),
+            AccountMeta::new_readonly(mint_authority.pubkey(), false),
+            AccountMeta::new(extra_pda_1, false),
+            AccountMeta::new(extra_pda_2, false),
+            AccountMeta::new(*writable_pubkey, false),
+        ];
+
+        let rent_lamports = self.rent.minimum_balance(
+            ExtraAccountMetaList::size_of(init_extra_account_metas.len()).unwrap(),
+        );
+
+        let instructions = 
+            &[
+                system_instruction::transfer(
+                    &payer.pubkey(),
+                    &extra_account_metas_address,
+                    rent_lamports,
+                ),
+                initialize_extra_account_meta_list(
+                    &program_id,
+                    &extra_account_metas_address,
+                    &mint_address,
+                    &mint_authority.pubkey(),
+                    &init_extra_account_metas,
+                ),
+            ];
+        self
+            .process_transaction(instructions, Some(&[&payer, &mint_authority]))
+            .await
+            .unwrap();
+
+        extra_account_metas.to_vec()
+    }
+
+    #[allow(dead_code)]
+    pub async fn update_transfer_hook_account_metas(
+        &self,
+        mint_address: &Pubkey,
+        mint_authority: &Keypair,
+        payer: &Keypair,
+        program_id: &Pubkey,
+        source: &Pubkey,
+        destination: &Pubkey,
+        updated_writable_pubkey: &Pubkey,
+        amount: u64,
+    ) -> Vec<AccountMeta> {
+        let extra_account_metas_address =
+            get_extra_account_metas_address(&mint_address, &program_id);
+
+        let updated_extra_account_metas = [
+            ExtraAccountMeta::new_with_pubkey(&sysvar::instructions::id(), false, false).unwrap(),
+            ExtraAccountMeta::new_with_pubkey(&mint_authority.pubkey(), false, false).unwrap(),
+            ExtraAccountMeta::new_with_seeds(
+                &[
+                    Seed::Literal {
+                        bytes: b"updated-seed-prefix".to_vec(),
+                    },
+                    Seed::AccountKey { index: 0 },
+                ],
+                false,
+                true,
+            )
+            .unwrap(),
+            ExtraAccountMeta::new_with_seeds(
+                &[
+                    Seed::InstructionData {
+                        index: 8,  // After instruction discriminator
+                        length: 8, // `u64` (amount)
+                    },
+                    Seed::AccountKey { index: 2 },
+                ],
+                false,
+                true,
+            )
+            .unwrap(),
+            ExtraAccountMeta::new_with_pubkey(&updated_writable_pubkey, false, true).unwrap(),
+        ];
+
+        let extra_pda_1 = Pubkey::find_program_address(
+            &[
+                b"updated-seed-prefix",  // Literal prefix
+                source.as_ref(), // Account at index 0
+            ],
+            &program_id,
+        )
+        .0;
+        let extra_pda_2 = Pubkey::find_program_address(
+            &[
+                &amount.to_le_bytes(), // Instruction data bytes 8 to 16
+                destination.as_ref(),  // Account at index 2
+            ],
+            &program_id,
+        )
+        .0;
+
+        let extra_account_metas = [
+            AccountMeta::new(extra_account_metas_address, false),
+            AccountMeta::new(*program_id, false),
+            AccountMeta::new_readonly(sysvar::instructions::id(), false),
+            AccountMeta::new_readonly(mint_authority.pubkey(), false),
+            AccountMeta::new(extra_pda_1, false),
+            AccountMeta::new(extra_pda_2, false),
+            AccountMeta::new(*updated_writable_pubkey, false),
+        ];
+
+        let rent_lamports = self.rent.minimum_balance(
+            ExtraAccountMetaList::size_of(updated_extra_account_metas.len()).unwrap(),
+        );
+
+        let instructions = 
+            &[
+                system_instruction::transfer(
+                    &payer.pubkey(),
+                    &extra_account_metas_address,
+                    rent_lamports,
+                ),
+                update_extra_account_meta_list(
+                    &program_id,
+                    &extra_account_metas_address,
+                    &mint_address,
+                    &mint_authority.pubkey(),
+                    &updated_extra_account_metas,
+                ),
+            ];
+
+        self
+            .process_transaction(instructions, Some(&[&payer, &mint_authority]))
+            .await
+            .unwrap();
+
+        extra_account_metas.to_vec()
     }
 
     #[allow(dead_code)]

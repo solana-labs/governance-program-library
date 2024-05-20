@@ -9,8 +9,7 @@ mod program_test;
 #[tokio::test]
 async fn test_create_max_voter_weight_record_with_token_extensions() -> Result<(), TransportError> {
     // Arrange
-    let mut token_voter_test = TokenVoterTest::start_new_token_extensions().await;
-
+    let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
     let realm_cookie = token_voter_test.governance.with_realm_token_extension().await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
