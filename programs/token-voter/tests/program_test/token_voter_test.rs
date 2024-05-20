@@ -7,6 +7,7 @@ use anchor_spl::{
     token_interface::TokenAccount,
 };
 use solana_sdk::{instruction::AccountMeta, sysvar::instructions};
+use spl_governance::state::{proposal::ProposalV2, token_owner_record::TokenOwnerRecordV2};
 use token_voter::state::*;
 
 use crate::program_test::governance_test::GovernanceTest;

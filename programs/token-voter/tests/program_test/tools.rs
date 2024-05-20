@@ -78,3 +78,18 @@ pub fn assert_ix_err(banks_client_error: BanksClientError, ix_error: Instruction
         _ => panic!("{:?} Is not InstructionError", tx_error),
     };
 }
+
+#[allow(dead_code)]
+pub fn assert_ix_err_transport(
+    banks_client_error: TransportError,
+    ix_error: InstructionError
+) {
+    let tx_error = banks_client_error.unwrap();
+
+    match tx_error {
+        TransactionError::InstructionError(_, instruction_error) => {
+            assert_eq!(instruction_error, ix_error);
+        }
+        _ => panic!("{:?} Is not InstructionError", tx_error),
+    };
+}
