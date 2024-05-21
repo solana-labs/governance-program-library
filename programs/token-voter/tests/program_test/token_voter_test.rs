@@ -7,7 +7,6 @@ use anchor_spl::{
     token_interface::TokenAccount,
 };
 use solana_sdk::{instruction::AccountMeta, sysvar::instructions};
-use spl_governance::state::{proposal::ProposalV2, token_owner_record::TokenOwnerRecordV2};
 use token_voter::state::*;
 
 use crate::program_test::governance_test::GovernanceTest;
@@ -234,6 +233,76 @@ impl TokenVoterTest {
 
         self.bench
             .process_transaction(&[create_registrar_ix], Some(signers))
+            .await?;
+
+        let account = Registrar {
+            governance_program_id: self.governance.program_id,
+            realm: realm_cookie.address,
+            governing_token_mint: realm_cookie.account.community_mint,
+            voting_mint_configs: vec![],
+            max_mints,
+            reserved: [0; 127],
+        };
+        Ok(RegistrarCookie {
+            address: registrar_key,
+            mint: vec![],
+            account,
+            realm_authority: realm_cookie.get_realm_authority(),
+            max_mints,
+        })
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_resize_registrar(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        max_mints: u8,
+    ) -> Result<RegistrarCookie, BanksClientError> {
+        self.with_resize_registrar_using_ix(realm_cookie,max_mints,  NopOverride, None)
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_resize_registrar_using_ix<F: Fn(&mut Instruction)>(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        max_mints: u8,
+        instruction_override: F,
+        signers_override: Option<&[&Keypair]>,
+    ) -> Result<RegistrarCookie, BanksClientError> {
+        let registrar_key =
+            get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
+
+        let data = anchor_lang::InstructionData::data(&token_voter::instruction::ResizeRegistrar {
+            max_mints,
+        });
+
+        let accounts = anchor_lang::ToAccountMetas::to_account_metas(
+            &token_voter::accounts::ResizeRegistrar {
+                registrar: registrar_key,
+                realm: realm_cookie.address,
+                governance_program_id: self.governance.program_id,
+                governing_token_mint: realm_cookie.account.community_mint,
+                realm_authority: realm_cookie.get_realm_authority().pubkey(),
+                payer: self.bench.payer.pubkey(),
+                system_program: solana_sdk::system_program::id(),
+            },
+            None,
+        );
+
+        let mut resize_registrar_ix = Instruction {
+            program_id: token_voter::id(),
+            accounts,
+            data,
+        };
+
+        instruction_override(&mut resize_registrar_ix);
+
+        let default_signers = &[&realm_cookie.realm_authority];
+        let signers = signers_override.unwrap_or(default_signers);
+
+        self.bench
+            .process_transaction(&[resize_registrar_ix], Some(signers))
             .await?;
 
         let account = Registrar {

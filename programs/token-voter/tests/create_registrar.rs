@@ -15,7 +15,7 @@ async fn test_create_registrar_with_token_extensions() -> Result<(), TransportEr
     // Arrange
     let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
 
-    let realm_cookie = token_voter_test.governance.with_realm_token_extension().await?;
+    let realm_cookie = token_voter_test.governance.with_realm_token_extension(&MintType::SplTokenExtensions).await?;
 
     // Act
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;

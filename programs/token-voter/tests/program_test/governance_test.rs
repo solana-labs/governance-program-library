@@ -6,7 +6,7 @@ use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 use spl_governance::{
     instruction::{
         create_governance, create_proposal, create_realm, create_token_owner_record,
-        deposit_governing_tokens, relinquish_vote, sign_off_proposal, AddSignatoryAuthority,
+        deposit_governing_tokens, relinquish_vote, sign_off_proposal, 
     },
     state::{
         enums::{
@@ -14,7 +14,7 @@ use spl_governance::{
             VoteTipping,
         },
         governance::get_governance_address,
-        proposal::{self, get_proposal_address, ProposalV2},
+        proposal::{get_proposal_address, ProposalV2},
         realm::{get_realm_address, GoverningTokenConfigAccountArgs, RealmConfig, RealmV2},
         realm_config::GoverningTokenType,
         token_owner_record::{
@@ -30,7 +30,7 @@ use crate::program_test::{
 };
 
 use super::{
-    program_test_bench::{MintType, TokenAccountCookie},
+    program_test_bench::MintType,
     token_voter_test::{UserCookie, VoterCookie},
 };
 
@@ -162,16 +162,16 @@ impl GovernanceTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_realm_token_extension(&mut self) -> Result<RealmCookie, TransportError> {
+    pub async fn with_realm_token_extension(&mut self, mint_type: &MintType) -> Result<RealmCookie, TransportError> {
         let realm_authority = Keypair::new();
 
         let community_mint_cookie = self
             .bench
-            .with_mint(&MintType::SplTokenExtensions, None)
+            .with_mint(mint_type, None)
             .await?;
         let council_mint_cookie = self
             .bench
-            .with_mint(&MintType::SplTokenExtensions, None)
+            .with_mint(mint_type, None)
             .await?;
 
         self.next_id += 1;
@@ -238,10 +238,11 @@ impl GovernanceTest {
     pub async fn with_proposal(
         &mut self,
         realm_cookie: &RealmCookie,
+        mint_type: &MintType,
     ) -> Result<ProposalCookie, TransportError> {
         let token_account_cookie = self
             .bench
-            .with_token_account(&realm_cookie.account.community_mint, &MintType::SplToken)
+            .with_token_account(&realm_cookie.account.community_mint, mint_type, true)
             .await?;
 
         let token_owner = self.bench.payer.pubkey();
@@ -250,7 +251,7 @@ impl GovernanceTest {
 
         let governing_token_account_cookie = self
             .bench
-            .with_tokens(council_mint_cookie, &token_owner, 1, &MintType::SplToken)
+            .with_tokens(council_mint_cookie, &token_owner, 2, mint_type, true)
             .await?;
 
         let proposal_owner_record_key = get_token_owner_record_address(
@@ -271,6 +272,11 @@ impl GovernanceTest {
         self.bench
             .process_transaction(&[create_tor_ix], None)
             .await?;
+        
+        let is_token_2022 = match mint_type {
+            MintType::SplToken => false,
+            _ => true,
+        };
 
         let deposit_ix = deposit_governing_tokens(
             &self.program_id,
@@ -279,9 +285,9 @@ impl GovernanceTest {
             &token_owner,
             &token_owner,
             &self.bench.payer.pubkey(),
-            1,
+            2,
             &governing_token_mint,
-            false,
+            is_token_2022
         );
 
         self.bench.process_transaction(&[deposit_ix], None).await?;
@@ -520,116 +526,6 @@ impl GovernanceTest {
     }
 
     #[allow(dead_code)]
-    pub async fn create_proposal(
-        &self,
-        realm_cookie: &RealmCookie,
-        authority: &Keypair,
-        voter: &VoterCookie,
-        payer: &Keypair,
-        token_owner_record_cookie: &TokenOwnerRecordCookie,
-        token_account_cookie: &TokenAccountCookie,
-    ) -> Result<ProposalCookie, TransportError> {
-        let council_mint_cookie = realm_cookie.council_mint_cookie.as_ref().unwrap();
-        let governing_token_mint = council_mint_cookie.address;
-        let proposal_seed = Pubkey::new_unique();
-
-        let proposal = spl_governance::state::proposal::get_proposal_address(
-            &self.program_id,
-            &realm_cookie.address,
-            &governing_token_mint,
-            &proposal_seed,
-        );
-
-        let governance_key = get_governance_address(
-            &self.program_id,
-            &realm_cookie.address,
-            &token_account_cookie.address,
-        );
-
-        let instructions = vec![
-            spl_governance::instruction::create_proposal(
-                &self.program_id,
-                &governance_key,
-                &token_owner_record_cookie.address,
-                &authority.pubkey(),
-                &payer.pubkey(),
-                Some(voter.voter_weight_record),
-                &realm_cookie.address,
-                "test proposal".into(),
-                "description".into(),
-                &governing_token_mint,
-                proposal::VoteType::SingleChoice,
-                vec!["yes".into()],
-                true,
-                &proposal_seed,
-            ),
-            spl_governance::instruction::add_signatory(
-                &self.program_id,
-                &governance_key,
-                &proposal,
-                &AddSignatoryAuthority::ProposalOwner {
-                    token_owner_record: token_owner_record_cookie.address,
-                    governance_authority: token_owner_record_cookie.account.governing_token_owner,
-                },
-                // &AddSignatoryAuthority::None,
-                &payer.pubkey(),
-                &authority.pubkey(),
-            ),
-            spl_governance::instruction::sign_off_proposal(
-                &self.program_id,
-                &realm_cookie.address,
-                &governance_key,
-                &proposal,
-                &authority.pubkey(),
-                None,
-            ),
-        ];
-
-        let signer1 = Keypair::from_base58_string(&payer.to_base58_string());
-        let signer2 = Keypair::from_base58_string(&authority.to_base58_string());
-
-        self.bench
-            .process_transaction(&instructions, Some(&[&signer1, &signer2]))
-            .await?;
-
-        let account = ProposalV2 {
-            account_type: GovernanceAccountType::GovernanceV2,
-            governing_token_mint: governing_token_mint,
-            state: ProposalState::Voting,
-            governance: governance_key,
-            token_owner_record: token_owner_record_cookie.address,
-            signatories_count: 1,
-            signatories_signed_off_count: 1,
-            vote_type: spl_governance::state::proposal::VoteType::SingleChoice,
-            options: vec![],
-            deny_vote_weight: Some(1),
-            veto_vote_weight: 0,
-            abstain_vote_weight: None,
-            start_voting_at: None,
-            draft_at: 1,
-            signing_off_at: None,
-            voting_at: None,
-            voting_at_slot: None,
-            voting_completed_at: None,
-            executing_at: None,
-            closed_at: None,
-            execution_flags: spl_governance::state::enums::InstructionExecutionFlags::None,
-            max_vote_weight: None,
-            max_voting_time: None,
-            reserved: [0; 64],
-            name: String::from("Proposal #1"),
-            description_link: String::from("Proposal #1 link"),
-            reserved1: 0,
-            vote_threshold: None,
-        };
-
-        Ok(ProposalCookie {
-            address: proposal,
-            account,
-        })
-    }
-
-    #[allow(dead_code)]
     pub async fn cast_vote(
         &self,
         realm_cookie: &RealmCookie,
@@ -640,7 +536,7 @@ impl GovernanceTest {
         max_voter_weight_record: &Pubkey,
         token_owner_record_cookie: &TokenOwnerRecordCookie,
     ) -> Result<(), TransportError> {
-        
+
         let instructions = vec![spl_governance::instruction::cast_vote(
             &self.program_id,
             &realm_cookie.address,

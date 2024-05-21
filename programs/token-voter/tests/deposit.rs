@@ -18,7 +18,7 @@ async fn test_deposit_entry_with_token_extension() -> Result<(), TransportError>
 
     let realm_cookie = token_voter_test
         .governance
-        .with_realm_token_extension()
+        .with_realm_token_extension(&MintType::SplTokenExtensions)
         .await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
@@ -111,7 +111,7 @@ async fn test_deposit_entry_with_token_extension_transfer_hooks() -> Result<(), 
 
     let realm_cookie = token_voter_test
         .governance
-        .with_realm_token_extension()
+        .with_realm_token_extension(&MintType::SplTokenExtensions)
         .await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
@@ -133,6 +133,7 @@ async fn test_deposit_entry_with_token_extension_transfer_hooks() -> Result<(), 
             &first_user_cookie.key.pubkey(),
             100,
             &MintType::SplTokenExtensionsWithTransferHook,
+            false
         )
         .await;
 
@@ -244,7 +245,7 @@ async fn test_deposit_entry_with_token_extension_transfer_fees() -> Result<(), T
 
     let realm_cookie = token_voter_test
         .governance
-        .with_realm_token_extension()
+        .with_realm_token_extension(&MintType::SplTokenExtensions)
         .await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
@@ -263,6 +264,7 @@ async fn test_deposit_entry_with_token_extension_transfer_fees() -> Result<(), T
             &first_user_cookie.key.pubkey(),
             100,
             &MintType::SplTokenExtensionsWithTransferFees,
+            false
         )
         .await;
 

@@ -3,6 +3,7 @@ use program_test::tools::assert_ix_err;
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
+use crate::program_test::program_test_bench::MintType;
 
 mod program_test;
 
@@ -10,7 +11,7 @@ mod program_test;
 async fn test_create_max_voter_weight_record_with_token_extensions() -> Result<(), TransportError> {
     // Arrange
     let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
-    let realm_cookie = token_voter_test.governance.with_realm_token_extension().await?;
+    let realm_cookie = token_voter_test.governance.with_realm_token_extension(&MintType::SplTokenExtensions).await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
 

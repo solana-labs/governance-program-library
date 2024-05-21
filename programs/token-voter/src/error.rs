@@ -187,4 +187,7 @@ pub enum TokenVoterError {
 
     #[msg("Index is out of Voting Mint Config bounds")]
     OutOfBoundsVotingMintConfigIndex,
+
+    #[msg("Resizing Max Mints cannot be smaller than Configure Mint Configs")]
+    InvalidResizeMaxMints,
 }

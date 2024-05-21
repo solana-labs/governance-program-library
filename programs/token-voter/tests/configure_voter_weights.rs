@@ -3,6 +3,7 @@ use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::transport::TransportError;
+use crate::program_test::program_test_bench::MintType;
 
 mod program_test;
 
@@ -11,7 +12,7 @@ async fn test_configure_voter_weights_with_token_extensions() -> Result<(), Tran
     // Arrange
     let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
     
-    let realm_cookie = token_voter_test.governance.with_realm_token_extension().await?;
+    let realm_cookie = token_voter_test.governance.with_realm_token_extension(&MintType::SplTokenExtensions).await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
     let governance_program_cookie = token_voter_test.with_governance_program(None).await;

@@ -62,7 +62,7 @@ pub fn resize_registrar(ctx: Context<ResizeRegistrar>, max_mints: u8) -> Result<
     require_gt!(
         max_mints as usize,
         registrar.voting_mint_configs.len(),
-        TokenVoterError::InvalidRealmAuthority
+        TokenVoterError::InvalidResizeMaxMints
     );
 
     registrar.max_mints = max_mints;

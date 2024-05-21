@@ -5,7 +5,7 @@ use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
 use token_voter::error::TokenVoterError;
-
+use crate::program_test::program_test_bench::MintType;
 mod program_test;
 
 #[tokio::test]
@@ -15,7 +15,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
 
     let realm_cookie = token_voter_test
         .governance
-        .with_realm_token_extension()
+        .with_realm_token_extension(&MintType::SplTokenExtensions)
         .await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
