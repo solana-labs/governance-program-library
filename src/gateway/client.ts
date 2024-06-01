@@ -1,10 +1,6 @@
-import { Program, Provider } from '@project-serum/anchor';
-import { PublicKey } from '@solana/web3.js';
-import { Gateway, IDL } from './gateway';
-
-export const GATEWAY_PLUGIN_ID = new PublicKey(
-  'GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk'
-);
+import { Program, Provider } from '@coral-xyz/anchor';
+import { Gateway } from './gateway';
+import GatewayIDL  from './gateway.json';
 
 export class GatewayClient {
   constructor(public program: Program<Gateway>, public devnet?: boolean) {}
@@ -13,12 +9,8 @@ export class GatewayClient {
     provider: Provider,
     devnet?: boolean,
   ): Promise<GatewayClient> {
-    // alternatively we could fetch from chain
-    // const idl = await Program.fetchIdl(GATEWAY_PLUGIN_ID, provider);
-    const idl = IDL;
-
     return new GatewayClient(
-      new Program<Gateway>(idl as Gateway, GATEWAY_PLUGIN_ID, provider),
+      new Program(GatewayIDL as Gateway, provider),
       devnet,
     );
   }

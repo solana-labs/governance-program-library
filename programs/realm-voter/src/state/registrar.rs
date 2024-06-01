@@ -1,10 +1,9 @@
 use crate::{id, state::GovernanceProgramConfig, tools::anchor::DISCRIMINATOR_SIZE};
-use anchor_lang::prelude::*;
-use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
+use anchor_lang::prelude::{borsh::BorshSchema, *};
 use solana_program::pubkey::PUBKEY_BYTES;
 
 /// Enum defining collection item change type
-#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
+#[derive(Clone, Debug, PartialEq, AnchorDeserialize, AnchorSerialize, BorshSchema)]
 pub enum CollectionItemChangeType {
     /// Update item in the collection if it already exists and Insert the item if it doesn't
     Upsert,

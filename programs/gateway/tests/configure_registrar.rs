@@ -4,7 +4,6 @@ use anchor_lang::prelude::Pubkey;
 use program_test::gateway_voter_test::GatewayVoterTest;
 
 use gpl_civic_gateway::error::GatewayError;
-use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 
@@ -12,7 +11,7 @@ use crate::program_test::tools::NopOverride;
 use crate::{
     program_test::governance_test::RealmCookie,
     program_test::predecessor_plugin_test::PredecessorPluginTest,
-    program_test::tools::{assert_anchor_err, assert_gateway_err, assert_ix_err},
+    program_test::tools::{assert_anchor_err, assert_gateway_err},
 };
 
 #[tokio::test]
@@ -197,7 +196,7 @@ async fn test_configure_registrar_with_invalid_spl_gov_program_id_error(
         .unwrap();
 
     // Assert
-    assert_anchor_err(err, anchor_lang::error::ErrorCode::ConstraintOwner);
+    assert_gateway_err(err, GatewayError::InvalidRealmForRegistrar);
 
     Ok(())
 }
@@ -225,7 +224,7 @@ async fn test_configure_registrar_with_invalid_realm_error() -> Result<(), Trans
         .err()
         .unwrap();
 
-    assert_ix_err(err, InstructionError::Custom(2004));
+    assert_gateway_err(err, GatewayError::InvalidRealmForRegistrar);
 
     Ok(())
 }

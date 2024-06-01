@@ -18,7 +18,7 @@ use solana_sdk::{
     transport::TransportError,
 };
 
-use borsh::BorshDeserialize;
+use borsh::de::BorshDeserialize;
 
 use crate::program_test::tools::clone_keypair;
 

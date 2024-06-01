@@ -1,6 +1,5 @@
 use crate::id;
 use crate::tools::anchor::DISCRIMINATOR_SIZE;
-use anchor_lang::prelude::Pubkey;
 use anchor_lang::prelude::*;
 use solana_program::pubkey::PUBKEY_BYTES;
 

@@ -4,8 +4,8 @@ use std::sync::Arc;
 use anchor_lang::prelude::Pubkey;
 use itertools::Either;
 use solana_gateway::{
-    instruction::{add_gatekeeper, issue_vanilla},
-    state::{get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed},
+    instruction::{add_gatekeeper, issue},
+    state::{get_gatekeeper_account_address, get_gateway_token_address_with_seed},
 };
 use solana_program::instruction::AccountMeta;
 
@@ -47,7 +47,7 @@ pub struct GatewayCookie {
 
 impl GatewayCookie {
     pub fn get_gatekeeper_account(&self) -> Pubkey {
-        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
+        let (gatekeeper_account, _) = get_gatekeeper_account_address(
             &self.gatekeeper.pubkey(),
             &self.gatekeeper_network.pubkey(),
         );
@@ -309,7 +309,7 @@ impl GatewayVoterTest {
         let gatekeeper_account = gateway_cookie.get_gatekeeper_account();
         let gateway_token_cookie = GatewayTokenCookie::new(&wallet_cookie.address, gateway_cookie);
 
-        let mut issue_ix = issue_vanilla(
+        let mut issue_ix = issue(
             &self.bench.payer.pubkey(),
             &wallet_cookie.address,
             &gatekeeper_account,
