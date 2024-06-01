@@ -20,7 +20,7 @@ async fn test_withdraw_with_token_extensions_transfer_hooks() -> Result<(), Tran
 
     let realm_cookie = token_voter_test
         .governance
-        .with_realm_token_extension(&MintType::SplTokenExtensions)
+        .with_realm()
         .await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
@@ -200,7 +200,7 @@ async fn test_withdraw_with_token_extensions() -> Result<(), TransportError> {
 
     let realm_cookie = token_voter_test
         .governance
-        .with_realm_token_extension(&MintType::SplTokenExtensions)
+        .with_realm()
         .await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;

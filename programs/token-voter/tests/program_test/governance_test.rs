@@ -75,8 +75,7 @@ impl GovernanceTest {
 
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
-        // program_test.add_program("spl_governance", Self::program_id(), None);
-        program_test.add_program("spl_governance_2022", Self::program_id(), None);
+        program_test.add_program("spl_governance", Self::program_id(), None);
     }
 
     #[allow(dead_code)]
@@ -125,81 +124,7 @@ impl GovernanceTest {
             None,
             realm_name.clone(),
             min_community_weight_to_create_governance,
-            community_mint_max_voter_weight_source.clone(),
-            false,
-        );
-
-        self.bench
-            .process_transaction(&[create_realm_ix], None)
-            .await?;
-
-        let account = RealmV2 {
-            account_type: GovernanceAccountType::RealmV2,
-            community_mint: community_mint_cookie.address,
-
-            name: realm_name,
-            reserved: [0; 6],
-            authority: Some(realm_authority.pubkey()),
-            config: RealmConfig {
-                council_mint: Some(council_mint_cookie.address),
-                reserved: [0; 6],
-                min_community_weight_to_create_governance,
-                legacy1: 0,
-                legacy2: 0,
-                community_mint_max_voter_weight_source,
-            },
-            reserved_v2: [0; 128],
-            legacy1: 0,
-        };
-
-        Ok(RealmCookie {
-            address: realm_key,
-            account,
-            realm_authority,
-            community_mint_cookie,
-            council_mint_cookie: Some(council_mint_cookie),
-        })
-    }
-
-    #[allow(dead_code)]
-    pub async fn with_realm_token_extension(&mut self, mint_type: &MintType) -> Result<RealmCookie, TransportError> {
-        let realm_authority = Keypair::new();
-
-        let community_mint_cookie = self
-            .bench
-            .with_mint(mint_type, None)
-            .await?;
-        let council_mint_cookie = self
-            .bench
-            .with_mint(mint_type, None)
-            .await?;
-
-        self.next_id += 1;
-        let realm_name = format!("Realm #{}", self.next_id).to_string();
-
-        let min_community_weight_to_create_governance = 1;
-        let community_mint_max_voter_weight_source = MintMaxVoterWeightSource::FULL_SUPPLY_FRACTION;
-
-        let realm_key = get_realm_address(&self.program_id, &realm_name);
-
-        let community_token_config_args = GoverningTokenConfigAccountArgs {
-            voter_weight_addin: self.community_voter_weight_addin,
-            max_voter_weight_addin: self.community_voter_weight_addin,
-            token_type: GoverningTokenType::default(),
-        };
-
-        let create_realm_ix = create_realm(
-            &self.program_id,
-            &realm_authority.pubkey(),
-            &community_mint_cookie.address,
-            &self.bench.payer.pubkey(),
-            Some(council_mint_cookie.address),
-            Some(community_token_config_args),
-            None,
-            realm_name.clone(),
-            min_community_weight_to_create_governance,
-            community_mint_max_voter_weight_source.clone(),
-            true,
+            community_mint_max_voter_weight_source.clone()
         );
 
         self.bench
@@ -238,11 +163,10 @@ impl GovernanceTest {
     pub async fn with_proposal(
         &mut self,
         realm_cookie: &RealmCookie,
-        mint_type: &MintType,
     ) -> Result<ProposalCookie, TransportError> {
         let token_account_cookie = self
             .bench
-            .with_token_account(&realm_cookie.account.community_mint, mint_type, true)
+            .with_token_account(&realm_cookie.account.community_mint, &MintType::SplToken, true)
             .await?;
 
         let token_owner = self.bench.payer.pubkey();
@@ -251,7 +175,7 @@ impl GovernanceTest {
 
         let governing_token_account_cookie = self
             .bench
-            .with_tokens(council_mint_cookie, &token_owner, 2, mint_type, true)
+            .with_tokens(council_mint_cookie, &token_owner, 2, &MintType::SplToken, true)
             .await?;
 
         let proposal_owner_record_key = get_token_owner_record_address(
@@ -273,11 +197,6 @@ impl GovernanceTest {
             .process_transaction(&[create_tor_ix], None)
             .await?;
         
-        let is_token_2022 = match mint_type {
-            MintType::SplToken => false,
-            _ => true,
-        };
-
         let deposit_ix = deposit_governing_tokens(
             &self.program_id,
             &realm_cookie.address,
@@ -287,7 +206,6 @@ impl GovernanceTest {
             &self.bench.payer.pubkey(),
             2,
             &governing_token_mint,
-            is_token_2022
         );
 
         self.bench.process_transaction(&[deposit_ix], None).await?;
@@ -301,15 +219,15 @@ impl GovernanceTest {
         let create_governance_ix = create_governance(
             &self.program_id,
             &realm_cookie.address,
-            &token_account_cookie.address,
+            Some(&token_account_cookie.address),
             &proposal_owner_record_key,
             &self.bench.payer.pubkey(),
             &realm_cookie.realm_authority.pubkey(),
             None,
             spl_governance::state::governance::GovernanceConfig {
                 min_community_weight_to_create_proposal: 1,
-                transactions_hold_up_time: 10,
                 min_council_weight_to_create_proposal: 1,
+                min_transaction_hold_up_time: 0,
                 community_vote_threshold: VoteThreshold::YesVotePercentage(60),
                 voting_base_time: 600,
                 community_vote_tipping: VoteTipping::Strict,
@@ -442,9 +360,8 @@ impl GovernanceTest {
             outstanding_proposal_count: 0,
             reserved: [0; 6],
             governance_delegate: None,
-            reserved_v2: [0; 124],
+            reserved_v2: [0; 128],
             version: TOKEN_OWNER_RECORD_LAYOUT_VERSION,
-            locks: vec![],
         };
 
         Ok(TokenOwnerRecordCookie {
@@ -489,9 +406,8 @@ impl GovernanceTest {
             outstanding_proposal_count: 0,
             reserved: [0; 6],
             governance_delegate: None,
-            reserved_v2: [0; 124],
+            reserved_v2: [0; 128],
             version: TOKEN_OWNER_RECORD_LAYOUT_VERSION,
-            locks: vec![],
         };
 
         Ok(TokenOwnerRecordCookie {

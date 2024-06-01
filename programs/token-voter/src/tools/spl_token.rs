@@ -55,7 +55,7 @@ pub fn transfer_checked_spl_tokens<'a>(
     mint_info: &AccountInfo<'a>,
     additional_accounts: &[AccountInfo<'a>],
 ) -> ProgramResult {
-    let spl_token_program_id = spl_token_info.owner;
+    let spl_token_program_id = spl_token_info.key;
 
     let mut transfer_instruction = spl_token_2022::instruction::transfer_checked(
         spl_token_program_id,
@@ -135,7 +135,7 @@ pub fn transfer_spl_tokens_signed_checked<'a>(
         return Err(ProgramError::InvalidSeeds);
     }
 
-    let spl_token_program_id = spl_token_info.owner;
+    let spl_token_program_id = spl_token_info.key;
 
     let mut transfer_instruction = spl_token_2022::instruction::transfer_checked(
         spl_token_program_id,
@@ -280,6 +280,17 @@ fn valid_mint_length(mint_data: &[u8]) -> bool {
         || (mint_data.len() > Mint::LEN
             && mint_data.len() != Multisig::LEN
             && ACCOUNTTYPE_MINT == mint_data[Mint::LEN])
+}
+
+/// Computationally cheap method to get owner from a token account
+/// It reads owner without deserializing full account data
+pub fn get_spl_token_owner(token_account_info: &AccountInfo) -> Result<Pubkey> {
+    assert_is_valid_spl_token_account(token_account_info)?;
+
+    // TokeAccount layout:   mint(32), owner(32), amount(8)
+    let data = token_account_info.try_borrow_data()?;
+    let owner_data = array_ref![data, 32, 32];
+    Ok(Pubkey::new_from_array(*owner_data))
 }
 
 /// Get current TransferFee, returns 0 if no TransferFeeConfig exist.

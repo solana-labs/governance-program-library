@@ -108,7 +108,7 @@ pub fn withdraw<'key, 'accounts, 'remaining, 'info>(
         registrar,
         voter_authority_key,
     )?;
-    token_owner_record.assert_can_withdraw_governing_tokens(Clock::get()?.unix_timestamp)?;
+    token_owner_record.assert_can_withdraw_governing_tokens()?;
 
     let deposit_entry = voter.active_deposit_mut(deposit_entry_index)?;
 

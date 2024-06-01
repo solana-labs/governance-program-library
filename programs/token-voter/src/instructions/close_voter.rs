@@ -1,11 +1,10 @@
 use {
-    crate::{error::*, state::*, tools::spl_token::get_spl_token_amount},
+    crate::{error::*, state::*, tools::spl_token::{get_spl_token_amount, get_spl_token_owner}},
     anchor_lang::prelude::*,
     anchor_spl::{
         token_2022::{self, CloseAccount},
         token_interface::TokenInterface,
     },
-    spl_governance::tools::spl_token::get_spl_token_owner,
 };
 
 // Remaining accounts must be all the token accounts owned by voter account they want to close,

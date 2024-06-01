@@ -1,5 +1,4 @@
 use crate::program_test::program_test_bench::MintType;
-use anchor_spl::token_interface::spl_token_metadata_interface::borsh::BorshDeserialize;
 use program_test::token_voter_test::TokenVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
@@ -9,6 +8,7 @@ use solana_sdk::signer::Signer;
 use solana_sdk::transport::TransportError;
 mod program_test;
 use crate::program_test::program_test_bench::TokenAccountCookie;
+use anchor_lang::AnchorDeserialize;
 
 #[tokio::test]
 async fn test_cast_token_vote() -> Result<(), TransportError> {
@@ -113,7 +113,7 @@ async fn test_cast_token_vote() -> Result<(), TransportError> {
         )
         .await?;
 
-    let proposal_cookie = token_voter_test.governance.with_proposal(&realm_cookie, &MintType::SplToken).await?;
+    let proposal_cookie = token_voter_test.governance.with_proposal(&realm_cookie).await?;
 
     token_voter_test
         .governance
@@ -166,7 +166,8 @@ async fn test_cast_token_vote_token_extension() -> Result<(), TransportError> {
     // Arrange
     let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
 
-    let realm_cookie = token_voter_test.governance.with_realm_token_extension(&MintType::SplTokenExtensions).await?;
+    let realm_cookie = token_voter_test.governance.with_realm().await?;
+    
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
     let governance_program_cookie = token_voter_test.with_governance_program(None).await;
@@ -191,7 +192,7 @@ async fn test_cast_token_vote_token_extension() -> Result<(), TransportError> {
         &token_account_keypair,
         &council_mint_cookie.address,
         &first_user_cookie.key.pubkey(),
-        &MintType::SplTokenExtensions,
+        &MintType::SplToken,
         true
     )
     .await?;
@@ -200,7 +201,7 @@ async fn test_cast_token_vote_token_extension() -> Result<(), TransportError> {
         &council_mint_cookie.mint_authority,
         &token_account_keypair.pubkey(),
         100,
-        &MintType::SplTokenExtensions,
+        &MintType::SplToken,
         &first_user_cookie.key.pubkey(),
         true,
     )
@@ -278,7 +279,7 @@ async fn test_cast_token_vote_token_extension() -> Result<(), TransportError> {
         )
         .await?;
 
-    let proposal_cookie = token_voter_test.governance.with_proposal(&realm_cookie, &MintType::SplTokenExtensions).await?;
+    let proposal_cookie = token_voter_test.governance.with_proposal(&realm_cookie).await?;
 
     token_voter_test
         .governance
@@ -336,7 +337,7 @@ async fn test_cast_token_vote_token_extension_transfer_fees() -> Result<(), Tran
 
     let realm_cookie = token_voter_test
         .governance
-        .with_realm_token_extension(&MintType::SplTokenExtensionsWithTransferFees)
+        .with_realm()
         .await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
@@ -365,7 +366,7 @@ async fn test_cast_token_vote_token_extension_transfer_fees() -> Result<(), Tran
             &token_account_keypair,
             &council_mint_cookie.address,
             &first_user_cookie.key.pubkey(),
-            &MintType::SplTokenExtensionsWithTransferFees,
+            &MintType::SplToken,
             true,
         )
         .await?;
@@ -377,7 +378,7 @@ async fn test_cast_token_vote_token_extension_transfer_fees() -> Result<(), Tran
             &council_mint_cookie.mint_authority,
             &token_account_keypair.pubkey(),
             100,
-            &MintType::SplTokenExtensionsWithTransferFees,
+            &MintType::SplToken,
             &first_user_cookie.key.pubkey(),
             true,
         )
@@ -457,7 +458,7 @@ async fn test_cast_token_vote_token_extension_transfer_fees() -> Result<(), Tran
 
     let proposal_cookie = token_voter_test
         .governance
-        .with_proposal(&realm_cookie, &MintType::SplTokenExtensionsWithTransferFees)
+        .with_proposal(&realm_cookie)
         .await?;
 
     token_voter_test
