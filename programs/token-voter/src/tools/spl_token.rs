@@ -8,21 +8,17 @@ use {
         entrypoint::ProgramResult,
         msg,
         program::{invoke, invoke_signed},
-        program_option::COption,
         program_pack::Pack,
-        system_instruction,
         sysvar::Sysvar,
     },
-    spl_governance::tools::pack::unpack_coption_pubkey,
     spl_token::state::Multisig,
     spl_token_2022::{
         cmp_pubkeys,
         extension::{
             transfer_fee::TransferFeeConfig, transfer_hook, AccountType, BaseStateWithExtensions,
-            ExtensionType, PodStateWithExtensions, StateWithExtensions,
+            PodStateWithExtensions, StateWithExtensions,
         },
         generic_token_account::GenericTokenAccount,
-        instruction::AuthorityType,
         pod::PodMint,
         state::{Account, Mint},
     },
@@ -49,128 +45,6 @@ pub fn is_spl_token_2022(spl_token_program_id: &Pubkey) -> bool {
     return true;
 }
 
-/// Creates and initializes SPL token account with PDA using the provided PDA
-/// seeds
-#[allow(clippy::too_many_arguments)]
-pub fn create_spl_token_account_signed<'a>(
-    payer_info: &AccountInfo<'a>,
-    token_account_info: &AccountInfo<'a>,
-    token_account_address_seeds: &[&[u8]],
-    token_mint_info: &AccountInfo<'a>,
-    token_account_owner_info: &AccountInfo<'a>,
-    program_id: &Pubkey,
-    system_info: &AccountInfo<'a>,
-    spl_token_info: &AccountInfo<'a>,
-    rent_sysvar_info: &AccountInfo<'a>,
-    rent: &Rent,
-) -> Result<()> {
-    let spl_token_program_id = &get_spl_token_program_id(spl_token_info);
-
-    // Get the token space for if the token has extensions.
-    let space = if is_spl_token_2022(spl_token_program_id) {
-        let mint_data = token_mint_info.data.borrow();
-
-        let state = PodStateWithExtensions::<PodMint>::unpack(&mint_data).map_err(|_| {
-            Into::<TokenVoterError>::into(TokenVoterError::InvalidGoverningTokenMint)
-        })?;
-        let mint_extensions = state.get_extension_types()?;
-        let required_extensions =
-            ExtensionType::get_required_init_account_extensions(&mint_extensions);
-        ExtensionType::try_calculate_account_len::<Account>(&required_extensions)?
-    } else {
-        spl_token_2022::state::Account::get_packed_len()
-    };
-
-    let create_account_instruction = system_instruction::create_account(
-        payer_info.key,
-        token_account_info.key,
-        1.max(rent.minimum_balance(space)),
-        space as u64,
-        spl_token_program_id,
-    );
-
-    let (account_address, bump_seed) =
-        Pubkey::find_program_address(token_account_address_seeds, program_id);
-
-    if account_address != *token_account_info.key {
-        msg!(
-            "Create SPL Token Account with PDA: {:?} was requested while PDA: {:?} was expected",
-            token_account_info.key,
-            account_address
-        );
-        return Err(ProgramError::InvalidSeeds.into());
-    }
-
-    let mut signers_seeds = token_account_address_seeds.to_vec();
-    let bump = &[bump_seed];
-    signers_seeds.push(bump);
-
-    invoke_signed(
-        &create_account_instruction,
-        &[
-            payer_info.clone(),
-            token_account_info.clone(),
-            system_info.clone(),
-        ],
-        &[&signers_seeds[..]],
-    )?;
-
-    let initialize_account_instruction = spl_token_2022::instruction::initialize_account(
-        spl_token_program_id,
-        token_account_info.key,
-        token_mint_info.key,
-        token_account_owner_info.key,
-    )?;
-
-    invoke(
-        &initialize_account_instruction,
-        &[
-            payer_info.clone(),
-            token_account_info.clone(),
-            token_account_owner_info.clone(),
-            token_mint_info.clone(),
-            spl_token_info.clone(),
-            rent_sysvar_info.clone(),
-        ],
-    )?;
-
-    Ok(())
-}
-
-/// Transfers SPL Tokens
-pub fn transfer_spl_tokens<'a>(
-    source_info: &AccountInfo<'a>,
-    destination_info: &AccountInfo<'a>,
-    authority_info: &AccountInfo<'a>,
-    amount: u64,
-    spl_token_info: &AccountInfo<'a>,
-) -> ProgramResult {
-    let spl_token_program_id = &get_spl_token_program_id(spl_token_info);
-    // for previous instruction compatibility we do not use transfer_checked() here.
-    #[allow(deprecated)]
-    let transfer_instruction = spl_token_2022::instruction::transfer(
-        spl_token_program_id,
-        source_info.key,
-        destination_info.key,
-        authority_info.key,
-        &[],
-        amount,
-    )
-    .unwrap();
-
-    invoke(
-        &transfer_instruction,
-        &[
-            spl_token_info.clone(),
-            authority_info.clone(),
-            source_info.clone(),
-            destination_info.clone(),
-        ],
-    )?;
-
-    Ok(())
-}
-
 /// Transfers SPL Tokens
 pub fn transfer_checked_spl_tokens<'a>(
     source_info: &AccountInfo<'a>,
@@ -181,7 +55,7 @@ pub fn transfer_checked_spl_tokens<'a>(
     mint_info: &AccountInfo<'a>,
     additional_accounts: &[AccountInfo<'a>],
 ) -> ProgramResult {
-    let spl_token_program_id = &get_spl_token_program_id(spl_token_info);
+    let spl_token_program_id = spl_token_info.owner;
 
     let mut transfer_instruction = spl_token_2022::instruction::transfer_checked(
         spl_token_program_id,
@@ -237,92 +111,6 @@ pub fn transfer_checked_spl_tokens<'a>(
     Ok(())
 }
 
-/// Mint SPL Tokens
-pub fn mint_spl_tokens_to<'a>(
-    mint_info: &AccountInfo<'a>,
-    destination_info: &AccountInfo<'a>,
-    mint_authority_info: &AccountInfo<'a>,
-    amount: u64,
-    spl_token_info: &AccountInfo<'a>,
-) -> ProgramResult {
-    let spl_token_program_id = &get_spl_token_program_id(spl_token_info);
-
-    let mint_to_ix = spl_token_2022::instruction::mint_to(
-        spl_token_program_id,
-        mint_info.key,
-        destination_info.key,
-        mint_authority_info.key,
-        &[],
-        amount,
-    )
-    .unwrap();
-
-    invoke(
-        &mint_to_ix,
-        &[
-            spl_token_info.clone(),
-            mint_authority_info.clone(),
-            mint_info.clone(),
-            destination_info.clone(),
-        ],
-    )?;
-
-    Ok(())
-}
-
-/// Transfers SPL Tokens from a token account owned by the provided PDA
-/// authority with seeds
-pub fn transfer_spl_tokens_signed<'a>(
-    source_info: &AccountInfo<'a>,
-    destination_info: &AccountInfo<'a>,
-    authority_info: &AccountInfo<'a>,
-    authority_seeds: &[&[u8]],
-    program_id: &Pubkey,
-    amount: u64,
-    spl_token_info: &AccountInfo<'a>,
-) -> ProgramResult {
-    let (authority_address, bump_seed) = Pubkey::find_program_address(authority_seeds, program_id);
-
-    if authority_address != *authority_info.key {
-        msg!(
-                "Transfer SPL Token with Authority PDA: {:?} was requested while PDA: {:?} was expected",
-                authority_info.key,
-                authority_address
-            );
-        return Err(ProgramError::InvalidSeeds);
-    }
-
-    let spl_token_program_id = &get_spl_token_program_id(spl_token_info);
-    // for previous instruction compatibility we do not use transfer_checked() here.
-    #[allow(deprecated)]
-    let transfer_instruction = spl_token_2022::instruction::transfer(
-        spl_token_program_id,
-        source_info.key,
-        destination_info.key,
-        authority_info.key,
-        &[],
-        amount,
-    )
-    .unwrap();
-
-    let mut signers_seeds = authority_seeds.to_vec();
-    let bump = &[bump_seed];
-    signers_seeds.push(bump);
-
-    invoke_signed(
-        &transfer_instruction,
-        &[
-            spl_token_info.clone(),
-            authority_info.clone(),
-            source_info.clone(),
-            destination_info.clone(),
-        ],
-        &[&signers_seeds[..]],
-    )?;
-
-    Ok(())
-}
-
 /// Transfers SPL Tokens checked from a token account owned by the provided PDA
 /// authority with seeds
 pub fn transfer_spl_tokens_signed_checked<'a>(
@@ -347,7 +135,7 @@ pub fn transfer_spl_tokens_signed_checked<'a>(
         return Err(ProgramError::InvalidSeeds);
     }
 
-    let spl_token_program_id = &get_spl_token_program_id(spl_token_info);
+    let spl_token_program_id = spl_token_info.owner;
 
     let mut transfer_instruction = spl_token_2022::instruction::transfer_checked(
         spl_token_program_id,
@@ -412,57 +200,6 @@ pub fn transfer_spl_tokens_signed_checked<'a>(
     Ok(())
 }
 
-/// Burns SPL Tokens from a token account owned by the provided PDA authority
-/// with seeds
-pub fn burn_spl_tokens_signed<'a>(
-    token_account_info: &AccountInfo<'a>,
-    token_mint_info: &AccountInfo<'a>,
-    authority_info: &AccountInfo<'a>,
-    authority_seeds: &[&[u8]],
-    program_id: &Pubkey,
-    amount: u64,
-    spl_token_info: &AccountInfo<'a>,
-) -> ProgramResult {
-    let (authority_address, bump_seed) = Pubkey::find_program_address(authority_seeds, program_id);
-
-    if authority_address != *authority_info.key {
-        msg!(
-            "Burn SPL Token with Authority PDA: {:?} was requested while PDA: {:?} was expected",
-            authority_info.key,
-            authority_address
-        );
-        return Err(ProgramError::InvalidSeeds);
-    }
-
-    let spl_token_program_id = &get_spl_token_program_id(spl_token_info);
-    let burn_ix = spl_token_2022::instruction::burn(
-        spl_token_program_id,
-        token_account_info.key,
-        token_mint_info.key,
-        authority_info.key,
-        &[],
-        amount,
-    )
-    .unwrap();
-
-    let mut signers_seeds = authority_seeds.to_vec();
-    let bump = &[bump_seed];
-    signers_seeds.push(bump);
-
-    invoke_signed(
-        &burn_ix,
-        &[
-            spl_token_info.clone(),
-            token_account_info.clone(),
-            token_mint_info.clone(),
-            authority_info.clone(),
-        ],
-        &[&signers_seeds[..]],
-    )?;
-
-    Ok(())
-}
-
 /// Asserts the given account_info represents a valid SPL Token account which is
 /// initialized and belongs to spl_token program
 pub fn assert_is_valid_spl_token_account(account_info: &AccountInfo) -> Result<()> {
@@ -481,11 +218,6 @@ pub fn assert_is_valid_spl_token_account(account_info: &AccountInfo) -> Result<(
     }
 
     Ok(())
-}
-
-/// Checks if the given account_info  is spl-token token account
-pub fn is_spl_token_account(account_info: &AccountInfo) -> bool {
-    assert_is_valid_spl_token_account(account_info).is_ok()
 }
 
 /// Asserts the given mint_info represents a valid SPL Token Mint account  which
@@ -515,33 +247,6 @@ pub fn assert_is_valid_spl_token_mint(mint_info: &AccountInfo) -> Result<()> {
     Ok(())
 }
 
-/// Checks if the given account_info is be spl-token mint account
-pub fn is_spl_token_mint(mint_info: &AccountInfo) -> bool {
-    assert_is_valid_spl_token_mint(mint_info).is_ok()
-}
-
-/// Computationally cheap method to get mint from a token account
-/// It reads mint without deserializing full account data
-pub fn get_spl_token_mint(token_account_info: &AccountInfo) -> Result<Pubkey> {
-    assert_is_valid_spl_token_account(token_account_info)?;
-
-    // TokeAccount layout:   mint(32), owner(32), amount(8), ...
-    let data = token_account_info.try_borrow_data()?;
-    let mint_data = array_ref![data, 0, 32];
-    Ok(Pubkey::new_from_array(*mint_data))
-}
-
-/// Computationally cheap method to get owner from a token account
-/// It reads owner without deserializing full account data
-pub fn get_spl_token_owner(token_account_info: &AccountInfo) -> Result<Pubkey> {
-    assert_is_valid_spl_token_account(token_account_info)?;
-
-    // TokeAccount layout:   mint(32), owner(32), amount(8)
-    let data = token_account_info.try_borrow_data()?;
-    let owner_data = array_ref![data, 32, 32];
-    Ok(Pubkey::new_from_array(*owner_data))
-}
-
 /// Computationally cheap method to just get supply from a mint without
 /// unpacking the whole object
 pub fn get_spl_token_mint_supply(mint_info: &AccountInfo) -> Result<u64> {
@@ -552,97 +257,6 @@ pub fn get_spl_token_mint_supply(mint_info: &AccountInfo) -> Result<u64> {
     let bytes = array_ref![data, 36, 8];
 
     Ok(u64::from_le_bytes(*bytes))
-}
-
-/// Computationally cheap method to just get authority from a mint without
-/// unpacking the whole object
-pub fn get_spl_token_mint_authority(mint_info: &AccountInfo) -> Result<COption<Pubkey>> {
-    assert_is_valid_spl_token_mint(mint_info)?;
-    // In token program, 36, 8, 1, 1 is the layout, where the first 36 is authority.
-    let data = mint_info.try_borrow_data().unwrap();
-    let bytes = array_ref![data, 0, 36];
-
-    Ok(unpack_coption_pubkey(bytes)?)
-}
-
-/// Asserts current mint authority matches the given authority and it's signer
-/// of the transaction
-pub fn assert_spl_token_mint_authority_is_signer(
-    mint_info: &AccountInfo,
-    mint_authority_info: &AccountInfo,
-) -> Result<()> {
-    let mint_authority = get_spl_token_mint_authority(mint_info)?;
-
-    if mint_authority.is_none() {
-        return Err(TokenVoterError::MintHasNoAuthority.into());
-    }
-
-    if !mint_authority.contains(mint_authority_info.key) {
-        return Err(TokenVoterError::InvalidMintAuthority.into());
-    }
-
-    if !mint_authority_info.is_signer {
-        return Err(TokenVoterError::MintAuthorityMustSign.into());
-    }
-
-    Ok(())
-}
-
-/// Asserts current token owner matches the given owner and it's signer of the
-/// transaction
-pub fn assert_spl_token_owner_is_signer(
-    token_info: &AccountInfo,
-    token_owner_info: &AccountInfo,
-) -> Result<()> {
-    let token_owner = get_spl_token_owner(token_info)?;
-
-    if token_owner != *token_owner_info.key {
-        return Err(TokenVoterError::InvalidTokenOwner.into());
-    }
-
-    if !token_owner_info.is_signer {
-        return Err(TokenVoterError::TokenOwnerMustSign.into());
-    }
-
-    Ok(())
-}
-
-/// Sets spl-token account (Mint or TokenAccount) authority
-pub fn set_spl_token_account_authority<'a>(
-    account_info: &AccountInfo<'a>,
-    account_authority: &AccountInfo<'a>,
-    new_account_authority: &Pubkey,
-    authority_type: AuthorityType,
-    spl_token_info: &AccountInfo<'a>,
-) -> Result<()> {
-    let spl_token_program_id = &get_spl_token_program_id(spl_token_info);
-    let set_authority_ix = spl_token_2022::instruction::set_authority(
-        spl_token_program_id,
-        account_info.key,
-        Some(new_account_authority),
-        authority_type,
-        account_authority.key,
-        &[],
-    )?;
-
-    invoke(
-        &set_authority_ix,
-        &[
-            account_info.clone(),
-            account_authority.clone(),
-            spl_token_info.clone(),
-        ],
-    )?;
-
-    Ok(())
-}
-
-fn get_spl_token_program_id(spl_token_info: &AccountInfo) -> Pubkey {
-    if is_spl_token_2022(spl_token_info.key) {
-        spl_token_2022::id()
-    } else {
-        spl_token::id()
-    }
 }
 
 /// Computationally cheap method to just get supply off a mint without unpacking whole object

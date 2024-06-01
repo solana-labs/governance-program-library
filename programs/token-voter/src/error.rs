@@ -8,17 +8,11 @@ pub enum TokenVoterError {
     #[msg("Invalid Realm for Registrar")]
     InvalidRealmForRegistrar,
 
-    #[msg("Invalid Collection Size")]
-    InvalidCollectionSize,
-
     #[msg("Invalid MaxVoterWeightRecord Realm")]
     InvalidMaxVoterWeightRecordRealm,
 
     #[msg("Invalid MaxVoterWeightRecord Mint")]
     InvalidMaxVoterWeightRecordMint,
-
-    #[msg("CastVote Is Not Allowed")]
-    CastVoteIsNotAllowed,
 
     #[msg("Invalid VoterWeightRecord Realm")]
     InvalidVoterWeightRecordRealm,
@@ -28,51 +22,6 @@ pub enum TokenVoterError {
 
     #[msg("Invalid TokenOwner for VoterWeightRecord")]
     InvalidTokenOwnerForVoterWeightRecord,
-
-    #[msg("Collection must be verified")]
-    CollectionMustBeVerified,
-
-    #[msg("Voter does not own NFT")]
-    VoterDoesNotOwnNft,
-
-    #[msg("Collection not found")]
-    CollectionNotFound,
-
-    #[msg("Missing Metadata collection")]
-    MissingMetadataCollection,
-
-    #[msg("Token Metadata doesn't match")]
-    TokenMetadataDoesNotMatch,
-
-    #[msg("Invalid account owner")]
-    InvalidAccountOwner,
-
-    #[msg("Invalid token metadata account")]
-    InvalidTokenMetadataAccount,
-
-    #[msg("Duplicated NFT detected")]
-    DuplicatedNftDetected,
-
-    #[msg("Invalid NFT amount")]
-    InvalidNftAmount,
-
-    #[msg("NFT already voted")]
-    NftAlreadyVoted,
-
-    #[msg("Invalid Proposal for NftVoteRecord")]
-    InvalidProposalForNftVoteRecord,
-
-    #[msg("Invalid TokenOwner for NftVoteRecord")]
-    InvalidTokenOwnerForNftVoteRecord,
-
-    #[msg("VoteRecord must be withdrawn")]
-    VoteRecordMustBeWithdrawn,
-
-    #[msg("Invalid VoteRecord for NftVoteRecord")]
-    InvalidVoteRecordForNftVoteRecord,
-
-    #[msg("VoterWeightRecord must be expired")]
-    VoterWeightRecordMustBeExpired,
 
     #[msg("Mathematical Overflow")]
     Overflow,
@@ -85,9 +34,6 @@ pub enum TokenVoterError {
     #[msg("Invalid Mint account owner")]
     SplTokenMintWithInvalidOwner,
 
-    /// Token Account is not initialized
-    #[msg("Token Account is not initialized")]
-    SplTokenAccountNotInitialized,
 
     /// Token Account doesn't exist
     #[msg("Token Account doesn't exist")]
@@ -108,44 +54,14 @@ pub enum TokenVoterError {
     /// Token Mint account doesn't exist
     #[msg("Token Mint account doesn't exist")]
     SplTokenMintDoesNotExist,
-
-    /// Current mint authority must sign transaction
-    #[msg("Current mint authority must sign transaction")]
-    MintAuthorityMustSign,
-
-    /// Invalid mint authority
-    #[msg("Invalid mint authority")]
-    InvalidMintAuthority,
-
-    /// Mint has no authority
-    #[msg("Mint has no authority")]
-    MintHasNoAuthority,
-
-    /// Invalid token owner
-    #[msg("Invalid token owner")]
-    InvalidTokenOwner,
-
-    /// Current token owner must sign transaction
-    #[msg("Current token owner must sign transaction")]
-    TokenOwnerMustSign,
-
+    
     /// Account data is empty or invalid
     #[msg("Account Data is empty or invalid")]
     InvalidAccountData,
 
-    /// Invalid Governing Token Mint
-    #[msg("Invalid Governing Token Mint")]
-    InvalidGoverningTokenMint,
-
     /// Math Overflow in VoterWeight
     #[msg("Math Overflow in VoterWeight")]
     VoterWeightOverflow,
-
-    #[msg("Invalid Proposal for NftVoteRecord")]
-    InvalidProposalForTokenVoteRecord,
-
-    #[msg("Invalid TokenOwner for NftVoteRecord")]
-    InvalidTokenOwnerForTokenVoteRecord,
 
     #[msg("Mint Not Found in Mint Configs")]
     MintNotFound,

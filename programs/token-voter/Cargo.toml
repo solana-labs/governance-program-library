@@ -1,7 +1,7 @@
 [package]
 name = "token-voter"
 version = "0.1.0"
-description = "Created with Anchor"
+description = "SPL Governance plugin implementing token based governance power"
 edition = "2021"
 
 [lib]
