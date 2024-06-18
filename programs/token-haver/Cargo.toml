@@ -1,6 +1,6 @@
 [package]
 name = "gpl-token-haver"
-version = "0.0.1"
+version = "0.0.2"
 description = "SPL Governance plugin granting governance power based on the nonzero presence of locked tokens"
 license = "Apache-2.0"
 edition = "2018"
