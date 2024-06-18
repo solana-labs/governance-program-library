@@ -9,7 +9,7 @@ pub mod state;
 
 pub mod tools;
 
-declare_id!("vo65JQC6U8HCDPfoJxRrr17n7RZ5fKdfyjHm3erHJ2V");
+declare_id!("7gobfUihgoxA14RUnVaseoah89ggCgYAzgz1JoaPAXam");
 
 #[program]
 pub mod token_haver {
