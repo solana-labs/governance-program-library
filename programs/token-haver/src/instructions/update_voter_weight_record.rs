@@ -42,6 +42,17 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
             voter_weight_record.governing_token_owner,
             TokenHaverError::TokenAccountWrongOwner
         );
+        
+        // Throw an error if a token account's mint is not unique amount the accounts
+        require!(
+            nonzero_token_accounts
+                .iter()
+                .filter(|a| a.mint == account.mint)
+                .count()
+                == 1,
+            TokenHaverError::TokenAccountDuplicateMint
+        );
+
         // Throw an error if a token account's mint isn't in registrar.mints
         require!(
             registrar.mints.contains(&account.mint),
@@ -52,7 +63,7 @@ pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Resu
     }
 
     // Setup voter_weight
-    voter_weight_record.voter_weight = nonzero_token_accounts.len() as u64;
+    voter_weight_record.voter_weight = (nonzero_token_accounts.len() as u64) * 1_000_000;
 
     // Record is only valid as of the current slot
     voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);

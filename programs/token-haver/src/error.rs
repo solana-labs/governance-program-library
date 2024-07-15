@@ -23,6 +23,9 @@ pub enum TokenHaverError {
     #[msg("All token accounts' mints must be included in the registrar")]
     TokenAccountWrongMint,
 
-    #[msg("All token accounts' mints must be included in the registrar")]
+    #[msg("All token accounts must be locked")]
     TokenAccountNotLocked,
+
+    #[msg("All token accounts' mints must be unique")]
+    TokenAccountDuplicateMint,
 }
