@@ -1,20 +1,14 @@
-/**
- * Program IDL in camelCase format in order to be used in JS/TS.
- *
- * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/realm_voter.json`.
- */
-export type RealmVoter = {
+{
   "address": "GRmVtfLq2BPeWs5EDoQoZc787VYkhdkA11k63QM1Xemz",
   "metadata": {
-    "name": "realmVoter",
+    "name": "realm_voter",
     "version": "0.0.1",
     "spec": "0.1.0",
     "description": "SPL Governance plugin granting governance power through Realms membership"
   },
   "instructions": [
     {
-      "name": "configureGovernanceProgram",
+      "name": "configure_governance_program",
       "discriminator": [
         249,
         113,
@@ -37,14 +31,14 @@ export type RealmVoter = {
           "name": "realm"
         },
         {
-          "name": "realmAuthority",
+          "name": "realm_authority",
           "docs": [
             "Authority of the Realm must sign the transaction and must match realm.authority"
           ],
           "signer": true
         },
         {
-          "name": "governanceProgramId",
+          "name": "governance_program_id",
           "docs": [
             "The onus is entirely on the  caller side to ensure the provided instance is correct",
             "In future versions once we have the registry of spl-governance instances it could be validated against the registry"
@@ -53,17 +47,17 @@ export type RealmVoter = {
       ],
       "args": [
         {
-          "name": "changeType",
+          "name": "change_type",
           "type": {
             "defined": {
-              "name": "collectionItemChangeType"
+              "name": "CollectionItemChangeType"
             }
           }
         }
       ]
     },
     {
-      "name": "configureVoterWeights",
+      "name": "configure_voter_weights",
       "discriminator": [
         183,
         82,
@@ -86,14 +80,14 @@ export type RealmVoter = {
           "name": "realm"
         },
         {
-          "name": "realmAuthority",
+          "name": "realm_authority",
           "docs": [
             "Authority of the Realm must sign and match realm.authority"
           ],
           "signer": true
         },
         {
-          "name": "maxVoterWeightRecord",
+          "name": "max_voter_weight_record",
           "docs": [
             "MaxVoterWeightRecord for the given registrar.realm and registrar.governing_token_mint"
           ],
@@ -102,17 +96,17 @@ export type RealmVoter = {
       ],
       "args": [
         {
-          "name": "realmMemberVoterWeight",
+          "name": "realm_member_voter_weight",
           "type": "u64"
         },
         {
-          "name": "maxVoterWeight",
+          "name": "max_voter_weight",
           "type": "u64"
         }
       ]
     },
     {
-      "name": "createMaxVoterWeightRecord",
+      "name": "create_max_voter_weight_record",
       "discriminator": [
         182,
         70,
@@ -128,7 +122,7 @@ export type RealmVoter = {
           "name": "registrar"
         },
         {
-          "name": "maxVoterWeightRecord",
+          "name": "max_voter_weight_record",
           "writable": true,
           "pda": {
             "seeds": [
@@ -163,12 +157,12 @@ export type RealmVoter = {
               {
                 "kind": "account",
                 "path": "registrar.realm",
-                "account": "registrar"
+                "account": "Registrar"
               },
               {
                 "kind": "account",
                 "path": "registrar.governing_token_mint",
-                "account": "registrar"
+                "account": "Registrar"
               }
             ]
           }
@@ -179,14 +173,14 @@ export type RealmVoter = {
           "signer": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "createRegistrar",
+      "name": "create_registrar",
       "discriminator": [
         132,
         235,
@@ -227,13 +221,13 @@ export type RealmVoter = {
               },
               {
                 "kind": "account",
-                "path": "governingTokenMint"
+                "path": "governing_token_mint"
               }
             ]
           }
         },
         {
-          "name": "governanceProgramId",
+          "name": "governance_program_id",
           "docs": [
             "The program id of the spl-governance program the realm belongs to"
           ]
@@ -250,7 +244,7 @@ export type RealmVoter = {
           ]
         },
         {
-          "name": "governingTokenMint",
+          "name": "governing_token_mint",
           "docs": [
             "Either the realm community mint or the council mint.",
             "It must match Realm.community_mint or Realm.config.council_mint",
@@ -260,7 +254,7 @@ export type RealmVoter = {
           ]
         },
         {
-          "name": "realmAuthority",
+          "name": "realm_authority",
           "docs": [
             "realm_authority must sign and match Realm.authority"
           ],
@@ -272,19 +266,19 @@ export type RealmVoter = {
           "signer": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "maxGovernancePrograms",
+          "name": "max_governance_programs",
           "type": "u8"
         }
       ]
     },
     {
-      "name": "createVoterWeightRecord",
+      "name": "create_voter_weight_record",
       "discriminator": [
         184,
         249,
@@ -300,7 +294,7 @@ export type RealmVoter = {
           "name": "registrar"
         },
         {
-          "name": "voterWeightRecord",
+          "name": "voter_weight_record",
           "writable": true,
           "pda": {
             "seeds": [
@@ -331,16 +325,16 @@ export type RealmVoter = {
               {
                 "kind": "account",
                 "path": "registrar.realm",
-                "account": "registrar"
+                "account": "Registrar"
               },
               {
                 "kind": "account",
                 "path": "registrar.governing_token_mint",
-                "account": "registrar"
+                "account": "Registrar"
               },
               {
                 "kind": "arg",
-                "path": "governingTokenOwner"
+                "path": "governing_token_owner"
               }
             ]
           }
@@ -351,19 +345,19 @@ export type RealmVoter = {
           "signer": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "governingTokenOwner",
+          "name": "governing_token_owner",
           "type": "pubkey"
         }
       ]
     },
     {
-      "name": "updateVoterWeightRecord",
+      "name": "update_voter_weight_record",
       "discriminator": [
         45,
         185,
@@ -382,11 +376,11 @@ export type RealmVoter = {
           ]
         },
         {
-          "name": "voterWeightRecord",
+          "name": "voter_weight_record",
           "writable": true
         },
         {
-          "name": "tokenOwnerRecord",
+          "name": "token_owner_record",
           "docs": [
             "TokenOwnerRecord for any of the configured spl-governance instances"
           ]
@@ -397,7 +391,7 @@ export type RealmVoter = {
   ],
   "accounts": [
     {
-      "name": "maxVoterWeightRecord",
+      "name": "MaxVoterWeightRecord",
       "discriminator": [
         157,
         95,
@@ -410,7 +404,7 @@ export type RealmVoter = {
       ]
     },
     {
-      "name": "registrar",
+      "name": "Registrar",
       "discriminator": [
         193,
         202,
@@ -423,7 +417,7 @@ export type RealmVoter = {
       ]
     },
     {
-      "name": "voterWeightRecord",
+      "name": "VoterWeightRecord",
       "discriminator": [
         46,
         249,
@@ -438,7 +432,7 @@ export type RealmVoter = {
   ],
   "types": [
     {
-      "name": "collectionItemChangeType",
+      "name": "CollectionItemChangeType",
       "docs": [
         "Enum defining collection item change type"
       ],
@@ -446,16 +440,16 @@ export type RealmVoter = {
         "kind": "enum",
         "variants": [
           {
-            "name": "upsert"
+            "name": "Upsert"
           },
           {
-            "name": "remove"
+            "name": "Remove"
           }
         ]
       }
     },
     {
-      "name": "governanceProgramConfig",
+      "name": "GovernanceProgramConfig",
       "docs": [
         "Configuration of an spl-governance instance used to grant governance power"
       ],
@@ -463,7 +457,7 @@ export type RealmVoter = {
         "kind": "struct",
         "fields": [
           {
-            "name": "programId",
+            "name": "program_id",
             "docs": [
               "The program id of the configured spl-governance instance"
             ],
@@ -485,7 +479,7 @@ export type RealmVoter = {
       }
     },
     {
-      "name": "maxVoterWeightRecord",
+      "name": "MaxVoterWeightRecord",
       "docs": [
         "MaxVoterWeightRecord account as defined in spl-governance-addin-api",
         "It's redefined here without account_discriminator for Anchor to treat it as native account",
@@ -503,7 +497,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "governingTokenMint",
+            "name": "governing_token_mint",
             "docs": [
               "Governing Token Mint the MaxVoterWeightRecord is associated with",
               "Note: The addin can take deposits of any tokens and is not restricted to the community or council tokens only"
@@ -511,7 +505,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "maxVoterWeight",
+            "name": "max_voter_weight",
             "docs": [
               "Max voter weight",
               "The max voter weight provided by the addin for the given realm and governing_token_mint"
@@ -519,7 +513,7 @@ export type RealmVoter = {
             "type": "u64"
           },
           {
-            "name": "maxVoterWeightExpiry",
+            "name": "max_voter_weight_expiry",
             "docs": [
               "The slot when the max voting weight expires",
               "It should be set to None if the weight never expires",
@@ -547,7 +541,7 @@ export type RealmVoter = {
       }
     },
     {
-      "name": "registrar",
+      "name": "Registrar",
       "docs": [
         "Registrar which stores spl-governance configurations for the given Realm"
       ],
@@ -555,7 +549,7 @@ export type RealmVoter = {
         "kind": "struct",
         "fields": [
           {
-            "name": "governanceProgramId",
+            "name": "governance_program_id",
             "docs": [
               "spl-governance program the Realm belongs to"
             ],
@@ -569,7 +563,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "governingTokenMint",
+            "name": "governing_token_mint",
             "docs": [
               "Governing token mint the Registrar is for",
               "It can either be the Community or the Council mint of the Realm",
@@ -579,7 +573,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "governanceProgramConfigs",
+            "name": "governance_program_configs",
             "docs": [
               "spl-governance instances used for governance power",
               "Any DAO member of any DAO created using the configured spl-governances would be given 1 vote",
@@ -588,20 +582,20 @@ export type RealmVoter = {
             "type": {
               "vec": {
                 "defined": {
-                  "name": "governanceProgramConfig"
+                  "name": "GovernanceProgramConfig"
                 }
               }
             }
           },
           {
-            "name": "realmMemberVoterWeight",
+            "name": "realm_member_voter_weight",
             "docs": [
               "Vote weight assigned to a member of any of the Realms from the configured spl-governances"
             ],
             "type": "u64"
           },
           {
-            "name": "maxVoterWeight",
+            "name": "max_voter_weight",
             "docs": [
               "Max voter weight (expressed in governing_token_mint decimal units) is used to establish the theoretical Max Attendance Quorum which is then used to calculate Approval Quorum",
               "This manual configuration is a rough estimate because it's not practical to calculate on-chain the number of all DAO members for the given spl-governance instances",
@@ -626,7 +620,7 @@ export type RealmVoter = {
       }
     },
     {
-      "name": "voterWeightAction",
+      "name": "VoterWeightAction",
       "docs": [
         "VoterWeightAction enum as defined in spl-governance-addin-api",
         "It's redefined here for Anchor to export it to IDL"
@@ -635,25 +629,25 @@ export type RealmVoter = {
         "kind": "enum",
         "variants": [
           {
-            "name": "castVote"
+            "name": "CastVote"
           },
           {
-            "name": "commentProposal"
+            "name": "CommentProposal"
           },
           {
-            "name": "createGovernance"
+            "name": "CreateGovernance"
           },
           {
-            "name": "createProposal"
+            "name": "CreateProposal"
           },
           {
-            "name": "signOffProposal"
+            "name": "SignOffProposal"
           }
         ]
       }
     },
     {
-      "name": "voterWeightRecord",
+      "name": "VoterWeightRecord",
       "docs": [
         "VoterWeightRecord account as defined in spl-governance-addin-api",
         "It's redefined here without account_discriminator for Anchor to treat it as native account",
@@ -671,7 +665,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "governingTokenMint",
+            "name": "governing_token_mint",
             "docs": [
               "Governing Token Mint the VoterWeightRecord is associated with",
               "Note: The addin can take deposits of any tokens and is not restricted to the community or council tokens only"
@@ -679,7 +673,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "governingTokenOwner",
+            "name": "governing_token_owner",
             "docs": [
               "The owner of the governing token and voter",
               "This is the actual owner (voter) and corresponds to TokenOwnerRecord.governing_token_owner"
@@ -687,7 +681,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "voterWeight",
+            "name": "voter_weight",
             "docs": [
               "Voter's weight",
               "The weight of the voter provided by the addin for the given realm, governing_token_mint and governing_token_owner (voter)"
@@ -695,7 +689,7 @@ export type RealmVoter = {
             "type": "u64"
           },
           {
-            "name": "voterWeightExpiry",
+            "name": "voter_weight_expiry",
             "docs": [
               "The slot when the voting weight expires",
               "It should be set to None if the weight never expires",
@@ -708,7 +702,7 @@ export type RealmVoter = {
             }
           },
           {
-            "name": "weightAction",
+            "name": "weight_action",
             "docs": [
               "The governance action the voter's weight pertains to",
               "It allows to provided voter's weight specific to the particular action the weight is evaluated for",
@@ -717,13 +711,13 @@ export type RealmVoter = {
             "type": {
               "option": {
                 "defined": {
-                  "name": "voterWeightAction"
+                  "name": "VoterWeightAction"
                 }
               }
             }
           },
           {
-            "name": "weightActionTarget",
+            "name": "weight_action_target",
             "docs": [
               "The target the voter's weight  action pertains to",
               "It allows to provided voter's weight specific to the target the weight is evaluated for",
@@ -750,4 +744,4 @@ export type RealmVoter = {
       }
     }
   ]
-};
+}

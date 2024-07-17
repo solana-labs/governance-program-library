@@ -2,77 +2,28 @@
  * Program IDL in camelCase format in order to be used in JS/TS.
  *
  * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/realm_voter.json`.
+ * IDL can be found at `target/idl/token_haver.json`.
  */
-export type RealmVoter = {
-  "address": "GRmVtfLq2BPeWs5EDoQoZc787VYkhdkA11k63QM1Xemz",
+export type TokenHaver = {
+  "address": "7gobfUihgoxA14RUnVaseoah89ggCgYAzgz1JoaPAXam",
   "metadata": {
-    "name": "realmVoter",
-    "version": "0.0.1",
+    "name": "tokenHaver",
+    "version": "0.0.2",
     "spec": "0.1.0",
-    "description": "SPL Governance plugin granting governance power through Realms membership"
+    "description": "SPL Governance plugin granting governance power based on the nonzero presence of locked tokens"
   },
   "instructions": [
     {
-      "name": "configureGovernanceProgram",
+      "name": "configureMints",
       "discriminator": [
-        249,
-        113,
-        78,
-        90,
-        175,
-        252,
-        38,
-        185
-      ],
-      "accounts": [
-        {
-          "name": "registrar",
-          "docs": [
-            "Registrar which we configure the provided spl-governance instance for"
-          ],
-          "writable": true
-        },
-        {
-          "name": "realm"
-        },
-        {
-          "name": "realmAuthority",
-          "docs": [
-            "Authority of the Realm must sign the transaction and must match realm.authority"
-          ],
-          "signer": true
-        },
-        {
-          "name": "governanceProgramId",
-          "docs": [
-            "The onus is entirely on the  caller side to ensure the provided instance is correct",
-            "In future versions once we have the registry of spl-governance instances it could be validated against the registry"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "changeType",
-          "type": {
-            "defined": {
-              "name": "collectionItemChangeType"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "configureVoterWeights",
-      "discriminator": [
-        183,
-        82,
-        128,
-        126,
-        12,
-        243,
-        124,
-        214
+        228,
+        192,
+        207,
+        41,
+        94,
+        110,
+        142,
+        197
       ],
       "accounts": [
         {
@@ -86,6 +37,10 @@ export type RealmVoter = {
           "name": "realm"
         },
         {
+          "name": "payer",
+          "signer": true
+        },
+        {
           "name": "realmAuthority",
           "docs": [
             "Authority of the Realm must sign and match realm.authority"
@@ -93,97 +48,18 @@ export type RealmVoter = {
           "signer": true
         },
         {
-          "name": "maxVoterWeightRecord",
-          "docs": [
-            "MaxVoterWeightRecord for the given registrar.realm and registrar.governing_token_mint"
-          ],
-          "writable": true
-        }
-      ],
-      "args": [
-        {
-          "name": "realmMemberVoterWeight",
-          "type": "u64"
-        },
-        {
-          "name": "maxVoterWeight",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "createMaxVoterWeightRecord",
-      "discriminator": [
-        182,
-        70,
-        243,
-        119,
-        162,
-        176,
-        38,
-        248
-      ],
-      "accounts": [
-        {
-          "name": "registrar"
-        },
-        {
-          "name": "maxVoterWeightRecord",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  109,
-                  97,
-                  120,
-                  45,
-                  118,
-                  111,
-                  116,
-                  101,
-                  114,
-                  45,
-                  119,
-                  101,
-                  105,
-                  103,
-                  104,
-                  116,
-                  45,
-                  114,
-                  101,
-                  99,
-                  111,
-                  114,
-                  100
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "registrar.realm",
-                "account": "registrar"
-              },
-              {
-                "kind": "account",
-                "path": "registrar.governing_token_mint",
-                "account": "registrar"
-              }
-            ]
-          }
-        },
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "mints",
+          "type": {
+            "vec": "pubkey"
+          }
+        }
+      ]
     },
     {
       "name": "createRegistrar",
@@ -278,8 +154,10 @@ export type RealmVoter = {
       ],
       "args": [
         {
-          "name": "maxGovernancePrograms",
-          "type": "u8"
+          "name": "mints",
+          "type": {
+            "vec": "pubkey"
+          }
         }
       ]
     },
@@ -384,31 +262,12 @@ export type RealmVoter = {
         {
           "name": "voterWeightRecord",
           "writable": true
-        },
-        {
-          "name": "tokenOwnerRecord",
-          "docs": [
-            "TokenOwnerRecord for any of the configured spl-governance instances"
-          ]
         }
       ],
       "args": []
     }
   ],
   "accounts": [
-    {
-      "name": "maxVoterWeightRecord",
-      "discriminator": [
-        157,
-        95,
-        242,
-        151,
-        16,
-        98,
-        26,
-        118
-      ]
-    },
     {
       "name": "registrar",
       "discriminator": [
@@ -436,116 +295,54 @@ export type RealmVoter = {
       ]
     }
   ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "invalidRealmAuthority",
+      "msg": "Invalid Realm Authority"
+    },
+    {
+      "code": 6001,
+      "name": "invalidRealmForRegistrar",
+      "msg": "Invalid Realm for Registrar"
+    },
+    {
+      "code": 6002,
+      "name": "invalidVoterWeightRecordRealm",
+      "msg": "Invalid VoterWeightRecord Realm"
+    },
+    {
+      "code": 6003,
+      "name": "invalidVoterWeightRecordMint",
+      "msg": "Invalid VoterWeightRecord Mint"
+    },
+    {
+      "code": 6004,
+      "name": "governingTokenOwnerMustMatch",
+      "msg": "Governing TokenOwner must match"
+    },
+    {
+      "code": 6005,
+      "name": "tokenAccountWrongOwner",
+      "msg": "All token accounts must be owned by the governing token owner"
+    },
+    {
+      "code": 6006,
+      "name": "tokenAccountWrongMint",
+      "msg": "All token accounts' mints must be included in the registrar"
+    },
+    {
+      "code": 6007,
+      "name": "tokenAccountNotLocked",
+      "msg": "All token accounts must be locked"
+    },
+    {
+      "code": 6008,
+      "name": "tokenAccountDuplicateMint",
+      "msg": "All token accounts' mints must be unique"
+    }
+  ],
   "types": [
-    {
-      "name": "collectionItemChangeType",
-      "docs": [
-        "Enum defining collection item change type"
-      ],
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "upsert"
-          },
-          {
-            "name": "remove"
-          }
-        ]
-      }
-    },
-    {
-      "name": "governanceProgramConfig",
-      "docs": [
-        "Configuration of an spl-governance instance used to grant governance power"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "programId",
-            "docs": [
-              "The program id of the configured spl-governance instance"
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "reserved",
-            "docs": [
-              "Reserved for future upgrades"
-            ],
-            "type": {
-              "array": [
-                "u8",
-                8
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "maxVoterWeightRecord",
-      "docs": [
-        "MaxVoterWeightRecord account as defined in spl-governance-addin-api",
-        "It's redefined here without account_discriminator for Anchor to treat it as native account",
-        "",
-        "The account is used as an api interface to provide max voting power to the governance program from external addin contracts"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "realm",
-            "docs": [
-              "The Realm the MaxVoterWeightRecord belongs to"
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "governingTokenMint",
-            "docs": [
-              "Governing Token Mint the MaxVoterWeightRecord is associated with",
-              "Note: The addin can take deposits of any tokens and is not restricted to the community or council tokens only"
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "maxVoterWeight",
-            "docs": [
-              "Max voter weight",
-              "The max voter weight provided by the addin for the given realm and governing_token_mint"
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "maxVoterWeightExpiry",
-            "docs": [
-              "The slot when the max voting weight expires",
-              "It should be set to None if the weight never expires",
-              "If the max vote weight decays with time, for example for time locked based weights, then the expiry must be set",
-              "As a pattern Revise instruction to update the max weight should be invoked before governance instruction within the same transaction",
-              "and the expiry set to the current slot to provide up to date weight"
-            ],
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "reserved",
-            "docs": [
-              "Reserved space for future versions"
-            ],
-            "type": {
-              "array": [
-                "u8",
-                8
-              ]
-            }
-          }
-        ]
-      }
-    },
     {
       "name": "registrar",
       "docs": [
@@ -579,47 +376,9 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "governanceProgramConfigs",
-            "docs": [
-              "spl-governance instances used for governance power",
-              "Any DAO member of any DAO created using the configured spl-governances would be given 1 vote",
-              "TODO: Once we have on-chain spl-governance registry this configuration won't be needed any longer"
-            ],
+            "name": "mints",
             "type": {
-              "vec": {
-                "defined": {
-                  "name": "governanceProgramConfig"
-                }
-              }
-            }
-          },
-          {
-            "name": "realmMemberVoterWeight",
-            "docs": [
-              "Vote weight assigned to a member of any of the Realms from the configured spl-governances"
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "maxVoterWeight",
-            "docs": [
-              "Max voter weight (expressed in governing_token_mint decimal units) is used to establish the theoretical Max Attendance Quorum which is then used to calculate Approval Quorum",
-              "This manual configuration is a rough estimate because it's not practical to calculate on-chain the number of all DAO members for the given spl-governance instances",
-              "",
-              "Note: This is not a security vulnerability because the plugin is inherently not secure and used only to encourage DAO usage and registration of spl-governance instances"
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "reserved",
-            "docs": [
-              "Reserved for future upgrades"
-            ],
-            "type": {
-              "array": [
-                "u8",
-                128
-              ]
+              "vec": "pubkey"
             }
           }
         ]

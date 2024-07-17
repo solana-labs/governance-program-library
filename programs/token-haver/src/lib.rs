@@ -27,7 +27,8 @@ pub mod token_haver {
         log_version();
         instructions::create_voter_weight_record(ctx, governing_token_owner)
     }
-    pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
+    pub fn update_voter_weight_record<'info>(
+        ctx: Context<'_, '_, 'info, 'info, UpdateVoterWeightRecord<'info>>,) -> Result<()> {
         log_version();
         instructions::update_voter_weight_record(ctx)
     }

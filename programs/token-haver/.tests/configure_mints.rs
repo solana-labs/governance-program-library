@@ -1,4 +1,4 @@
-use gpl_realm_voter::{error::TokenHaverError, state::CollectionItemChangeType};
+use gpl_token_haver::{error::TokenHaverError, state::CollectionItemChangeType};
 use program_test::token_haver_test::RealmVoterTest;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
@@ -51,9 +51,9 @@ async fn test_configure_governance_program_with_multiple_programs() -> Result<()
 
     let governance_program_cookie1 = realm_voter_test.with_governance_program(None).await;
 
-    // Create config with gpl_realm_voter::id() to have some other executable program, the actual program is irrelevant here
+    // Create config with gpl_token_haver::id() to have some other executable program, the actual program is irrelevant here
     let governance_program_cookie2 = realm_voter_test
-        .with_governance_program(Some(gpl_realm_voter::id()))
+        .with_governance_program(Some(gpl_token_haver::id()))
         .await;
 
     // Act

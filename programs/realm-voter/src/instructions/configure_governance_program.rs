@@ -8,11 +8,11 @@ use anchor_lang::prelude::*;
 use spl_governance::state::realm;
 
 use crate::error::RealmVoterError;
-use crate::state::{GovernanceProgramConfig, Registrar};
+use crate::state::{GovernanceProgramConfig, Registrar, CollectionItemChangeType};
 
 /// Creates or updates configuration for spl-governance program instances to define which spl-governance instances can be used to grant governance power
 #[derive(Accounts)]
-#[instruction(change_type: crate::state::CollectionItemChangeType)]
+#[instruction(change_type: CollectionItemChangeType)]
 pub struct ConfigureGovernanceProgram<'info> {
     /// Registrar which we configure the provided spl-governance instance for
     #[account(mut)]
@@ -38,7 +38,7 @@ pub struct ConfigureGovernanceProgram<'info> {
 
 pub fn configure_governance_program(
     ctx: Context<ConfigureGovernanceProgram>,
-    change_type: crate::state::CollectionItemChangeType,
+    change_type: CollectionItemChangeType,
 ) -> Result<()> {
     let registrar = &mut ctx.accounts.registrar;
 
@@ -68,23 +68,23 @@ pub fn configure_governance_program(
 
     match (change_type, governance_program_config_idx) {
         // Update
-        (crate::state::CollectionItemChangeType::Upsert, Some(config_idx)) => {
+        (CollectionItemChangeType::Upsert, Some(config_idx)) => {
             // Note: Update in this version is nop because we only store governance_program_id
             registrar.governance_program_configs[config_idx] = governance_program_config;
         }
         // Insert
-        (crate::state::CollectionItemChangeType::Upsert, None) => {
+        (CollectionItemChangeType::Upsert, None) => {
             // Note: In the current version push() would throw an error if we exceed
             // max_governance_programs specified when the Registrar was created
             registrar
                 .governance_program_configs
                 .push(governance_program_config);
         }
-        (crate::state::CollectionItemChangeType::Remove, Some(config_idx)) => {
+        (CollectionItemChangeType::Remove, Some(config_idx)) => {
             registrar.governance_program_configs.remove(config_idx);
         }
 
-        (crate::state::CollectionItemChangeType::Remove, None) => {
+        (CollectionItemChangeType::Remove, None) => {
             return err!(RealmVoterError::GovernanceProgramNotConfigured)
         }
     }

@@ -24,7 +24,9 @@ pub struct UpdateVoterWeightRecord<'info> {
     pub voter_weight_record: Account<'info, VoterWeightRecord>,
 }
 
-pub fn update_voter_weight_record(ctx: Context<UpdateVoterWeightRecord>) -> Result<()> {
+pub fn update_voter_weight_record<'info>(
+    ctx: Context<'_, '_, 'info, 'info, UpdateVoterWeightRecord<'info>>,
+) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
