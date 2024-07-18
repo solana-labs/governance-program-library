@@ -1,84 +1,86 @@
-/**
- * Program IDL in camelCase format in order to be used in JS/TS.
- *
- * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/realm_voter.json`.
- */
-export type RealmVoter = {
-  "address": "GRmVtfLq2BPeWs5EDoQoZc787VYkhdkA11k63QM1Xemz",
+{
+  "address": "GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw",
   "metadata": {
-    "name": "realmVoter",
-    "version": "0.0.1",
+    "name": "nft_voter",
+    "version": "0.2.2",
     "spec": "0.1.0",
-    "description": "SPL Governance plugin granting governance power through Realms membership"
+    "description": "SPL Governance addin implementing NFT based governance"
   },
   "instructions": [
     {
-      "name": "configureGovernanceProgram",
+      "name": "cast_nft_vote",
       "discriminator": [
-        249,
-        113,
-        78,
-        90,
-        175,
-        252,
-        38,
-        185
-      ],
-      "accounts": [
-        {
-          "name": "registrar",
-          "docs": [
-            "Registrar which we configure the provided spl-governance instance for"
-          ],
-          "writable": true
-        },
-        {
-          "name": "realm"
-        },
-        {
-          "name": "realmAuthority",
-          "docs": [
-            "Authority of the Realm must sign the transaction and must match realm.authority"
-          ],
-          "signer": true
-        },
-        {
-          "name": "governanceProgramId",
-          "docs": [
-            "The onus is entirely on the  caller side to ensure the provided instance is correct",
-            "In future versions once we have the registry of spl-governance instances it could be validated against the registry"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "changeType",
-          "type": {
-            "defined": {
-              "name": "collectionItemChangeType"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "configureVoterWeights",
-      "discriminator": [
-        183,
-        82,
-        128,
-        126,
+        150,
+        177,
+        73,
+        223,
+        30,
         12,
-        243,
-        124,
-        214
+        172,
+        125
       ],
       "accounts": [
         {
           "name": "registrar",
           "docs": [
-            "The Registrar for the given realm and governing_token_mint"
+            "The NFT voting registrar"
+          ]
+        },
+        {
+          "name": "voter_weight_record",
+          "writable": true
+        },
+        {
+          "name": "voter_token_owner_record",
+          "docs": [
+            "TokenOwnerRecord of the voter who casts the vote"
+          ]
+        },
+        {
+          "name": "voter_authority",
+          "docs": [
+            "Authority of the voter who casts the vote",
+            "It can be either governing_token_owner or its delegate and must sign this instruction"
+          ],
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "docs": [
+            "The account which pays for the transaction"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "proposal",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "configure_collection",
+      "discriminator": [
+        71,
+        128,
+        33,
+        233,
+        71,
+        167,
+        155,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "registrar",
+          "docs": [
+            "Registrar for which we configure this Collection"
           ],
           "writable": true
         },
@@ -86,33 +88,33 @@ export type RealmVoter = {
           "name": "realm"
         },
         {
-          "name": "realmAuthority",
+          "name": "realm_authority",
           "docs": [
-            "Authority of the Realm must sign and match realm.authority"
+            "Authority of the Realm must sign and match Realm.authority"
           ],
           "signer": true
         },
         {
-          "name": "maxVoterWeightRecord",
-          "docs": [
-            "MaxVoterWeightRecord for the given registrar.realm and registrar.governing_token_mint"
-          ],
+          "name": "collection"
+        },
+        {
+          "name": "max_voter_weight_record",
           "writable": true
         }
       ],
       "args": [
         {
-          "name": "realmMemberVoterWeight",
+          "name": "weight",
           "type": "u64"
         },
         {
-          "name": "maxVoterWeight",
-          "type": "u64"
+          "name": "size",
+          "type": "u32"
         }
       ]
     },
     {
-      "name": "createMaxVoterWeightRecord",
+      "name": "create_max_voter_weight_record",
       "discriminator": [
         182,
         70,
@@ -125,10 +127,7 @@ export type RealmVoter = {
       ],
       "accounts": [
         {
-          "name": "registrar"
-        },
-        {
-          "name": "maxVoterWeightRecord",
+          "name": "max_voter_weight_record",
           "writable": true,
           "pda": {
             "seeds": [
@@ -162,16 +161,29 @@ export type RealmVoter = {
               },
               {
                 "kind": "account",
-                "path": "registrar.realm",
-                "account": "registrar"
+                "path": "realm"
               },
               {
                 "kind": "account",
-                "path": "registrar.governing_token_mint",
-                "account": "registrar"
+                "path": "realm_governing_token_mint"
               }
             ]
           }
+        },
+        {
+          "name": "governance_program_id",
+          "docs": [
+            "The program id of the spl-governance program the realm belongs to"
+          ]
+        },
+        {
+          "name": "realm"
+        },
+        {
+          "name": "realm_governing_token_mint",
+          "docs": [
+            "Either the realm community mint or the council mint."
+          ]
         },
         {
           "name": "payer",
@@ -179,14 +191,14 @@ export type RealmVoter = {
           "signer": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "createRegistrar",
+      "name": "create_registrar",
       "discriminator": [
         132,
         235,
@@ -201,7 +213,7 @@ export type RealmVoter = {
         {
           "name": "registrar",
           "docs": [
-            "The Realm Voter Registrar",
+            "The NFT voting Registrar",
             "There can only be a single registrar per governance Realm and governing mint of the Realm"
           ],
           "writable": true,
@@ -227,13 +239,13 @@ export type RealmVoter = {
               },
               {
                 "kind": "account",
-                "path": "governingTokenMint"
+                "path": "governing_token_mint"
               }
             ]
           }
         },
         {
-          "name": "governanceProgramId",
+          "name": "governance_program_id",
           "docs": [
             "The program id of the spl-governance program the realm belongs to"
           ]
@@ -250,17 +262,17 @@ export type RealmVoter = {
           ]
         },
         {
-          "name": "governingTokenMint",
+          "name": "governing_token_mint",
           "docs": [
             "Either the realm community mint or the council mint.",
             "It must match Realm.community_mint or Realm.config.council_mint",
             "",
-            "Note: Once the Realm voter plugin is enabled the governing_token_mint is used only as identity",
+            "Note: Once the NFT plugin is enabled the governing_token_mint is used only as identity",
             "for the voting population and the tokens of that are no longer used"
           ]
         },
         {
-          "name": "realmAuthority",
+          "name": "realm_authority",
           "docs": [
             "realm_authority must sign and match Realm.authority"
           ],
@@ -272,19 +284,19 @@ export type RealmVoter = {
           "signer": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "maxGovernancePrograms",
+          "name": "max_collections",
           "type": "u8"
         }
       ]
     },
     {
-      "name": "createVoterWeightRecord",
+      "name": "create_voter_weight_record",
       "discriminator": [
         184,
         249,
@@ -297,10 +309,7 @@ export type RealmVoter = {
       ],
       "accounts": [
         {
-          "name": "registrar"
-        },
-        {
-          "name": "voterWeightRecord",
+          "name": "voter_weight_record",
           "writable": true,
           "pda": {
             "seeds": [
@@ -330,20 +339,33 @@ export type RealmVoter = {
               },
               {
                 "kind": "account",
-                "path": "registrar.realm",
-                "account": "registrar"
+                "path": "realm"
               },
               {
                 "kind": "account",
-                "path": "registrar.governing_token_mint",
-                "account": "registrar"
+                "path": "realm_governing_token_mint"
               },
               {
                 "kind": "arg",
-                "path": "governingTokenOwner"
+                "path": "governing_token_owner"
               }
             ]
           }
+        },
+        {
+          "name": "governance_program_id",
+          "docs": [
+            "The program id of the spl-governance program the realm belongs to"
+          ]
+        },
+        {
+          "name": "realm"
+        },
+        {
+          "name": "realm_governing_token_mint",
+          "docs": [
+            "Either the realm community mint or the council mint."
+          ]
         },
         {
           "name": "payer",
@@ -351,19 +373,80 @@ export type RealmVoter = {
           "signer": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "governingTokenOwner",
+          "name": "governing_token_owner",
           "type": "pubkey"
         }
       ]
     },
     {
-      "name": "updateVoterWeightRecord",
+      "name": "relinquish_nft_vote",
+      "discriminator": [
+        180,
+        111,
+        224,
+        230,
+        204,
+        199,
+        66,
+        66
+      ],
+      "accounts": [
+        {
+          "name": "registrar",
+          "docs": [
+            "The NFT voting Registrar"
+          ]
+        },
+        {
+          "name": "voter_weight_record",
+          "writable": true
+        },
+        {
+          "name": "governance",
+          "docs": [
+            "Governance account the Proposal is for"
+          ]
+        },
+        {
+          "name": "proposal"
+        },
+        {
+          "name": "voter_token_owner_record",
+          "docs": [
+            "TokenOwnerRecord of the voter who cast the original vote"
+          ]
+        },
+        {
+          "name": "voter_authority",
+          "docs": [
+            "Authority of the voter who cast the original vote",
+            "It can be either governing_token_owner or its delegate and must sign this instruction"
+          ],
+          "signer": true
+        },
+        {
+          "name": "vote_record",
+          "docs": [
+            "The account is used to validate that it doesn't exist and if it doesn't then Anchor owner check throws error",
+            "The check is disabled here and performed inside the instruction",
+            "#[account(owner = registrar.governance_program_id)]"
+          ]
+        },
+        {
+          "name": "beneficiary",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_voter_weight_record",
       "discriminator": [
         45,
         185,
@@ -378,26 +461,29 @@ export type RealmVoter = {
         {
           "name": "registrar",
           "docs": [
-            "The RealmVoter voting Registrar"
+            "The NFT voting Registrar"
           ]
         },
         {
-          "name": "voterWeightRecord",
+          "name": "voter_weight_record",
           "writable": true
-        },
-        {
-          "name": "tokenOwnerRecord",
-          "docs": [
-            "TokenOwnerRecord for any of the configured spl-governance instances"
-          ]
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "voter_weight_action",
+          "type": {
+            "defined": {
+              "name": "VoterWeightAction"
+            }
+          }
+        }
+      ]
     }
   ],
   "accounts": [
     {
-      "name": "maxVoterWeightRecord",
+      "name": "MaxVoterWeightRecord",
       "discriminator": [
         157,
         95,
@@ -410,7 +496,7 @@ export type RealmVoter = {
       ]
     },
     {
-      "name": "registrar",
+      "name": "Registrar",
       "discriminator": [
         193,
         202,
@@ -423,7 +509,7 @@ export type RealmVoter = {
       ]
     },
     {
-      "name": "voterWeightRecord",
+      "name": "VoterWeightRecord",
       "discriminator": [
         46,
         249,
@@ -438,36 +524,38 @@ export type RealmVoter = {
   ],
   "types": [
     {
-      "name": "collectionItemChangeType",
+      "name": "CollectionConfig",
       "docs": [
-        "Enum defining collection item change type"
-      ],
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "upsert"
-          },
-          {
-            "name": "remove"
-          }
-        ]
-      }
-    },
-    {
-      "name": "governanceProgramConfig",
-      "docs": [
-        "Configuration of an spl-governance instance used to grant governance power"
+        "Configuration of an NFT collection used for governance power"
       ],
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "programId",
+            "name": "collection",
             "docs": [
-              "The program id of the configured spl-governance instance"
+              "The NFT collection used for governance"
             ],
             "type": "pubkey"
+          },
+          {
+            "name": "size",
+            "docs": [
+              "The size of the NFT collection used to calculate max voter weight",
+              "Note: At the moment the size is not captured on Metaplex accounts",
+              "and it has to be manually updated on the Registrar"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "weight",
+            "docs": [
+              "Governance power weight of the collection",
+              "Each NFT in the collection has governance power = 1 * weight",
+              "Note: The weight is scaled accordingly to the governing_token_mint decimals",
+              "Ex: if the the mint has 2 decimal places then weight of 1 should be stored as 100"
+            ],
+            "type": "u64"
           },
           {
             "name": "reserved",
@@ -485,7 +573,7 @@ export type RealmVoter = {
       }
     },
     {
-      "name": "maxVoterWeightRecord",
+      "name": "MaxVoterWeightRecord",
       "docs": [
         "MaxVoterWeightRecord account as defined in spl-governance-addin-api",
         "It's redefined here without account_discriminator for Anchor to treat it as native account",
@@ -503,7 +591,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "governingTokenMint",
+            "name": "governing_token_mint",
             "docs": [
               "Governing Token Mint the MaxVoterWeightRecord is associated with",
               "Note: The addin can take deposits of any tokens and is not restricted to the community or council tokens only"
@@ -511,7 +599,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "maxVoterWeight",
+            "name": "max_voter_weight",
             "docs": [
               "Max voter weight",
               "The max voter weight provided by the addin for the given realm and governing_token_mint"
@@ -519,7 +607,7 @@ export type RealmVoter = {
             "type": "u64"
           },
           {
-            "name": "maxVoterWeightExpiry",
+            "name": "max_voter_weight_expiry",
             "docs": [
               "The slot when the max voting weight expires",
               "It should be set to None if the weight never expires",
@@ -547,15 +635,15 @@ export type RealmVoter = {
       }
     },
     {
-      "name": "registrar",
+      "name": "Registrar",
       "docs": [
-        "Registrar which stores spl-governance configurations for the given Realm"
+        "Registrar which stores NFT voting configuration for the given Realm"
       ],
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "governanceProgramId",
+            "name": "governance_program_id",
             "docs": [
               "spl-governance program the Realm belongs to"
             ],
@@ -569,46 +657,27 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "governingTokenMint",
+            "name": "governing_token_mint",
             "docs": [
               "Governing token mint the Registrar is for",
               "It can either be the Community or the Council mint of the Realm",
-              "When the plugin is enabled the mint is only used as the identity of the governing power (voting population)",
+              "When the plugin is used the mint is only used as identity of the governing power (voting population)",
               "and the actual token of the mint is not used"
             ],
             "type": "pubkey"
           },
           {
-            "name": "governanceProgramConfigs",
+            "name": "collection_configs",
             "docs": [
-              "spl-governance instances used for governance power",
-              "Any DAO member of any DAO created using the configured spl-governances would be given 1 vote",
-              "TODO: Once we have on-chain spl-governance registry this configuration won't be needed any longer"
+              "MPL Collection used for voting"
             ],
             "type": {
               "vec": {
                 "defined": {
-                  "name": "governanceProgramConfig"
+                  "name": "CollectionConfig"
                 }
               }
             }
-          },
-          {
-            "name": "realmMemberVoterWeight",
-            "docs": [
-              "Vote weight assigned to a member of any of the Realms from the configured spl-governances"
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "maxVoterWeight",
-            "docs": [
-              "Max voter weight (expressed in governing_token_mint decimal units) is used to establish the theoretical Max Attendance Quorum which is then used to calculate Approval Quorum",
-              "This manual configuration is a rough estimate because it's not practical to calculate on-chain the number of all DAO members for the given spl-governance instances",
-              "",
-              "Note: This is not a security vulnerability because the plugin is inherently not secure and used only to encourage DAO usage and registration of spl-governance instances"
-            ],
-            "type": "u64"
           },
           {
             "name": "reserved",
@@ -626,7 +695,7 @@ export type RealmVoter = {
       }
     },
     {
-      "name": "voterWeightAction",
+      "name": "VoterWeightAction",
       "docs": [
         "VoterWeightAction enum as defined in spl-governance-addin-api",
         "It's redefined here for Anchor to export it to IDL"
@@ -635,25 +704,25 @@ export type RealmVoter = {
         "kind": "enum",
         "variants": [
           {
-            "name": "castVote"
+            "name": "CastVote"
           },
           {
-            "name": "commentProposal"
+            "name": "CommentProposal"
           },
           {
-            "name": "createGovernance"
+            "name": "CreateGovernance"
           },
           {
-            "name": "createProposal"
+            "name": "CreateProposal"
           },
           {
-            "name": "signOffProposal"
+            "name": "SignOffProposal"
           }
         ]
       }
     },
     {
-      "name": "voterWeightRecord",
+      "name": "VoterWeightRecord",
       "docs": [
         "VoterWeightRecord account as defined in spl-governance-addin-api",
         "It's redefined here without account_discriminator for Anchor to treat it as native account",
@@ -671,7 +740,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "governingTokenMint",
+            "name": "governing_token_mint",
             "docs": [
               "Governing Token Mint the VoterWeightRecord is associated with",
               "Note: The addin can take deposits of any tokens and is not restricted to the community or council tokens only"
@@ -679,7 +748,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "governingTokenOwner",
+            "name": "governing_token_owner",
             "docs": [
               "The owner of the governing token and voter",
               "This is the actual owner (voter) and corresponds to TokenOwnerRecord.governing_token_owner"
@@ -687,7 +756,7 @@ export type RealmVoter = {
             "type": "pubkey"
           },
           {
-            "name": "voterWeight",
+            "name": "voter_weight",
             "docs": [
               "Voter's weight",
               "The weight of the voter provided by the addin for the given realm, governing_token_mint and governing_token_owner (voter)"
@@ -695,7 +764,7 @@ export type RealmVoter = {
             "type": "u64"
           },
           {
-            "name": "voterWeightExpiry",
+            "name": "voter_weight_expiry",
             "docs": [
               "The slot when the voting weight expires",
               "It should be set to None if the weight never expires",
@@ -708,7 +777,7 @@ export type RealmVoter = {
             }
           },
           {
-            "name": "weightAction",
+            "name": "weight_action",
             "docs": [
               "The governance action the voter's weight pertains to",
               "It allows to provided voter's weight specific to the particular action the weight is evaluated for",
@@ -717,13 +786,13 @@ export type RealmVoter = {
             "type": {
               "option": {
                 "defined": {
-                  "name": "voterWeightAction"
+                  "name": "VoterWeightAction"
                 }
               }
             }
           },
           {
-            "name": "weightActionTarget",
+            "name": "weight_action_target",
             "docs": [
               "The target the voter's weight  action pertains to",
               "It allows to provided voter's weight specific to the target the weight is evaluated for",
@@ -750,4 +819,4 @@ export type RealmVoter = {
       }
     }
   ]
-};
+}

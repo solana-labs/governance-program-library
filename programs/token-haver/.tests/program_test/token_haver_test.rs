@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
 
-use gpl_realm_voter::state::max_voter_weight_record::MaxVoterWeightRecord;
-use gpl_realm_voter::state::*;
+use gpl_token_haver::state::max_voter_weight_record::MaxVoterWeightRecord;
+use gpl_token_haver::state::*;
 
 use solana_program_test::{BanksClientError, ProgramTest};
 use solana_sdk::instruction::Instruction;
@@ -52,7 +52,7 @@ pub struct RealmVoterTest {
 impl RealmVoterTest {
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
-        program_test.add_program("gpl_realm_voter", gpl_realm_voter::id(), None);
+        program_test.add_program("gpl_token_haver", gpl_token_haver::id(), None);
     }
 
     #[allow(dead_code)]
@@ -62,7 +62,7 @@ impl RealmVoterTest {
         RealmVoterTest::add_program(&mut program_test);
         GovernanceTest::add_program(&mut program_test);
 
-        let program_id = gpl_realm_voter::id();
+        let program_id = gpl_token_haver::id();
 
         let bench = ProgramTestBench::start_new(program_test).await;
         let bench_rc = Arc::new(bench);
@@ -110,12 +110,12 @@ impl RealmVoterTest {
         let mints = &[realm_cookie.account.community_mint].to_vec();
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_realm_voter::instruction::CreateRegistrar {
+            anchor_lang::InstructionData::data(&gpl_token_haver::instruction::CreateRegistrar {
                 mints: mints.clone(),
             });
 
         let accounts = anchor_lang::ToAccountMetas::to_account_metas(
-            &gpl_realm_voter::accounts::CreateRegistrar {
+            &gpl_token_haver::accounts::CreateRegistrar {
                 registrar: registrar_key,
                 realm: realm_cookie.address,
                 governance_program_id: self.governance.program_id,
@@ -128,7 +128,7 @@ impl RealmVoterTest {
         );
 
         let mut create_registrar_ix = Instruction {
-            program_id: gpl_realm_voter::id(),
+            program_id: gpl_token_haver::id(),
             accounts,
             data,
         };
@@ -183,16 +183,16 @@ impl RealmVoterTest {
                 registrar_cookie.account.governing_token_mint.as_ref(),
                 governing_token_owner.as_ref(),
             ],
-            &gpl_realm_voter::id(),
+            &gpl_token_haver::id(),
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_realm_voter::instruction::CreateVoterWeightRecord {
+            &gpl_token_haver::instruction::CreateVoterWeightRecord {
                 governing_token_owner,
             },
         );
 
-        let accounts = gpl_realm_voter::accounts::CreateVoterWeightRecord {
+        let accounts = gpl_token_haver::accounts::CreateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_key,
             payer: self.bench.payer.pubkey(),
@@ -200,7 +200,7 @@ impl RealmVoterTest {
         };
 
         let mut create_voter_weight_record_ix = Instruction {
-            program_id: gpl_realm_voter::id(),
+            program_id: gpl_token_haver::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
@@ -236,19 +236,18 @@ impl RealmVoterTest {
         token_owner_record_cookie: &TokenOwnerRecordCookie,
     ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_realm_voter::instruction::UpdateVoterWeightRecord {},
+            &gpl_token_haver::instruction::UpdateVoterWeightRecord {},
         );
 
-        let accounts = gpl_realm_voter::accounts::UpdateVoterWeightRecord {
+        let accounts = gpl_token_haver::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            token_owner_record: token_owner_record_cookie.address,
         };
 
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
         let instructions = vec![Instruction {
-            program_id: gpl_realm_voter::id(),
+            program_id: gpl_token_haver::id(),
             accounts: account_metas,
             data,
         }];

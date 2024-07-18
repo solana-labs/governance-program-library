@@ -1,5 +1,5 @@
-import * as anchor from "@project-serum/anchor";
-import { Program } from "@project-serum/anchor";
+import * as anchor from "@coral-xyz/anchor";
+import { Program } from "@coral-xyz/anchor";
 import { NftVoter } from "../target/types/nft_voter";
 
 describe("nft-voter", () => {
@@ -8,7 +8,7 @@ describe("nft-voter", () => {
 
   it("Is initialized!", async () => {
 
-    const records = program.account.nftVoteRecord.all();
+    const records = program.account.voterWeightRecord.all();
     // Add your test here.
     //const tx = await program.rpc.createRegistrar({});
     console.log("Your transaction signature", records);

@@ -1,5 +1,5 @@
 use crate::program_test::token_haver_test::RealmVoterTest;
-use gpl_realm_voter::{error::TokenHaverError, state::CollectionItemChangeType};
+use gpl_token_haver::{error::TokenHaverError, state::CollectionItemChangeType};
 use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
