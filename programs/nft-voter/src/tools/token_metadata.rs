@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 use anchor_lang::prelude::*;
 use mpl_token_metadata::accounts::Metadata;
 
@@ -7,8 +9,8 @@ pub fn get_token_metadata(account_info: &AccountInfo) -> Result<Metadata> {
     if *account_info.owner != mpl_token_metadata::ID {
         return Err(NftVoterError::InvalidAccountOwner.into());
     }
-    let metadata_data_bytes = &account_info.data.borrow() as &[u8];
-    let metadata = Metadata::from_bytes(metadata_data_bytes)?;
+    
+    let metadata = Metadata::try_from(account_info)?;
 
     // I'm not sure if this is needed but try_from_slice_checked in from_account_info
     // ignores Key::Uninitialized and hence checking for the exact Key match here
