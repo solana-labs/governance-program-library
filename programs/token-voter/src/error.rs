@@ -96,4 +96,7 @@ pub enum TokenVoterError {
 
     #[msg("Resizing Max Mints cannot be smaller than Configure Mint Configs")]
     InvalidResizeMaxMints,
+    
+    #[msg("Mint Index mismatch!")]
+    MintIndexMismatch,
 }
