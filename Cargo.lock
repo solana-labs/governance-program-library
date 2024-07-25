@@ -2530,6 +2530,7 @@ version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1d4f516cd9daae872182a50850ab6d5588667e71152d49b0729a32830036b83"
 dependencies = [
+ "anchor-lang",
  "base64 0.22.1",
  "borsh 0.10.3",
  "modular-bitfield",

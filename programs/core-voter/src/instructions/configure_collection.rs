@@ -5,7 +5,7 @@ use anchor_lang::{
 };
 
 use anchor_lang::prelude::*;
-use anchor_spl::token::Mint;
+use mpl_core::accounts::BaseCollectionV1;
 use spl_governance::state::realm;
 
 use crate::error::NftVoterError;
@@ -32,7 +32,7 @@ pub struct ConfigureCollection<'info> {
     pub realm_authority: Signer<'info>,
 
     // Collection which is going to be used for voting
-    pub collection: Account<'info, Mint>,
+    pub collection: Account<'info, BaseCollectionV1>,
 
     #[account(
         mut,
