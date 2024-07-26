@@ -76,7 +76,7 @@ pub fn create_registrar(
     registrar.previous_voter_weight_plugin_program_id = use_previous_voter_weight_plugin
         .then(|| {
             remaining_accounts
-                .get(0)
+                .first()
                 .ok_or(GatewayError::MissingPreviousVoterWeightPlugin)
                 .map(|account| account.key)
         })

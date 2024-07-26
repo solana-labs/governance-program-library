@@ -11,7 +11,6 @@ pub enum CollectionItemChangeType {
     Remove,
 }
 
-
 /// Registrar which stores spl-governance configurations for the given Realm
 #[account]
 #[derive(Debug, PartialEq)]
