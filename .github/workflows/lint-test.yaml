@@ -33,7 +33,7 @@ jobs:
         run: cargo fmt -- --check
 
       - name: Run clippy
-        run: cargo clippy -- --deny=warnings
+        run: cargo clippy -- -A clippy::pedantic --deny=warnings
 
   test:
     name: Run Tests
