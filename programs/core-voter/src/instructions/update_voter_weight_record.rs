@@ -1,7 +1,7 @@
 use crate::error::NftVoterError;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use itertools::Itertools;
+use mpl_core::accounts::BaseAssetV1;
 
 /// Updates VoterWeightRecord to evaluate governance power for non voting use cases: CreateProposal, CreateGovernance etc...
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the given target action only
@@ -49,12 +49,12 @@ pub fn update_voter_weight_record(
     // Ensure all nfts are unique
     let mut unique_nft_mints = vec![];
 
-    for (nft_info, nft_metadata_info) in ctx.remaining_accounts.iter().tuples() {
+    for asset in ctx.remaining_accounts.iter() {
         let (nft_vote_weight, _) = resolve_nft_vote_weight_and_mint(
             registrar,
             governing_token_owner,
-            nft_info,
-            nft_metadata_info,
+            asset.key.clone(),
+            &BaseAssetV1::from_bytes(&asset.data.borrow()).unwrap(),
             &mut unique_nft_mints,
         )?;
 
