@@ -473,7 +473,7 @@ impl CoreVoterTest {
 
     /// Casts NFT Vote and spl-gov Vote
     #[allow(dead_code)]
-    pub async fn cast_nft_vote(
+    pub async fn cast_asset_vote(
         &mut self,
         registrar_cookie: &RegistrarCookie,
         voter_weight_record_cookie: &VoterWeightRecordCookie,
@@ -571,7 +571,7 @@ impl CoreVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn get_nft_vote_record_account(&mut self, nft_vote_record: &Pubkey) -> AssetVoteRecord {
+    pub async fn get_asset_vote_record_account(&mut self, nft_vote_record: &Pubkey) -> AssetVoteRecord {
         self.bench
             .get_borsh_account::<AssetVoteRecord>(nft_vote_record)
             .await

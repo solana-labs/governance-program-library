@@ -13,7 +13,7 @@ use spl_governance::error::GovernanceError;
 mod program_test;
 
 #[tokio::test]
-async fn test_cast_nft_vote() -> Result<(), TransportError> {
+async fn test_cast_asset_vote() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -65,7 +65,7 @@ async fn test_cast_nft_vote() -> Result<(), TransportError> {
 
     // Act
     let asset_vote_record_cookies = core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
@@ -79,7 +79,7 @@ async fn test_cast_nft_vote() -> Result<(), TransportError> {
 
     // Assert
     let asset_vote_record = core_voter_test
-        .get_nft_vote_record_account(&asset_vote_record_cookies[0].address)
+        .get_asset_vote_record_account(&asset_vote_record_cookies[0].address)
         .await;
 
     assert_eq!(asset_vote_record_cookies[0].account, asset_vote_record);
@@ -103,7 +103,7 @@ async fn test_cast_nft_vote() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_multiple_nfts() -> Result<(), TransportError> {
+async fn test_cast_asset_vote_with_multiple_nfts() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -145,12 +145,12 @@ async fn test_cast_nft_vote_with_multiple_nfts() -> Result<(), TransportError> {
         .with_proposal(&realm_cookie)
         .await?;
 
-    let nft_cookie1 = core_voter_test
+    let asset_cookie1 = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
 
-    let nft_cookie2 = core_voter_test
+    let asset_cookie2 = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
@@ -159,31 +159,31 @@ async fn test_cast_nft_vote_with_multiple_nfts() -> Result<(), TransportError> {
     let clock = core_voter_test.bench.get_clock().await;
 
     // Act
-    let nft_vote_record_cookies = core_voter_test
-        .cast_nft_vote(
+    let asset_vote_record_cookies = core_voter_test
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1, &nft_cookie2],
+            &[&asset_cookie1, &asset_cookie2],
             None,
         )
         .await?;
 
     // Assert
-    let nft_vote_record1 = core_voter_test
-        .get_nft_vote_record_account(&nft_vote_record_cookies[0].address)
+    let asset_vote_record1 = core_voter_test
+        .get_asset_vote_record_account(&asset_vote_record_cookies[0].address)
         .await;
 
-    assert_eq!(nft_vote_record_cookies[0].account, nft_vote_record1);
+    assert_eq!(asset_vote_record_cookies[0].account, asset_vote_record1);
 
-    let nft_vote_record2 = core_voter_test
-        .get_nft_vote_record_account(&nft_vote_record_cookies[1].address)
+    let asset_vote_record2 = core_voter_test
+        .get_asset_vote_record_account(&asset_vote_record_cookies[1].address)
         .await;
 
-    assert_eq!(nft_vote_record_cookies[1].account, nft_vote_record2);
+    assert_eq!(asset_vote_record_cookies[1].account, asset_vote_record2);
 
     let voter_weight_record = core_voter_test
         .get_voter_weight_record(&voter_weight_record_cookie.address)
@@ -204,7 +204,7 @@ async fn test_cast_nft_vote_with_multiple_nfts() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), TransportError> {
+async fn test_cast_asset_vote_with_nft_already_voted_error() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -243,20 +243,20 @@ async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), Transpo
         .with_proposal(&realm_cookie)
         .await?;
 
-    let nft_cookie1 = core_voter_test
+    let asset_cookie1 = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
 
     core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1],
+            &[&asset_cookie1],
             None,
         )
         .await?;
@@ -264,16 +264,15 @@ async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), Transpo
     core_voter_test.bench.advance_clock().await;
 
     // Act
-
     let err = core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1],
+            &[&asset_cookie1],
             None,
         )
         .await
@@ -287,7 +286,7 @@ async fn test_cast_nft_vote_with_nft_already_voted_error() -> Result<(), Transpo
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_invalid_voter_error() -> Result<(), TransportError> {
+async fn test_cast_asset_vote_with_invalid_voter_error() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -326,7 +325,7 @@ async fn test_cast_nft_vote_with_invalid_voter_error() -> Result<(), TransportEr
         .with_proposal(&realm_cookie)
         .await?;
 
-    let nft_cookie1 = core_voter_test
+    let asset_cookie1 = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
@@ -336,14 +335,14 @@ async fn test_cast_nft_vote_with_invalid_voter_error() -> Result<(), TransportEr
     // Act
 
     let err = core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie2,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1],
+            &[&asset_cookie1],
             None,
         )
         .await
@@ -357,7 +356,7 @@ async fn test_cast_nft_vote_with_invalid_voter_error() -> Result<(), TransportEr
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_unverified_collection_error() -> Result<(), TransportError> {
+async fn test_cast_asset_vote_with_unverified_collection_error() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -400,21 +399,21 @@ async fn test_cast_nft_vote_with_unverified_collection_error() -> Result<(), Tra
         .await?;
 
     // Create NFT without verified collection
-    let nft_cookie1 = core_voter_test
+    let asset_cookie1 = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, None)
         .await?;
 
     // Act
     let err = core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1],
+            &[&asset_cookie1],
             None,
         )
         .await
@@ -428,7 +427,7 @@ async fn test_cast_nft_vote_with_unverified_collection_error() -> Result<(), Tra
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_invalid_owner_error() -> Result<(), TransportError> {
+async fn test_cast_asset_vote_with_invalid_owner_error() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -472,21 +471,21 @@ async fn test_cast_nft_vote_with_invalid_owner_error() -> Result<(), TransportEr
         .with_proposal(&realm_cookie)
         .await?;
 
-    let nft_cookie = core_voter_test
+    let asset_cookie = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie2, Some(collection_cookie.collection))
         .await?;
 
     // Act
     let err = core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie],
+            &[&asset_cookie],
             None,
         )
         .await
@@ -500,7 +499,7 @@ async fn test_cast_nft_vote_with_invalid_owner_error() -> Result<(), TransportEr
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_invalid_collection_error() -> Result<(), TransportError> {
+async fn test_cast_asset_vote_with_invalid_collection_error() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -544,21 +543,21 @@ async fn test_cast_nft_vote_with_invalid_collection_error() -> Result<(), Transp
 
     let collection_cookie2 = core_voter_test.core.with_collection().await?;
 
-    let nft_cookie = core_voter_test
+    let asset_cookie = core_voter_test
         .core
         .with_asset(&collection_cookie2, &voter_cookie, Some(collection_cookie2.collection))
         .await?;
 
     // Act
     let err = core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie],
+            &[&asset_cookie],
             None,
         )
         .await
@@ -572,7 +571,7 @@ async fn test_cast_nft_vote_with_invalid_collection_error() -> Result<(), Transp
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_same_nft_error() -> Result<(), TransportError> {
+async fn test_cast_asset_vote_with_same_nft_error() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -611,21 +610,21 @@ async fn test_cast_nft_vote_with_same_nft_error() -> Result<(), TransportError> 
         .with_voter_weight_record(&registrar_cookie, &voter_cookie)
         .await?;
 
-    let nft_cookie = core_voter_test
+    let asset_cookie = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
 
     // Act
     let err = core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie, &nft_cookie],
+            &[&asset_cookie, &asset_cookie],
             None,
         )
         .await
@@ -640,7 +639,7 @@ async fn test_cast_nft_vote_with_same_nft_error() -> Result<(), TransportError> 
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_no_nft_error() -> Result<(), TransportError> {
+async fn test_cast_asset_vote_with_no_nft_error() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -684,7 +683,7 @@ async fn test_cast_nft_vote_with_no_nft_error() -> Result<(), TransportError> {
 
     // Act
     let err = core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
@@ -705,7 +704,7 @@ async fn test_cast_nft_vote_with_no_nft_error() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_max_5_nfts() -> Result<(), TransportError> {
+async fn test_cast_asset_vote_with_max_5_nfts() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -747,47 +746,47 @@ async fn test_cast_nft_vote_with_max_5_nfts() -> Result<(), TransportError> {
         .with_proposal(&realm_cookie)
         .await?;
 
-    let mut nft_cookies = vec![];
+    let mut asset_cookies = vec![];
 
     for _ in 0..5 {
         core_voter_test.bench.advance_clock().await;
-        let nft_cookie = core_voter_test
+        let asset_cookie = core_voter_test
             .core
             .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
             .await?;
 
-        nft_cookies.push(nft_cookie)
+        asset_cookies.push(asset_cookie)
     }
 
     core_voter_test.bench.advance_clock().await;
     let clock = core_voter_test.bench.get_clock().await;
 
     // Act
-    let nft_vote_record_cookies = core_voter_test
-        .cast_nft_vote(
+    let asset_vote_record_cookies = core_voter_test
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &nft_cookies.iter().collect::<Vec<_>>(),
+            &asset_cookies.iter().collect::<Vec<_>>(),
             None,
         )
         .await?;
 
     // Assert
-    let nft_vote_record1 = core_voter_test
-        .get_nft_vote_record_account(&nft_vote_record_cookies[0].address)
+    let asset_vote_record1 = core_voter_test
+        .get_asset_vote_record_account(&asset_vote_record_cookies[0].address)
         .await;
 
-    assert_eq!(nft_vote_record_cookies[0].account, nft_vote_record1);
+    assert_eq!(asset_vote_record_cookies[0].account, asset_vote_record1);
 
-    let nft_vote_record2 = core_voter_test
-        .get_nft_vote_record_account(&nft_vote_record_cookies[1].address)
+    let asset_vote_record2 = core_voter_test
+        .get_asset_vote_record_account(&asset_vote_record_cookies[1].address)
         .await;
 
-    assert_eq!(nft_vote_record_cookies[1].account, nft_vote_record2);
+    assert_eq!(asset_vote_record_cookies[1].account, asset_vote_record2);
 
     let voter_weight_record = core_voter_test
         .get_voter_weight_record(&voter_weight_record_cookie.address)
@@ -808,7 +807,7 @@ async fn test_cast_nft_vote_with_max_5_nfts() -> Result<(), TransportError> {
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_using_multiple_instructions() -> Result<(), TransportError> {
+async fn test_cast_asset_vote_using_multiple_instructions() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -850,7 +849,7 @@ async fn test_cast_nft_vote_using_multiple_instructions() -> Result<(), Transpor
         .with_proposal(&realm_cookie)
         .await?;
 
-    let nft_cookie1 = core_voter_test
+    let asset_cookie1 = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
@@ -863,19 +862,19 @@ async fn test_cast_nft_vote_using_multiple_instructions() -> Result<(), Transpor
     };
 
     core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1],
+            &[&asset_cookie1],
             Some(args),
         )
         .await?;
 
-    let nft_cookie2 = core_voter_test
+    let asset_cookie2 = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
@@ -883,14 +882,14 @@ async fn test_cast_nft_vote_using_multiple_instructions() -> Result<(), Transpor
     // Act
 
     core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie2],
+            &[&asset_cookie2],
             None,
         )
         .await?;
@@ -916,7 +915,7 @@ async fn test_cast_nft_vote_using_multiple_instructions() -> Result<(), Transpor
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_using_multiple_instructions_with_nft_already_voted_error(
+async fn test_cast_asset_vote_using_multiple_instructions_with_nft_already_voted_error(
 ) -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
@@ -959,7 +958,7 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_nft_already_voted_e
         .with_proposal(&realm_cookie)
         .await?;
 
-    let nft_cookie1 = core_voter_test
+    let asset_cookie1 = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
@@ -969,14 +968,14 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_nft_already_voted_e
     };
 
     core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1],
+            &[&asset_cookie1],
             Some(args),
         )
         .await?;
@@ -984,14 +983,14 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_nft_already_voted_e
     // Act
 
     let err = core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1],
+            &[&asset_cookie1],
             None,
         )
         .await
@@ -1005,7 +1004,7 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_nft_already_voted_e
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_using_multiple_instructions_with_attempted_sandwiched_relinquish(
+async fn test_cast_asset_vote_using_multiple_instructions_with_attempted_sandwiched_relinquish(
 ) -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
@@ -1048,7 +1047,7 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_attempted_sandwiche
         .with_proposal(&realm_cookie)
         .await?;
 
-    let nft_cookie1 = core_voter_test
+    let asset_cookie1 = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
@@ -1058,15 +1057,15 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_attempted_sandwiche
     };
 
     // Cast vote with NFT
-    let nft_vote_record_cookies = core_voter_test
-        .cast_nft_vote(
+    let asset_vote_record_cookies = core_voter_test
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1],
+            &[&asset_cookie1],
             Some(args),
         )
         .await?;
@@ -1081,21 +1080,21 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_attempted_sandwiche
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &nft_vote_record_cookies,
+            &asset_vote_record_cookies,
         )
         .await?;
 
     // Act
 
     core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1],
+            &[&asset_cookie1],
             None,
         )
         .await?;
@@ -1112,7 +1111,7 @@ async fn test_cast_nft_vote_using_multiple_instructions_with_attempted_sandwiche
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_using_delegate() -> Result<(), TransportError> {
+async fn test_cast_asset_vote_using_delegate() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -1151,7 +1150,7 @@ async fn test_cast_nft_vote_using_delegate() -> Result<(), TransportError> {
         .with_proposal(&realm_cookie)
         .await?;
 
-    let nft_cookie1 = core_voter_test
+    let asset_cookie1 = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
@@ -1170,31 +1169,31 @@ async fn test_cast_nft_vote_using_delegate() -> Result<(), TransportError> {
         .await;
 
     // Act
-    let nft_vote_record_cookies = core_voter_test
-        .cast_nft_vote(
+    let asset_vote_record_cookies = core_voter_test
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &delegate_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1],
+            &[&asset_cookie1],
             None,
         )
         .await?;
 
     // Assert
-    let nft_vote_record = core_voter_test
-        .get_nft_vote_record_account(&nft_vote_record_cookies[0].address)
+    let asset_vote_record = core_voter_test
+        .get_asset_vote_record_account(&asset_vote_record_cookies[0].address)
         .await;
 
-    assert_eq!(nft_vote_record_cookies[0].account, nft_vote_record);
+    assert_eq!(asset_vote_record_cookies[0].account, asset_vote_record);
 
     Ok(())
 }
 
 #[tokio::test]
-async fn test_cast_nft_vote_with_invalid_voter_weight_token_owner_error(
+async fn test_cast_asset_vote_with_invalid_voter_weight_token_owner_error(
 ) -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
@@ -1236,7 +1235,7 @@ async fn test_cast_nft_vote_with_invalid_voter_weight_token_owner_error(
         .with_proposal(&realm_cookie)
         .await?;
 
-    let nft_cookie1 = core_voter_test
+    let asset_cookie1 = core_voter_test
         .core
         .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
@@ -1244,14 +1243,14 @@ async fn test_cast_nft_vote_with_invalid_voter_weight_token_owner_error(
     // Act
 
     let err = core_voter_test
-        .cast_nft_vote(
+        .cast_asset_vote(
             &registrar_cookie,
             &voter_weight_record_cookie2,
             &max_voter_weight_record_cookie,
             &proposal_cookie,
             &voter_cookie,
             &voter_token_owner_record_cookie,
-            &[&nft_cookie1],
+            &[&asset_cookie1],
             None,
         )
         .await
