@@ -48,10 +48,7 @@ pub struct ConfigureCollection<'info> {
 pub fn configure_collection(
     ctx: Context<ConfigureCollection>,
     weight: u64,
-    size: u32,
 ) -> Result<()> {
-    require!(size > 0, NftVoterError::InvalidCollectionSize);
-
     let registrar = &mut ctx.accounts.registrar;
 
     let realm = realm::get_realm_data_for_governing_token_mint(
@@ -74,6 +71,10 @@ pub fn configure_collection(
     // }
 
     let collection = &ctx.accounts.collection;
+    
+    let size = collection.current_size;
+
+    require!(size > 0, NftVoterError::InvalidCollectionSize);
 
     let collection_config = CollectionConfig {
         collection: collection.key(),

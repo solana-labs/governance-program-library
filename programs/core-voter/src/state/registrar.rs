@@ -2,16 +2,12 @@ use crate::{
     error::NftVoterError,
     id,
     state::{CollectionConfig, VoterWeightRecord},
-    tools::{
-        anchor::DISCRIMINATOR_SIZE, spl_token::get_spl_token_amount,
-        token_metadata::get_token_metadata_for_mint,
-    },
+    tools::anchor::DISCRIMINATOR_SIZE,
 };
 use anchor_lang::prelude::*;
 use mpl_core::{accounts::BaseAssetV1, types::UpdateAuthority};
 use solana_program::pubkey::PUBKEY_BYTES;
 use spl_governance::state::token_owner_record;
-use spl_governance::tools::spl_token::{get_spl_token_mint, get_spl_token_owner};
 
 /// Registrar which stores NFT voting configuration for the given Realm
 #[account]
