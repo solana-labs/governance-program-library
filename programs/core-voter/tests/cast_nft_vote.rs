@@ -76,6 +76,9 @@ async fn test_cast_asset_vote() -> Result<(), TransportError> {
             None,
         )
         .await?;
+    
+        println!("Asset Vote Record Address: {:?}", asset_vote_record_cookies[0].address);
+        println!("Asset Vote Record Account: {:?}", asset_vote_record_cookies[0].account);
 
     // Assert
     let asset_vote_record = core_voter_test

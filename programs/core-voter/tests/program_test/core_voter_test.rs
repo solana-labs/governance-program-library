@@ -520,7 +520,7 @@ impl CoreVoterTest {
             };
 
             asset_vote_record_cookies.push(AssetVoteRecordCookie {
-                address: asset_voter_cookie.address,
+                address: proposal_cookie.address,
                 account,
             })
         }
@@ -563,6 +563,7 @@ impl CoreVoterTest {
             .await?;
 
         Ok(asset_vote_record_cookies)
+
     }
 
     #[allow(dead_code)]
