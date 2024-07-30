@@ -23,6 +23,13 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
+    let voter_cookie = core_voter_test.bench.with_wallet().await;
+
+    let asset_cookie1 = core_voter_test
+        .core
+        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .await?;
+
     core_voter_test
         .with_collection(
             &registrar_cookie,
@@ -31,8 +38,6 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
             Some(ConfigureCollectionArgs { weight: 1, size: 1 }), // Set Size == 1 to complete voting with just one vote
         )
         .await?;
-
-    let voter_cookie = core_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = core_voter_test
         .governance
@@ -46,11 +51,6 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
     let proposal_cookie = core_voter_test
         .governance
         .with_proposal(&realm_cookie)
-        .await?;
-
-    let asset_cookie1 = core_voter_test
-                .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
 
     let asset_vote_record_cookies = core_voter_test
@@ -69,7 +69,6 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
     core_voter_test.bench.advance_clock().await;
 
     // Act
-
     core_voter_test
         .relinquish_nft_vote(
             &registrar_cookie,
@@ -116,6 +115,13 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
+    let voter_cookie = core_voter_test.bench.with_wallet().await;
+
+    let asset_cookie1 = core_voter_test
+        .core
+        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .await?;
+
     core_voter_test
         .with_collection(
             &registrar_cookie,
@@ -124,8 +130,6 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
             None,
         )
         .await?;
-
-    let voter_cookie = core_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = core_voter_test
         .governance
@@ -139,11 +143,6 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
     let proposal_cookie = core_voter_test
         .governance
         .with_proposal(&realm_cookie)
-        .await?;
-
-    let asset_cookie1 = core_voter_test
-                .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
 
     let asset_vote_record_cookies = core_voter_test
@@ -172,7 +171,6 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
     core_voter_test.bench.advance_clock().await;
 
     // Act
-
     core_voter_test
         .relinquish_nft_vote(
             &registrar_cookie,
@@ -185,7 +183,6 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
         .await?;
 
     // Assert
-
     let voter_weight_record = core_voter_test
         .get_voter_weight_record(&voter_weight_record_cookie.address)
         .await;
@@ -220,6 +217,13 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_e
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
+    let voter_cookie = core_voter_test.bench.with_wallet().await;
+
+    let asset_cookie1 = core_voter_test
+        .core
+        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .await?;
+
     core_voter_test
         .with_collection(
             &registrar_cookie,
@@ -228,8 +232,6 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_e
             None,
         )
         .await?;
-
-    let voter_cookie = core_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = core_voter_test
         .governance
@@ -243,11 +245,6 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_e
     let proposal_cookie = core_voter_test
         .governance
         .with_proposal(&realm_cookie)
-        .await?;
-
-    let asset_cookie1 = core_voter_test
-        .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
 
     let asset_vote_record_cookies = core_voter_test
@@ -264,7 +261,6 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_e
         .await?;
 
     // Act
-
     let err = core_voter_test
         .relinquish_nft_vote(
             &registrar_cookie,
@@ -299,6 +295,13 @@ async fn test_relinquish_nft_vote_with_invalid_voter_error() -> Result<(), Trans
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
+    let voter_cookie = core_voter_test.bench.with_wallet().await;
+
+    let asset_cookie1 = core_voter_test
+        .core
+        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .await?;
+
     core_voter_test
         .with_collection(
             &registrar_cookie,
@@ -307,8 +310,6 @@ async fn test_relinquish_nft_vote_with_invalid_voter_error() -> Result<(), Trans
             Some(ConfigureCollectionArgs { weight: 1, size: 1 }), // Set Size == 1 to complete voting with just one vote
         )
         .await?;
-
-    let voter_cookie = core_voter_test.bench.with_wallet().await;
 
     let voter_token_owner_record_cookie = core_voter_test
         .governance
@@ -322,11 +323,6 @@ async fn test_relinquish_nft_vote_with_invalid_voter_error() -> Result<(), Trans
     let proposal_cookie = core_voter_test
         .governance
         .with_proposal(&realm_cookie)
-        .await?;
-
-    let asset_cookie1 = core_voter_test
-                .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
         .await?;
 
     let asset_vote_record_cookies = core_voter_test

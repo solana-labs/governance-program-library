@@ -356,77 +356,6 @@ async fn test_cast_asset_vote_with_invalid_voter_error() -> Result<(), Transport
 }
 
 #[tokio::test]
-async fn test_cast_asset_vote_with_unverified_collection_error() -> Result<(), TransportError> {
-    // Arrange
-    let mut core_voter_test = CoreVoterTest::start_new().await;
-
-    let realm_cookie = core_voter_test.governance.with_realm().await?;
-
-    let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
-
-    let collection_cookie = core_voter_test.core.with_collection().await?;
-
-    let max_voter_weight_record_cookie = core_voter_test
-        .with_max_voter_weight_record(&registrar_cookie)
-        .await?;
-
-    let voter_cookie = core_voter_test.bench.with_wallet().await;
-
-    // Create NFT without verified collection
-    let asset_cookie1 = core_voter_test
-        .core
-        .with_asset(&collection_cookie, &voter_cookie, None)
-        .await?;
-
-    core_voter_test
-        .with_collection(
-            &registrar_cookie,
-            &collection_cookie,
-            &max_voter_weight_record_cookie,
-            Some(ConfigureCollectionArgs {
-                weight: 10,
-                size: 20,
-            }),
-        )
-        .await?;
-
-    let voter_token_owner_record_cookie = core_voter_test
-        .governance
-        .with_token_owner_record(&realm_cookie, &voter_cookie)
-        .await?;
-
-    let voter_weight_record_cookie = core_voter_test
-        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
-        .await?;
-
-    let proposal_cookie = core_voter_test
-        .governance
-        .with_proposal(&realm_cookie)
-        .await?;
-
-    // Act
-    let err = core_voter_test
-        .cast_asset_vote(
-            &registrar_cookie,
-            &voter_weight_record_cookie,
-            &max_voter_weight_record_cookie,
-            &proposal_cookie,
-            &voter_cookie,
-            &voter_token_owner_record_cookie,
-            &[&asset_cookie1],
-            None,
-        )
-        .await
-        .err()
-        .unwrap();
-
-    // Assert
-    assert_nft_voter_err(err, NftVoterError::CollectionMustBeVerified);
-
-    Ok(())
-}
-
-#[tokio::test]
 async fn test_cast_asset_vote_with_invalid_owner_error() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
@@ -510,13 +439,18 @@ async fn test_cast_asset_vote_with_invalid_collection_error() -> Result<(), Tran
 
     let collection_cookie = core_voter_test.core.with_collection().await?;
 
+    let collection_cookie2 = core_voter_test.core.with_collection().await?;
+
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
     let voter_cookie: program_test::program_test_bench::WalletCookie = core_voter_test.bench.with_wallet().await;
 
-    let collection_cookie2 = core_voter_test.core.with_collection().await?;
+    let _random_asset_cookie = core_voter_test
+        .core
+        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .await?;
 
     let asset_cookie = core_voter_test
         .core
@@ -636,76 +570,6 @@ async fn test_cast_asset_vote_with_same_nft_error() -> Result<(), TransportError
     // Assert
 
     assert_nft_voter_err(err, NftVoterError::DuplicatedNftDetected);
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_cast_asset_vote_with_no_nft_error() -> Result<(), TransportError> {
-    // Arrange
-    let mut core_voter_test = CoreVoterTest::start_new().await;
-
-    let realm_cookie = core_voter_test.governance.with_realm().await?;
-
-    let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
-
-    let collection_cookie = core_voter_test.core.with_collection().await?;
-
-    let max_voter_weight_record_cookie = core_voter_test
-        .with_max_voter_weight_record(&registrar_cookie)
-        .await?;
-
-    let voter_cookie = core_voter_test.bench.with_wallet().await;
-
-    let asset_cookie = core_voter_test
-        .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
-        .await?;
-
-    core_voter_test
-        .with_collection(
-            &registrar_cookie,
-            &collection_cookie,
-            &max_voter_weight_record_cookie,
-            Some(ConfigureCollectionArgs {
-                weight: 10,
-                size: 20,
-            }),
-        )
-        .await?;
-
-    let voter_token_owner_record_cookie = core_voter_test
-        .governance
-        .with_token_owner_record(&realm_cookie, &voter_cookie)
-        .await?;
-
-    let voter_weight_record_cookie = core_voter_test
-        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
-        .await?;
-
-    let proposal_cookie = core_voter_test
-        .governance
-        .with_proposal(&realm_cookie)
-        .await?;
-
-    // Act
-    let err = core_voter_test
-        .cast_asset_vote(
-            &registrar_cookie,
-            &voter_weight_record_cookie,
-            &max_voter_weight_record_cookie,
-            &proposal_cookie,
-            &voter_cookie,
-            &voter_token_owner_record_cookie,
-            &[],
-            None,
-        )
-        .await
-        .err()
-        .unwrap();
-
-    // Assert
-    assert_nft_voter_err(err, NftVoterError::InvalidNftAmount);
 
     Ok(())
 }

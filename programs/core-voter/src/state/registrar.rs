@@ -129,7 +129,7 @@ pub fn resolve_nft_vote_weight_and_mint(
 
     let collection_config = registrar.get_collection_config(collection)?;
 
-    assert!(collection_config.collection == collection, NftVoterError::InvalidNftCollection);
+    require!(collection_config.collection == collection, NftVoterError::InvalidNftCollection);
 
     Ok((collection_config.weight, nft_mint))
 }
