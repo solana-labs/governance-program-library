@@ -1,5 +1,5 @@
 use crate::program_test::core_voter_test::ConfigureCollectionArgs;
-use gpl_nft_voter::error::NftVoterError;
+use gpl_core_voter::error::NftVoterError;
 use program_test::core_voter_test::{CastAssetVoteArgs, CoreVoterTest};
 use program_test::tools::{assert_gov_err, assert_nft_voter_err};
 use solana_program_test::*;

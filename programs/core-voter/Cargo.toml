@@ -7,7 +7,7 @@ edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "gpl_nft_voter"
+name = "gpl_core_voter"
 
 [features]
 no-entrypoint = []

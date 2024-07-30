@@ -1,7 +1,7 @@
 mod program_test;
 
 use anchor_lang::prelude::{ErrorCode, Pubkey};
-use gpl_nft_voter::error::NftVoterError;
+use gpl_core_voter::error::NftVoterError;
 use program_test::core_voter_test::CoreVoterTest;
 
 use solana_program_test::*;

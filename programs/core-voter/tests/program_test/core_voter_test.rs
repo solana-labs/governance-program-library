@@ -2,15 +2,15 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::{AccountMeta, Pubkey};
 
-use gpl_nft_voter::state::max_voter_weight_record::{
+use gpl_core_voter::state::max_voter_weight_record::{
     get_max_voter_weight_record_address, MaxVoterWeightRecord,
 };
-use gpl_nft_voter::state::*;
+use gpl_core_voter::state::*;
 
 use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{self, Vote, VoteChoice};
 
-use gpl_nft_voter::state::{
+use gpl_core_voter::state::{
     get_nft_vote_record_address, get_registrar_address, CollectionConfig, AssetVoteRecord, Registrar,
 };
 
@@ -89,7 +89,7 @@ pub struct CoreVoterTest {
 impl CoreVoterTest {
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
-        program_test.add_program("gpl_core_voter", gpl_nft_voter::id(), None);
+        program_test.add_program("gpl_core_voter", gpl_core_voter::id(), None);
     }
 
     #[allow(dead_code)]
@@ -100,7 +100,7 @@ impl CoreVoterTest {
         GovernanceTest::add_program(&mut program_test);
         CoreTest::add_program(&mut program_test);
 
-        let program_id = gpl_nft_voter::id();
+        let program_id = gpl_core_voter::id();
 
         let bench = ProgramTestBench::start_new(program_test).await;
         let bench_rc = Arc::new(bench);
@@ -139,12 +139,12 @@ impl CoreVoterTest {
         let max_collections = 10;
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CreateRegistrar {
+            anchor_lang::InstructionData::data(&gpl_core_voter::instruction::CreateRegistrar {
                 max_collections,
             });
 
         let accounts = anchor_lang::ToAccountMetas::to_account_metas(
-            &gpl_nft_voter::accounts::CreateRegistrar {
+            &gpl_core_voter::accounts::CreateRegistrar {
                 registrar: registrar_key,
                 realm: realm_cookie.address,
                 governance_program_id: self.governance.program_id,
@@ -157,7 +157,7 @@ impl CoreVoterTest {
         );
 
         let mut create_registrar_ix = Instruction {
-            program_id: gpl_nft_voter::id(),
+            program_id: gpl_core_voter::id(),
             accounts,
             data,
         };
@@ -213,16 +213,16 @@ impl CoreVoterTest {
                 registrar_cookie.account.governing_token_mint.as_ref(),
                 governing_token_owner.as_ref(),
             ],
-            &gpl_nft_voter::id(),
+            &gpl_core_voter::id(),
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_nft_voter::instruction::CreateVoterWeightRecord {
+            &gpl_core_voter::instruction::CreateVoterWeightRecord {
                 governing_token_owner,
             },
         );
 
-        let accounts = gpl_nft_voter::accounts::CreateVoterWeightRecord {
+        let accounts = gpl_core_voter::accounts::CreateVoterWeightRecord {
             governance_program_id: self.governance.program_id,
             realm: registrar_cookie.account.realm,
             realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
@@ -232,7 +232,7 @@ impl CoreVoterTest {
         };
 
         let mut create_voter_weight_record_ix = Instruction {
-            program_id: gpl_nft_voter::id(),
+            program_id: gpl_core_voter::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
@@ -281,10 +281,10 @@ impl CoreVoterTest {
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_nft_voter::instruction::CreateMaxVoterWeightRecord {},
+            &gpl_core_voter::instruction::CreateMaxVoterWeightRecord {},
         );
 
-        let accounts = gpl_nft_voter::accounts::CreateMaxVoterWeightRecord {
+        let accounts = gpl_core_voter::accounts::CreateMaxVoterWeightRecord {
             governance_program_id: self.governance.program_id,
             realm: registrar_cookie.account.realm,
             realm_governing_token_mint: registrar_cookie.account.governing_token_mint,
@@ -294,7 +294,7 @@ impl CoreVoterTest {
         };
 
         let mut create_max_voter_weight_record_ix = Instruction {
-            program_id: gpl_nft_voter::id(),
+            program_id: gpl_core_voter::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
@@ -328,12 +328,12 @@ impl CoreVoterTest {
         asset_cookies: &[&AssetCookie],
     ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_nft_voter::instruction::UpdateVoterWeightRecord {
+            &gpl_core_voter::instruction::UpdateVoterWeightRecord {
                 voter_weight_action,
             },
         );
 
-        let accounts = gpl_nft_voter::accounts::UpdateVoterWeightRecord {
+        let accounts = gpl_core_voter::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
         };
@@ -345,7 +345,7 @@ impl CoreVoterTest {
         }
 
         let instructions = vec![Instruction {
-            program_id: gpl_nft_voter::id(),
+            program_id: gpl_core_voter::id(),
             accounts: account_metas,
             data,
         }];
@@ -364,7 +364,7 @@ impl CoreVoterTest {
         asset_vote_record_cookies: &Vec<AssetVoteRecordCookie>,
     ) -> Result<(), BanksClientError> {
         let data =
-            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::RelinquishNftVote {});
+            anchor_lang::InstructionData::data(&gpl_core_voter::instruction::RelinquishNftVote {});
 
         let vote_record_key = vote_record::get_vote_record_address(
             &self.governance.program_id,
@@ -372,7 +372,7 @@ impl CoreVoterTest {
             &voter_token_owner_record_cookie.address,
         );
 
-        let accounts = gpl_nft_voter::accounts::RelinquishNftVote {
+        let accounts = gpl_core_voter::accounts::RelinquishNftVote {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
             governance: proposal_cookie.account.governance,
@@ -390,7 +390,7 @@ impl CoreVoterTest {
         }
 
         let relinquish_nft_vote_ix = Instruction {
-            program_id: gpl_nft_voter::id(),
+            program_id: gpl_core_voter::id(),
             accounts: account_metas,
             data,
         };
@@ -434,11 +434,11 @@ impl CoreVoterTest {
         let args = args.unwrap_or_default();
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::ConfigureCollection {
+            anchor_lang::InstructionData::data(&gpl_core_voter::instruction::ConfigureCollection {
                 weight: args.weight,
             });
 
-        let accounts = gpl_nft_voter::accounts::ConfigureCollection {
+        let accounts = gpl_core_voter::accounts::ConfigureCollection {
             registrar: registrar_cookie.address,
             realm: registrar_cookie.account.realm,
             realm_authority: registrar_cookie.realm_authority.pubkey(),
@@ -447,7 +447,7 @@ impl CoreVoterTest {
         };
 
         let mut configure_collection_ix = Instruction {
-            program_id: gpl_nft_voter::id(),
+            program_id: gpl_core_voter::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
@@ -486,11 +486,11 @@ impl CoreVoterTest {
     ) -> Result<Vec<AssetVoteRecordCookie>, BanksClientError> {
         let args = args.unwrap_or_default();
 
-        let data = anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::CastNftVote {
+        let data = anchor_lang::InstructionData::data(&gpl_core_voter::instruction::CastNftVote {
             proposal: proposal_cookie.address,
         });
 
-        let accounts = gpl_nft_voter::accounts::CastNftVote {
+        let accounts = gpl_core_voter::accounts::CastNftVote {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
             voter_token_owner_record: voter_token_owner_record_cookie.address,
@@ -526,7 +526,7 @@ impl CoreVoterTest {
         }
 
         let cast_nft_vote_ix = Instruction {
-            program_id: gpl_nft_voter::id(),
+            program_id: gpl_core_voter::id(),
             accounts: account_metas,
             data,
         };

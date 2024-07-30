@@ -1,6 +1,6 @@
 use crate::program_test::core_voter_test::ConfigureCollectionArgs;
-use gpl_nft_voter::error::NftVoterError;
-use gpl_nft_voter::state::*;
+use gpl_core_voter::error::NftVoterError;
+use gpl_core_voter::state::*;
 use program_test::{
     core_voter_test::*,
     tools::{assert_gov_err, assert_nft_voter_err},

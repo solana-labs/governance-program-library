@@ -1,5 +1,5 @@
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
-use gpl_nft_voter::error::NftVoterError;
+use gpl_core_voter::error::NftVoterError;
 use solana_program::instruction::InstructionError;
 use solana_program_test::BanksClientError;
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};

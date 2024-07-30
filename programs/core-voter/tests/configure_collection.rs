@@ -1,4 +1,4 @@
-use gpl_nft_voter::error::NftVoterError;
+use gpl_core_voter::error::NftVoterError;
 use program_test::{
     core_voter_test::CoreVoterTest,
     tools::{assert_anchor_err, assert_nft_voter_err},
