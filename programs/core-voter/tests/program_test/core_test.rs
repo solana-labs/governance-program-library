@@ -40,6 +40,7 @@ impl CoreTest {
 
     #[allow(dead_code)]
     pub async fn with_collection(&self) -> Result<CollectionCookie, TransportError> {
+        let update_authority = self.bench.context.borrow().payer.pubkey();
         let payer = self.bench.context.borrow().payer.pubkey();
 
         // Create collection
@@ -60,7 +61,7 @@ impl CoreTest {
         // instruction accounts
         let create_coll_ix_accounts = mpl_core::instructions::CreateCollectionV2 {
             collection: coll_keypair.pubkey(),
-            update_authority: Some(coll_authority.pubkey()),
+            update_authority: Some(update_authority),
             payer,
             system_program: system_program::ID,
         };
@@ -71,7 +72,7 @@ impl CoreTest {
         self.bench
             .process_transaction(
                 &[create_coll_ix],
-                Some(&[&coll_keypair, &coll_authority]),
+                Some(&[&coll_keypair]),
             )
             .await?;
 
@@ -88,6 +89,7 @@ impl CoreTest {
         asset_owner_cookie: &WalletCookie,
         collection: Option<Pubkey>
     ) -> Result<AssetCookie, TransportError> {
+        let collection_authority = self.bench.context.borrow().payer.pubkey();
         let payer = self.bench.context.borrow().payer.pubkey();
 
         // Create Asset
@@ -109,7 +111,7 @@ impl CoreTest {
         let create_accounts = mpl_core::instructions::CreateV2 {
             asset: asset_keypair.pubkey(),
             collection,
-            authority: Some(collection_cookie.authority.pubkey()),
+            authority: Some(collection_authority),
             payer,
             owner: Some(asset_owner_cookie.address),
             update_authority: None,
@@ -123,7 +125,7 @@ impl CoreTest {
         self.bench
             .process_transaction(
                 &[create_ix],
-                Some(&[&asset_keypair, &collection_cookie.authority]),
+                Some(&[&asset_keypair]),
             )
             .await?;
 
