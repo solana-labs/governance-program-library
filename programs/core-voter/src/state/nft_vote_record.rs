@@ -34,7 +34,7 @@ pub struct AssetVoteRecord {
 
 impl AssetVoteRecord {
     /// sha256("account:AssetVoteRecord")[..8]
-    pub const ACCOUNT_DISCRIMINATOR: [u8; 8] = [137, 6, 55, 139, 251, 126, 254, 99];
+    pub const ACCOUNT_DISCRIMINATOR: [u8; 8] = [14, 166, 191, 239, 186, 156, 140, 83];
 }
 
 impl AccountMaxSize for AssetVoteRecord {}

@@ -520,7 +520,7 @@ impl CoreVoterTest {
             };
 
             asset_vote_record_cookies.push(AssetVoteRecordCookie {
-                address: proposal_cookie.address,
+                address: nft_vote_record_key,
                 account,
             })
         }
