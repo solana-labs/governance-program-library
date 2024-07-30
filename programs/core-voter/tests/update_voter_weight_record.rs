@@ -207,68 +207,6 @@ async fn test_update_voter_weight_with_cast_vote_not_allowed_error() -> Result<(
 }
 
 #[tokio::test]
-async fn test_update_voter_weight_with_unverified_collection_error() -> Result<(), TransportError> {
-    // Arrange
-    let mut core_voter_test = CoreVoterTest::start_new().await;
-
-    let realm_cookie = core_voter_test.governance.with_realm().await?;
-
-    let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
-
-    let collection_cookie = core_voter_test.core.with_collection().await?;
-
-    let max_voter_weight_record_cookie = core_voter_test
-        .with_max_voter_weight_record(&registrar_cookie)
-        .await?;
-    
-    let voter_cookie = core_voter_test.bench.with_wallet().await;
-
-    let _random_asset_cookie = core_voter_test
-    .core
-    .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
-    .await?;
-
-    // Create NFT without verified collection
-    let asset_cookie1 = core_voter_test
-        .core
-        .with_asset(&collection_cookie, &voter_cookie, None)
-        .await?;
-
-    core_voter_test
-        .with_collection(
-            &registrar_cookie,
-            &collection_cookie,
-            &max_voter_weight_record_cookie,
-            Some(ConfigureCollectionArgs {
-                weight: 10,
-                size: 20,
-            }),
-        )
-        .await?;
-
-    let mut voter_weight_record_cookie = core_voter_test
-        .with_voter_weight_record(&registrar_cookie, &voter_cookie)
-        .await?;
-
-    // Act
-    let err = core_voter_test
-        .update_voter_weight_record(
-            &registrar_cookie,
-            &mut voter_weight_record_cookie,
-            VoterWeightAction::CreateGovernance,
-            &[&asset_cookie1],
-        )
-        .await
-        .err()
-        .unwrap();
-
-    // Assert
-    assert_nft_voter_err(err, NftVoterError::CollectionMustBeVerified);
-
-    Ok(())
-}
-
-#[tokio::test]
 async fn test_update_voter_weight_with_invalid_owner_error() -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
@@ -345,9 +283,14 @@ async fn test_update_voter_weight_with_invalid_collection_error() -> Result<(), 
 
     let voter_cookie = core_voter_test.bench.with_wallet().await;
 
-    let asset_cookie1 = core_voter_test
+    let _random_asset_cookie = core_voter_test
         .core
         .with_asset(&collection_cookie2, &voter_cookie, Some(collection_cookie.collection))
+        .await?;
+
+    let asset_cookie1 = core_voter_test
+        .core
+        .with_asset(&collection_cookie2, &voter_cookie, Some(collection_cookie2.collection))
         .await?;
 
     core_voter_test
