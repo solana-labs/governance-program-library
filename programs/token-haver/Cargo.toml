@@ -1,0 +1,33 @@
+[package]
+name = "gpl-token-haver"
+version = "0.0.2"
+description = "SPL Governance plugin granting governance power based on the nonzero presence of locked tokens"
+license = "Apache-2.0"
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "gpl_token_haver"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+arrayref = "0.3.6"
+anchor-lang = { version = "0.30.1" }
+anchor-spl = "0.30.1"
+solana-program = "1.18.18"
+spl-governance = { version = "4.0.0", features = ["no-entrypoint"] }
+spl-governance-tools=  "0.1.4"
+spl-token = { version = "4.0.0", features = [ "no-entrypoint" ] }
+
+# tests are incomplete
+# [dev-dependencies]
+# borsh = "0.10.3"
+# solana-sdk = "1.18.18"
+# solana-program-test = "1.18.18"

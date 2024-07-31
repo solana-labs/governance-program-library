@@ -8,6 +8,7 @@ use instructions::*;
 pub mod state;
 
 pub mod tools;
+use crate::state::CollectionItemChangeType;
 
 declare_id!("GRmVtfLq2BPeWs5EDoQoZc787VYkhdkA11k63QM1Xemz");
 
@@ -49,7 +50,7 @@ pub mod realm_voter {
 
     pub fn configure_governance_program(
         ctx: Context<ConfigureGovernanceProgram>,
-        change_type: crate::state::CollectionItemChangeType,
+        change_type: CollectionItemChangeType,
     ) -> Result<()> {
         log_version();
         instructions::configure_governance_program(ctx, change_type)
