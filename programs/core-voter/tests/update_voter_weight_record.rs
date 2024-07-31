@@ -17,7 +17,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection(None).await?;
+    let collection_cookie = core_voter_test.core.with_collection().await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
@@ -27,7 +27,11 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     let _collection_config_cookie = core_voter_test
@@ -67,7 +71,7 @@ async fn test_update_voter_weight_record() -> Result<(), TransportError> {
 
     assert_eq!(voter_weight_record.voter_weight, 10);
     assert_eq!(voter_weight_record.voter_weight_expiry, Some(clock.slot));
-    
+
     assert_eq!(
         voter_weight_record.weight_action,
         Some(VoterWeightAction::CreateProposal.into())
@@ -86,7 +90,7 @@ async fn test_update_voter_weight_with_multiple_nfts() -> Result<(), TransportEr
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection(None).await?;
+    let collection_cookie = core_voter_test.core.with_collection().await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
@@ -96,12 +100,20 @@ async fn test_update_voter_weight_with_multiple_nfts() -> Result<(), TransportEr
 
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     let asset_cookie2 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     let _collection_config_cookie = core_voter_test
@@ -159,7 +171,7 @@ async fn test_update_voter_weight_with_cast_vote_not_allowed_error() -> Result<(
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection(None).await?;
+    let collection_cookie = core_voter_test.core.with_collection().await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
@@ -169,7 +181,11 @@ async fn test_update_voter_weight_with_cast_vote_not_allowed_error() -> Result<(
 
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     core_voter_test
@@ -215,7 +231,7 @@ async fn test_update_voter_weight_with_invalid_owner_error() -> Result<(), Trans
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection(None).await?;
+    let collection_cookie = core_voter_test.core.with_collection().await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
@@ -227,7 +243,11 @@ async fn test_update_voter_weight_with_invalid_owner_error() -> Result<(), Trans
 
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie2, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie2,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     core_voter_test
@@ -273,9 +293,9 @@ async fn test_update_voter_weight_with_invalid_collection_error() -> Result<(), 
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection(None).await?;
+    let collection_cookie = core_voter_test.core.with_collection().await?;
 
-    let collection_cookie2 = core_voter_test.core.with_collection(None).await?;
+    let collection_cookie2 = core_voter_test.core.with_collection().await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
@@ -285,12 +305,20 @@ async fn test_update_voter_weight_with_invalid_collection_error() -> Result<(), 
 
     let _random_asset_cookie = core_voter_test
         .core
-        .with_asset(&collection_cookie2, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie2,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie2, &voter_cookie, Some(collection_cookie2.collection))
+        .with_asset(
+            &collection_cookie2,
+            &voter_cookie,
+            Some(collection_cookie2.collection),
+        )
         .await?;
 
     core_voter_test
@@ -336,13 +364,17 @@ async fn test_update_voter_weight_with_same_nft_error() -> Result<(), TransportE
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection(None).await?;
+    let collection_cookie = core_voter_test.core.with_collection().await?;
 
     let voter_cookie = core_voter_test.bench.with_wallet().await;
 
     let asset_cookie = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     let max_voter_weight_record_cookie = core_voter_test
