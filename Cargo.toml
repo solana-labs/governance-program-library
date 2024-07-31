@@ -5,3 +5,6 @@ members = [
     "programs/realm-voter",
     "programs/nft-voter",
 ]
+
+[profile.release]
+overflow-checks = true

@@ -1,9 +1,9 @@
 use std::{str::FromStr, sync::Arc};
 
 use anchor_lang::prelude::Pubkey;
-use mpl_token_metadata::types::Collection;
+use mpl_token_metadata::{types::Collection, types::DataV2};
 use solana_program_test::ProgramTest;
-use solana_sdk::{signer::Signer, transport::TransportError};
+use solana_sdk::{signer::Signer, system_program, transport::TransportError};
 
 use crate::program_test::program_test_bench::{MintCookie, ProgramTestBench, WalletCookie};
 
@@ -79,24 +79,35 @@ impl TokenMetadataTest {
         let coll_symbol = "NFT_C".to_string();
         let coll_uri = "URI".to_string();
 
-        let create_coll_metadata_ix =
-            mpl_token_metadata::instructions::CreateMetadataAccountV3Builder::new()
-                .metadata(coll_metadata_key)
-                .is_mutable(true)
-                .mint(coll_mint_cookie.address)
-                .mint_authority(coll_mint_cookie.mint_authority.pubkey())
-                .payer(payer)
-                .update_authority(update_authority, true)
-                .data(mpl_token_metadata::types::DataV2 {
-                    name: coll_name.clone(),
-                    symbol: coll_symbol.clone(),
-                    uri: coll_uri.clone(),
-                    seller_fee_basis_points: 10,
-                    creators: None,
-                    collection: None,
-                    uses: None,
-                })
-                .instruction();
+        // instruction args
+        let args = mpl_token_metadata::instructions::CreateMetadataAccountV3InstructionArgs {
+            data: DataV2 {
+                name: coll_name,
+                symbol: coll_symbol,
+                uri: coll_uri,
+                seller_fee_basis_points: 10,
+                creators: None,
+                collection: None,
+                uses: None,
+            },
+            is_mutable: true,
+            collection_details: None,
+        };
+
+        // instruction accounts
+        let create_coll_metadata_ix_accounts =
+            mpl_token_metadata::instructions::CreateMetadataAccountV3 {
+                metadata: coll_metadata_key,
+                mint: coll_mint_cookie.address,
+                mint_authority: coll_mint_cookie.mint_authority.pubkey(),
+                payer: payer,
+                update_authority: (payer, true),
+                system_program: system_program::ID,
+                rent: None,
+            };
+
+        // creates the instruction
+        let create_coll_metadata_ix = create_coll_metadata_ix_accounts.instruction(args);
 
         self.bench
             .process_transaction(
@@ -114,16 +125,28 @@ impl TokenMetadataTest {
         let (master_edition_key, _) =
             Pubkey::find_program_address(master_edition_seeds, &self.program_id);
 
+        // instruction args
+        let args_master_edition_v3 =
+            mpl_token_metadata::instructions::CreateMasterEditionV3InstructionArgs {
+                max_supply: Some(0),
+            };
+
+        // instruction accounts
+        let create_master_edition_v3_ix_accounts =
+            mpl_token_metadata::instructions::CreateMasterEditionV3 {
+                edition: master_edition_key,
+                metadata: coll_metadata_key,
+                mint: coll_mint_cookie.address,
+                mint_authority: coll_mint_cookie.mint_authority.pubkey(),
+                payer: payer,
+                update_authority: payer,
+                system_program: system_program::ID,
+                token_program: spl_token::id(),
+                rent: None,
+            };
+
         let create_master_edition_ix =
-            mpl_token_metadata::instructions::CreateMasterEditionV3Builder::new()
-                .metadata(coll_metadata_key)
-                .edition(master_edition_key)
-                .mint(coll_mint_cookie.address)
-                .update_authority(update_authority)
-                .mint_authority(coll_mint_cookie.mint_authority.pubkey())
-                .payer(payer)
-                .max_supply(0)
-                .instruction();
+            create_master_edition_v3_ix_accounts.instruction(args_master_edition_v3);
 
         self.bench
             .process_transaction(
@@ -174,39 +197,51 @@ impl TokenMetadataTest {
             key: nft_collection_cookie.mint,
         };
 
-        let create_metadata_ix =
-            mpl_token_metadata::instructions::CreateMetadataAccountV3Builder::new()
-                .metadata(metadata_key)
-                .is_mutable(true)
-                .mint(mint_cookie.address)
-                .mint_authority(mint_cookie.mint_authority.pubkey())
-                .payer(self.bench.payer.pubkey())
-                .update_authority(self.bench.payer.pubkey(), false)
-                .data(mpl_token_metadata::types::DataV2 {
-                    name: name.clone(),
-                    symbol: symbol.clone(),
-                    uri: uri.clone(),
-                    seller_fee_basis_points: 10,
-                    creators: None,
-                    collection: Some(collection.clone()),
-                    uses: None,
-                })
-                .instruction();
+        // instruction args
+        let args = mpl_token_metadata::instructions::CreateMetadataAccountV3InstructionArgs {
+            data: DataV2 {
+                name: name,
+                symbol: symbol,
+                uri: uri,
+                seller_fee_basis_points: 10,
+                creators: None,
+                collection: Some(collection),
+                uses: None,
+            },
+            is_mutable: true,
+            collection_details: None,
+        };
+
+        // instruction accounts
+        let create_metadata_ix_accounts =
+            mpl_token_metadata::instructions::CreateMetadataAccountV3 {
+                metadata: metadata_key,
+                mint: mint_cookie.address,
+                mint_authority: mint_cookie.mint_authority.pubkey(),
+                payer: self.bench.payer.pubkey(),
+                update_authority: (self.bench.payer.pubkey(), true),
+                system_program: system_program::ID,
+                rent: None,
+            };
+
+        // creates the instruction
+        let create_metadata_ix = create_metadata_ix_accounts.instruction(args);
 
         self.bench
             .process_transaction(&[create_metadata_ix], Some(&[&mint_cookie.mint_authority]))
             .await?;
 
         if verify_collection {
-            let verify_collection =
-                mpl_token_metadata::instructions::VerifyCollectionBuilder::new()
-                    .metadata(metadata_key)
-                    .collection_mint(nft_collection_cookie.mint)
-                    .collection(nft_collection_cookie.metadata)
-                    .collection_master_edition_account(nft_collection_cookie.master_edition)
-                    .payer(self.bench.payer.pubkey())
-                    .collection_authority(self.bench.payer.pubkey())
-                    .instruction();
+            let verify_collection_accounts = mpl_token_metadata::instructions::VerifyCollection {
+                metadata: metadata_key,
+                collection_authority: self.bench.payer.pubkey(),
+                payer: self.bench.payer.pubkey(),
+                collection_mint: nft_collection_cookie.mint,
+                collection: nft_collection_cookie.metadata,
+                collection_master_edition_account: nft_collection_cookie.master_edition,
+                collection_authority_record: None,
+            };
+            let verify_collection = verify_collection_accounts.instruction();
 
             self.bench
                 .process_transaction(&[verify_collection], None)

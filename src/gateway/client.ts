@@ -8,6 +8,9 @@ import { getTokenOwnerRecordAddress, VoterWeightAction } from '@solana/spl-gover
 export const GATEWAY_PLUGIN_ID = new PublicKey(
   'GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk'
 );
+import { Program, Provider } from '@coral-xyz/anchor';
+import { Gateway } from './gateway';
+import GatewayIDL  from './gateway.json';
 
 export class GatewayClient extends Client<Gateway> {
   readonly requiresInputVoterWeight = true;
@@ -19,11 +22,16 @@ export class GatewayClient extends Client<Gateway> {
     provider: Provider,
     devnet?: boolean,
   ): Promise<GatewayClient> {
+<<<<<<< HEAD
     // alternatively we could fetch from chain
     // const idl = await Program.fetchIdl(GATEWAY_PLUGIN_ID, provider);
 
     return new GatewayClient(
       new Program<Gateway>(IDL, GATEWAY_PLUGIN_ID, provider),
+=======
+    return new GatewayClient(
+      new Program(GatewayIDL as Gateway, provider),
+>>>>>>> origin
       devnet,
     );
   }

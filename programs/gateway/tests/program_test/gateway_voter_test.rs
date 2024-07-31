@@ -3,10 +3,9 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
 use itertools::Either;
-use solana_gateway::state::get_gatekeeper_account_address;
 use solana_gateway::{
     instruction::{add_gatekeeper, issue},
-    state::get_gateway_token_address_with_seed,
+    state::{get_gatekeeper_account_address, get_gateway_token_address_with_seed},
 };
 use solana_program::instruction::AccountMeta;
 

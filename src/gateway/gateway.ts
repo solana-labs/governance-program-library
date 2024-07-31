@@ -1,104 +1,40 @@
+/**
+ * Program IDL in camelCase format in order to be used in JS/TS.
+ *
+ * Note that this is only a type helper and is not the actual IDL. The original
+ * IDL can be found at `target/idl/gateway.json`.
+ */
 export type Gateway = {
-  "version": "0.1.1",
-  "name": "gateway",
+  "address": "GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk",
+  "metadata": {
+    "name": "gateway",
+    "version": "0.1.1",
+    "spec": "0.1.0",
+    "description": "SPL Governance addin for Civic Pass (www.civic.com)"
+  },
   "instructions": [
     {
-      "name": "createRegistrar",
-      "accounts": [
-        {
-          "name": "registrar",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The Gateway Registrar",
-            "There can only be a single registrar per governance Realm and governing mint of the Realm"
-          ]
-        },
-        {
-          "name": "governanceProgramId",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The program id of the spl-governance program the realm belongs to"
-          ]
-        },
-        {
-          "name": "realm",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "An spl-governance Realm",
-            "",
-            "Realm is validated in the instruction:",
-            "- Realm is owned by the governance_program_id",
-            "- governing_token_mint must be the community or council mint",
-            "- realm_authority is realm.authority"
-          ]
-        },
-        {
-          "name": "governingTokenMint",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "Either the realm community mint or the council mint.",
-            "It must match Realm.community_mint or Realm.config.council_mint",
-            "",
-            "Note: Once the Civic Pass plugin is enabled the governing_token_mint is used only as identity",
-            "for the voting population and the tokens of that are no longer used"
-          ]
-        },
-        {
-          "name": "realmAuthority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "realm_authority must sign and match Realm.authority"
-          ]
-        },
-        {
-          "name": "gatekeeperNetwork",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The Identity.com Gateway gatekeeper network that this realm uses",
-            "(See the registry struct docs for details).",
-            "Gateway Token belongs to this gatekeeper network, so passing a particular key here is",
-            "essentially saying \"We trust this gatekeeper network\"."
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "usePreviousVoterWeightPlugin",
-          "type": "bool"
-        }
-      ]
-    },
-    {
       "name": "configureRegistrar",
+      "discriminator": [
+        252,
+        142,
+        240,
+        129,
+        235,
+        180,
+        14,
+        115
+      ],
       "accounts": [
         {
           "name": "registrar",
-          "isMut": true,
-          "isSigner": false,
           "docs": [
             "The Gateway Plugin Registrar to be updated"
-          ]
+          ],
+          "writable": true
         },
         {
           "name": "realm",
-          "isMut": false,
-          "isSigner": false,
           "docs": [
             "An spl-governance Realm",
             "",
@@ -109,16 +45,13 @@ export type Gateway = {
         },
         {
           "name": "realmAuthority",
-          "isMut": false,
-          "isSigner": true,
           "docs": [
             "realm_authority must sign and match Realm.authority"
-          ]
+          ],
+          "signer": true
         },
         {
           "name": "gatekeeperNetwork",
-          "isMut": false,
-          "isSigner": false,
           "docs": [
             "The new Identity.com Gateway gatekeeper network",
             "(See the registry struct docs for details).",
@@ -135,51 +68,212 @@ export type Gateway = {
       ]
     },
     {
-      "name": "createVoterWeightRecord",
+      "name": "createRegistrar",
+      "discriminator": [
+        132,
+        235,
+        36,
+        49,
+        139,
+        66,
+        202,
+        69
+      ],
       "accounts": [
         {
           "name": "registrar",
-          "isMut": false,
-          "isSigner": false
+          "docs": [
+            "The Gateway Registrar",
+            "There can only be a single registrar per governance Realm and governing mint of the Realm"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  97,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "realm"
+              },
+              {
+                "kind": "account",
+                "path": "governingTokenMint"
+              }
+            ]
+          }
         },
         {
-          "name": "voterWeightRecord",
-          "isMut": true,
-          "isSigner": false
+          "name": "governanceProgramId",
+          "docs": [
+            "The program id of the spl-governance program the realm belongs to"
+          ]
+        },
+        {
+          "name": "realm",
+          "docs": [
+            "An spl-governance Realm",
+            "",
+            "Realm is validated in the instruction:",
+            "- Realm is owned by the governance_program_id",
+            "- governing_token_mint must be the community or council mint",
+            "- realm_authority is realm.authority"
+          ]
+        },
+        {
+          "name": "governingTokenMint",
+          "docs": [
+            "Either the realm community mint or the council mint.",
+            "It must match Realm.community_mint or Realm.config.council_mint",
+            "",
+            "Note: Once the Civic Pass plugin is enabled the governing_token_mint is used only as identity",
+            "for the voting population and the tokens of that are no longer used"
+          ]
+        },
+        {
+          "name": "realmAuthority",
+          "docs": [
+            "realm_authority must sign and match Realm.authority"
+          ],
+          "signer": true
+        },
+        {
+          "name": "gatekeeperNetwork",
+          "docs": [
+            "The Identity.com Gateway gatekeeper network that this realm uses",
+            "(See the registry struct docs for details).",
+            "Gateway Token belongs to this gatekeeper network, so passing a particular key here is",
+            "essentially saying \"We trust this gatekeeper network\"."
+          ]
         },
         {
           "name": "payer",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "usePreviousVoterWeightPlugin",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "createVoterWeightRecord",
+      "discriminator": [
+        184,
+        249,
+        133,
+        178,
+        88,
+        152,
+        250,
+        186
+      ],
+      "accounts": [
+        {
+          "name": "registrar"
+        },
+        {
+          "name": "voterWeightRecord",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  111,
+                  116,
+                  101,
+                  114,
+                  45,
+                  119,
+                  101,
+                  105,
+                  103,
+                  104,
+                  116,
+                  45,
+                  114,
+                  101,
+                  99,
+                  111,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "registrar.realm",
+                "account": "registrar"
+              },
+              {
+                "kind": "account",
+                "path": "registrar.governing_token_mint",
+                "account": "registrar"
+              },
+              {
+                "kind": "arg",
+                "path": "governingTokenOwner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
           "name": "governingTokenOwner",
-          "type": "publicKey"
+          "type": "pubkey"
         }
       ]
     },
     {
       "name": "updateVoterWeightRecord",
+      "discriminator": [
+        45,
+        185,
+        3,
+        36,
+        109,
+        190,
+        115,
+        169
+      ],
       "accounts": [
         {
           "name": "registrar",
-          "isMut": false,
-          "isSigner": false,
           "docs": [
             "The Gateway Registrar"
           ]
         },
         {
           "name": "inputVoterWeight",
-          "isMut": false,
-          "isSigner": false,
           "docs": [
             "An account that is either of type TokenOwnerRecordV2 or VoterWeightRecord",
             "depending on whether the registrar includes a predecessor or not"
@@ -187,8 +281,6 @@ export type Gateway = {
         },
         {
           "name": "gatewayToken",
-          "isMut": false,
-          "isSigner": false,
           "docs": [
             "A gateway token from the gatekeeper network in the registrar.",
             "Proves that the holder is permitted to take an action."
@@ -196,14 +288,41 @@ export type Gateway = {
         },
         {
           "name": "voterWeightRecord",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         }
       ],
       "args": []
     }
   ],
   "accounts": [
+    {
+      "name": "registrar",
+      "discriminator": [
+        193,
+        202,
+        205,
+        51,
+        78,
+        168,
+        150,
+        128
+      ]
+    },
+    {
+      "name": "voterWeightRecord",
+      "discriminator": [
+        46,
+        249,
+        155,
+        75,
+        153,
+        248,
+        116,
+        9
+      ]
+    }
+  ],
+  "types": [
     {
       "name": "registrar",
       "docs": [
@@ -217,14 +336,14 @@ export type Gateway = {
             "docs": [
               "spl-governance program the Realm belongs to"
             ],
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
             "name": "realm",
             "docs": [
               "Realm of the Registrar"
             ],
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
             "name": "governingTokenMint",
@@ -234,7 +353,7 @@ export type Gateway = {
               "When the plugin is used the mint is only used as identity of the governing power (voting population)",
               "and the actual token of the mint is not used"
             ],
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
             "name": "gatekeeperNetwork",
@@ -242,7 +361,7 @@ export type Gateway = {
               "The Gatekeeper Network represents the \"Pass Type\" that a",
               "user must present."
             ],
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
             "name": "previousVoterWeightPluginProgramId",
@@ -251,7 +370,7 @@ export type Gateway = {
               "If set, then update_voter_weight_record will expect a voter_weight_record owned by this program"
             ],
             "type": {
-              "option": "publicKey"
+              "option": "pubkey"
             }
           },
           {
@@ -265,6 +384,33 @@ export type Gateway = {
                 128
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "voterWeightAction",
+      "docs": [
+        "VoterWeightAction enum as defined in spl-governance-addin-api",
+        "It's redefined here for Anchor to export it to IDL"
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "castVote"
+          },
+          {
+            "name": "commentProposal"
+          },
+          {
+            "name": "createGovernance"
+          },
+          {
+            "name": "createProposal"
+          },
+          {
+            "name": "signOffProposal"
           }
         ]
       }
@@ -285,7 +431,7 @@ export type Gateway = {
             "docs": [
               "The Realm the VoterWeightRecord belongs to"
             ],
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
             "name": "governingTokenMint",
@@ -293,7 +439,7 @@ export type Gateway = {
               "Governing Token Mint the VoterWeightRecord is associated with",
               "Note: The addin can take deposits of any tokens and is not restricted to the community or council tokens only"
             ],
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
             "name": "governingTokenOwner",
@@ -301,7 +447,7 @@ export type Gateway = {
               "The owner of the governing token and voter",
               "This is the actual owner (voter) and corresponds to TokenOwnerRecord.governing_token_owner"
             ],
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
             "name": "voterWeight",
@@ -333,7 +479,9 @@ export type Gateway = {
             ],
             "type": {
               "option": {
-                "defined": "VoterWeightAction"
+                "defined": {
+                  "name": "voterWeightAction"
+                }
               }
             }
           },
@@ -346,7 +494,7 @@ export type Gateway = {
               "When the target is provided then the governance program asserts the target is the same as specified by the addin"
             ],
             "type": {
-              "option": "publicKey"
+              "option": "pubkey"
             }
           },
           {
@@ -363,547 +511,6 @@ export type Gateway = {
           }
         ]
       }
-    }
-  ],
-  "types": [
-    {
-      "name": "VoterWeightAction",
-      "docs": [
-        "VoterWeightAction enum as defined in spl-governance-addin-api",
-        "It's redefined here for Anchor to export it to IDL"
-      ],
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "CastVote"
-          },
-          {
-            "name": "CommentProposal"
-          },
-          {
-            "name": "CreateGovernance"
-          },
-          {
-            "name": "CreateProposal"
-          },
-          {
-            "name": "SignOffProposal"
-          }
-        ]
-      }
-    }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "InvalidRealmAuthority",
-      "msg": "Invalid realm authority"
-    },
-    {
-      "code": 6001,
-      "name": "InvalidRealmForRegistrar",
-      "msg": "Invalid realm for the provided registrar"
-    },
-    {
-      "code": 6002,
-      "name": "InvalidPredecessorTokenOwnerRecord",
-      "msg": "Invalid TokenOwnerRecord as input voter weight (expecting TokenOwnerRecord V1 or V2)"
-    },
-    {
-      "code": 6003,
-      "name": "InvalidPredecessorVoterWeightRecord",
-      "msg": "Invalid VoterWeightRecord as input voter weight (expecting VoterWeightRecord)"
-    },
-    {
-      "code": 6004,
-      "name": "InvalidPredecessorVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord realm for input voter weight"
-    },
-    {
-      "code": 6005,
-      "name": "InvalidPredecessorVoterWeightRecordGovTokenMint",
-      "msg": "Invalid VoterWeightRecord governance token mint for input voter weight"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidPredecessorVoterWeightRecordGovTokenOwner",
-      "msg": "Invalid VoterWeightRecord governance token owner for input voter weight"
-    },
-    {
-      "code": 6007,
-      "name": "InvalidVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord realm"
-    },
-    {
-      "code": 6008,
-      "name": "InvalidVoterWeightRecordMint",
-      "msg": "Invalid VoterWeightRecord mint"
-    },
-    {
-      "code": 6009,
-      "name": "InvalidGatewayToken",
-      "msg": "Invalid gateway token"
-    },
-    {
-      "code": 6010,
-      "name": "MissingPreviousVoterWeightPlugin",
-      "msg": "Previous voter weight plugin required but not provided"
-    }
-  ]
-};
-
-export const IDL: Gateway = {
-  "version": "0.1.1",
-  "name": "gateway",
-  "instructions": [
-    {
-      "name": "createRegistrar",
-      "accounts": [
-        {
-          "name": "registrar",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The Gateway Registrar",
-            "There can only be a single registrar per governance Realm and governing mint of the Realm"
-          ]
-        },
-        {
-          "name": "governanceProgramId",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The program id of the spl-governance program the realm belongs to"
-          ]
-        },
-        {
-          "name": "realm",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "An spl-governance Realm",
-            "",
-            "Realm is validated in the instruction:",
-            "- Realm is owned by the governance_program_id",
-            "- governing_token_mint must be the community or council mint",
-            "- realm_authority is realm.authority"
-          ]
-        },
-        {
-          "name": "governingTokenMint",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "Either the realm community mint or the council mint.",
-            "It must match Realm.community_mint or Realm.config.council_mint",
-            "",
-            "Note: Once the Civic Pass plugin is enabled the governing_token_mint is used only as identity",
-            "for the voting population and the tokens of that are no longer used"
-          ]
-        },
-        {
-          "name": "realmAuthority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "realm_authority must sign and match Realm.authority"
-          ]
-        },
-        {
-          "name": "gatekeeperNetwork",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The Identity.com Gateway gatekeeper network that this realm uses",
-            "(See the registry struct docs for details).",
-            "Gateway Token belongs to this gatekeeper network, so passing a particular key here is",
-            "essentially saying \"We trust this gatekeeper network\"."
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "usePreviousVoterWeightPlugin",
-          "type": "bool"
-        }
-      ]
-    },
-    {
-      "name": "configureRegistrar",
-      "accounts": [
-        {
-          "name": "registrar",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The Gateway Plugin Registrar to be updated"
-          ]
-        },
-        {
-          "name": "realm",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "An spl-governance Realm",
-            "",
-            "Realm is validated in the instruction:",
-            "- Realm is owned by the governance_program_id",
-            "- realm_authority is realm.authority"
-          ]
-        },
-        {
-          "name": "realmAuthority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "realm_authority must sign and match Realm.authority"
-          ]
-        },
-        {
-          "name": "gatekeeperNetwork",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The new Identity.com Gateway gatekeeper network",
-            "(See the registry struct docs for details).",
-            "Gateway Token belongs to this gatekeeper network, so passing a particular key here is",
-            "essentially saying \"We trust this gatekeeper network\"."
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "usePreviousVoterWeightPlugin",
-          "type": "bool"
-        }
-      ]
-    },
-    {
-      "name": "createVoterWeightRecord",
-      "accounts": [
-        {
-          "name": "registrar",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "voterWeightRecord",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "governingTokenOwner",
-          "type": "publicKey"
-        }
-      ]
-    },
-    {
-      "name": "updateVoterWeightRecord",
-      "accounts": [
-        {
-          "name": "registrar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The Gateway Registrar"
-          ]
-        },
-        {
-          "name": "inputVoterWeight",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "An account that is either of type TokenOwnerRecordV2 or VoterWeightRecord",
-            "depending on whether the registrar includes a predecessor or not"
-          ]
-        },
-        {
-          "name": "gatewayToken",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "A gateway token from the gatekeeper network in the registrar.",
-            "Proves that the holder is permitted to take an action."
-          ]
-        },
-        {
-          "name": "voterWeightRecord",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    }
-  ],
-  "accounts": [
-    {
-      "name": "registrar",
-      "docs": [
-        "Registrar which stores Civic Pass voting configuration for the given Realm"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "governanceProgramId",
-            "docs": [
-              "spl-governance program the Realm belongs to"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "realm",
-            "docs": [
-              "Realm of the Registrar"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "governingTokenMint",
-            "docs": [
-              "Governing token mint the Registrar is for",
-              "It can either be the Community or the Council mint of the Realm",
-              "When the plugin is used the mint is only used as identity of the governing power (voting population)",
-              "and the actual token of the mint is not used"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "gatekeeperNetwork",
-            "docs": [
-              "The Gatekeeper Network represents the \"Pass Type\" that a",
-              "user must present."
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "previousVoterWeightPluginProgramId",
-            "docs": [
-              "If the plugin is one in a sequence, this is the previous plugin program ID",
-              "If set, then update_voter_weight_record will expect a voter_weight_record owned by this program"
-            ],
-            "type": {
-              "option": "publicKey"
-            }
-          },
-          {
-            "name": "reserved",
-            "docs": [
-              "Reserved for future upgrades"
-            ],
-            "type": {
-              "array": [
-                "u8",
-                128
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "voterWeightRecord",
-      "docs": [
-        "VoterWeightRecord account as defined in spl-governance-addin-api",
-        "It's redefined here without account_discriminator for Anchor to treat it as native account",
-        "",
-        "The account is used as an api interface to provide voting power to the governance program from external addin contracts"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "realm",
-            "docs": [
-              "The Realm the VoterWeightRecord belongs to"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "governingTokenMint",
-            "docs": [
-              "Governing Token Mint the VoterWeightRecord is associated with",
-              "Note: The addin can take deposits of any tokens and is not restricted to the community or council tokens only"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "governingTokenOwner",
-            "docs": [
-              "The owner of the governing token and voter",
-              "This is the actual owner (voter) and corresponds to TokenOwnerRecord.governing_token_owner"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "voterWeight",
-            "docs": [
-              "Voter's weight",
-              "The weight of the voter provided by the addin for the given realm, governing_token_mint and governing_token_owner (voter)"
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "voterWeightExpiry",
-            "docs": [
-              "The slot when the voting weight expires",
-              "It should be set to None if the weight never expires",
-              "If the voter weight decays with time, for example for time locked based weights, then the expiry must be set",
-              "As a common pattern Revise instruction to update the weight should be invoked before governance instruction within the same transaction",
-              "and the expiry set to the current slot to provide up to date weight"
-            ],
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "weightAction",
-            "docs": [
-              "The governance action the voter's weight pertains to",
-              "It allows to provided voter's weight specific to the particular action the weight is evaluated for",
-              "When the action is provided then the governance program asserts the executing action is the same as specified by the addin"
-            ],
-            "type": {
-              "option": {
-                "defined": "VoterWeightAction"
-              }
-            }
-          },
-          {
-            "name": "weightActionTarget",
-            "docs": [
-              "The target the voter's weight  action pertains to",
-              "It allows to provided voter's weight specific to the target the weight is evaluated for",
-              "For example when addin supplies weight to vote on a particular proposal then it must specify the proposal as the action target",
-              "When the target is provided then the governance program asserts the target is the same as specified by the addin"
-            ],
-            "type": {
-              "option": "publicKey"
-            }
-          },
-          {
-            "name": "reserved",
-            "docs": [
-              "Reserved space for future versions"
-            ],
-            "type": {
-              "array": [
-                "u8",
-                8
-              ]
-            }
-          }
-        ]
-      }
-    }
-  ],
-  "types": [
-    {
-      "name": "VoterWeightAction",
-      "docs": [
-        "VoterWeightAction enum as defined in spl-governance-addin-api",
-        "It's redefined here for Anchor to export it to IDL"
-      ],
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "CastVote"
-          },
-          {
-            "name": "CommentProposal"
-          },
-          {
-            "name": "CreateGovernance"
-          },
-          {
-            "name": "CreateProposal"
-          },
-          {
-            "name": "SignOffProposal"
-          }
-        ]
-      }
-    }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "InvalidRealmAuthority",
-      "msg": "Invalid realm authority"
-    },
-    {
-      "code": 6001,
-      "name": "InvalidRealmForRegistrar",
-      "msg": "Invalid realm for the provided registrar"
-    },
-    {
-      "code": 6002,
-      "name": "InvalidPredecessorTokenOwnerRecord",
-      "msg": "Invalid TokenOwnerRecord as input voter weight (expecting TokenOwnerRecord V1 or V2)"
-    },
-    {
-      "code": 6003,
-      "name": "InvalidPredecessorVoterWeightRecord",
-      "msg": "Invalid VoterWeightRecord as input voter weight (expecting VoterWeightRecord)"
-    },
-    {
-      "code": 6004,
-      "name": "InvalidPredecessorVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord realm for input voter weight"
-    },
-    {
-      "code": 6005,
-      "name": "InvalidPredecessorVoterWeightRecordGovTokenMint",
-      "msg": "Invalid VoterWeightRecord governance token mint for input voter weight"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidPredecessorVoterWeightRecordGovTokenOwner",
-      "msg": "Invalid VoterWeightRecord governance token owner for input voter weight"
-    },
-    {
-      "code": 6007,
-      "name": "InvalidVoterWeightRecordRealm",
-      "msg": "Invalid VoterWeightRecord realm"
-    },
-    {
-      "code": 6008,
-      "name": "InvalidVoterWeightRecordMint",
-      "msg": "Invalid VoterWeightRecord mint"
-    },
-    {
-      "code": 6009,
-      "name": "InvalidGatewayToken",
-      "msg": "Invalid gateway token"
-    },
-    {
-      "code": 6010,
-      "name": "MissingPreviousVoterWeightPlugin",
-      "msg": "Previous voter weight plugin required but not provided"
     }
   ]
 };
