@@ -17,7 +17,7 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
@@ -27,7 +27,11 @@ async fn test_relinquish_nft_vote() -> Result<(), TransportError> {
 
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     core_voter_test
@@ -109,7 +113,7 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
@@ -119,7 +123,11 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
 
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     core_voter_test
@@ -202,7 +210,8 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state() -> Result<(), T
 }
 
 #[tokio::test]
-async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_exists_error() -> Result<(), TransportError> {
+async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_exists_error(
+) -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -210,7 +219,7 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_e
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(Some(5)).await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
@@ -220,7 +229,11 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_e
 
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     core_voter_test
@@ -229,6 +242,7 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_e
             &collection_cookie,
             &max_voter_weight_record_cookie,
             None,
+            
         )
         .await?;
 
@@ -273,6 +287,8 @@ async fn test_relinquish_nft_vote_for_proposal_in_voting_state_and_vote_record_e
         .err()
         .unwrap();
 
+    println!("{:?}", err);
+
     // Assert
     assert_nft_voter_err(err, NftVoterError::VoteRecordMustBeWithdrawn);
 
@@ -288,7 +304,7 @@ async fn test_relinquish_nft_vote_with_invalid_voter_error() -> Result<(), Trans
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
@@ -298,7 +314,11 @@ async fn test_relinquish_nft_vote_with_invalid_voter_error() -> Result<(), Trans
 
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     core_voter_test
@@ -363,7 +383,8 @@ async fn test_relinquish_nft_vote_with_invalid_voter_error() -> Result<(), Trans
 }
 
 #[tokio::test]
-async fn test_relinquish_nft_vote_with_unexpired_vote_weight_record() -> Result<(), TransportError> {
+async fn test_relinquish_nft_vote_with_unexpired_vote_weight_record() -> Result<(), TransportError>
+{
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -371,17 +392,21 @@ async fn test_relinquish_nft_vote_with_unexpired_vote_weight_record() -> Result<
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
     let voter_cookie = core_voter_test.bench.with_wallet().await;
-    
+
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     core_voter_test
@@ -451,7 +476,8 @@ async fn test_relinquish_nft_vote_with_unexpired_vote_weight_record() -> Result<
 }
 
 #[tokio::test]
-async fn test_relinquish_nft_vote_with_invalid_voter_weight_token_owner_error() -> Result<(), TransportError> {
+async fn test_relinquish_nft_vote_with_invalid_voter_weight_token_owner_error(
+) -> Result<(), TransportError> {
     // Arrange
     let mut core_voter_test = CoreVoterTest::start_new().await;
 
@@ -459,7 +485,7 @@ async fn test_relinquish_nft_vote_with_invalid_voter_weight_token_owner_error() 
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
@@ -469,7 +495,11 @@ async fn test_relinquish_nft_vote_with_invalid_voter_weight_token_owner_error() 
 
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     core_voter_test
@@ -545,7 +575,7 @@ async fn test_relinquish_nft_vote_using_delegate() -> Result<(), TransportError>
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let max_voter_weight_record_cookie = core_voter_test
         .with_max_voter_weight_record(&registrar_cookie)
@@ -555,7 +585,11 @@ async fn test_relinquish_nft_vote_using_delegate() -> Result<(), TransportError>
 
     let asset_cookie1 = core_voter_test
         .core
-        .with_asset(&collection_cookie, &voter_cookie, Some(collection_cookie.collection))
+        .with_asset(
+            &collection_cookie,
+            &voter_cookie,
+            Some(collection_cookie.collection),
+        )
         .await?;
 
     core_voter_test

@@ -2,7 +2,7 @@ use std::{str::FromStr, sync::Arc};
 
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::ProgramTest;
-use solana_sdk::{signer::Signer, system_program, transport::TransportError, signature::Keypair};
+use solana_sdk::{signature::Keypair, signer::Signer, system_program, transport::TransportError};
 
 use crate::program_test::program_test_bench::{ProgramTestBench, WalletCookie};
 
@@ -39,7 +39,7 @@ impl CoreTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_collection(&self) -> Result<CollectionCookie, TransportError> {
+    pub async fn with_collection(&self, collection_size: Option<u64>) -> Result<CollectionCookie, TransportError> {
         let update_authority = self.bench.context.borrow().payer.pubkey();
         let payer = self.bench.context.borrow().payer.pubkey();
 
@@ -70,11 +70,45 @@ impl CoreTest {
         let create_coll_ix = create_coll_ix_accounts.instruction(args);
 
         self.bench
-            .process_transaction(
-                &[create_coll_ix],
-                Some(&[&coll_keypair]),
-            )
+            .process_transaction(&[create_coll_ix], Some(&[&coll_keypair]))
             .await?;
+
+        // Create 5 NFT Assets into the collection
+
+        for i in 0..collection_size.unwrap_or(0) {
+            let asset_keypair = Keypair::new();
+
+            let name = format!("NFT{}", i);
+            let uri = format!("URI{}", i);
+
+            // instruction args
+            let args = mpl_core::instructions::CreateV2InstructionArgs {
+                data_state: mpl_core::types::DataState::AccountState,
+                name,
+                uri,
+                plugins: None,
+                external_plugin_adapters: None,
+            };
+
+            // instruction accounts
+            let create_accounts = mpl_core::instructions::CreateV2 {
+                asset: asset_keypair.pubkey(),
+                collection: Some(coll_keypair.pubkey()),
+                authority: Some(payer),
+                payer,
+                owner: Some(payer),
+                update_authority: None,
+                system_program: system_program::ID,
+                log_wrapper: None,
+            };
+
+            // creates the instruction
+            let create_ix = create_accounts.instruction(args);
+
+            self.bench
+                .process_transaction(&[create_ix], Some(&[&asset_keypair]))
+                .await?;
+        }
 
         Ok(CollectionCookie {
             collection: coll_keypair.pubkey(),
@@ -87,7 +121,7 @@ impl CoreTest {
         &self,
         collection_cookie: &CollectionCookie,
         asset_owner_cookie: &WalletCookie,
-        collection: Option<Pubkey>
+        collection: Option<Pubkey>,
     ) -> Result<AssetCookie, TransportError> {
         let collection_authority = self.bench.context.borrow().payer.pubkey();
         let payer = self.bench.context.borrow().payer.pubkey();
@@ -116,17 +150,14 @@ impl CoreTest {
             owner: Some(asset_owner_cookie.address),
             update_authority: None,
             system_program: system_program::ID,
-            log_wrapper: None
+            log_wrapper: None,
         };
 
         // creates the instruction
         let create_ix = create_accounts.instruction(args);
 
         self.bench
-            .process_transaction(
-                &[create_ix],
-                Some(&[&asset_keypair]),
-            )
+            .process_transaction(&[create_ix], Some(&[&asset_keypair]))
             .await?;
 
         Ok(AssetCookie {

@@ -18,6 +18,11 @@ pub fn NopOverride<T>(_: &mut T) {}
 pub fn assert_nft_voter_err(banks_client_error: BanksClientError, nft_locker_error: NftVoterError) {
     let tx_error = banks_client_error.unwrap();
 
+    println!("banks client error: {:?}", tx_error);
+    println!("nft locker error: {:?}", nft_locker_error);
+    println!("error code offset: {:?}", ERROR_CODE_OFFSET);
+    println!("nft locker error as u32: {:?}", nft_locker_error as u32 + ERROR_CODE_OFFSET);
+
     match tx_error {
         TransactionError::InstructionError(_, instruction_error) => match instruction_error {
             InstructionError::Custom(e) => {

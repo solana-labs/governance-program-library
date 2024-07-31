@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 pub enum NftVoterError {
+    // 0
     #[msg("Invalid Realm Authority")]
     InvalidRealmAuthority,
 
@@ -32,6 +33,7 @@ pub enum NftVoterError {
     #[msg("Collection must be verified")]
     CollectionMustBeVerified,
 
+    //10
     #[msg("Voter does not own NFT")]
     VoterDoesNotOwnNft,
 
@@ -62,6 +64,7 @@ pub enum NftVoterError {
     #[msg("Invalid Proposal for NftVoteRecord")]
     InvalidProposalForNftVoteRecord,
 
+    // 20
     #[msg("Invalid TokenOwner for NftVoteRecord")]
     InvalidTokenOwnerForNftVoteRecord,
 

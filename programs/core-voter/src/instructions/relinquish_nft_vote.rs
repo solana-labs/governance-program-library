@@ -92,6 +92,9 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
     // When vote is withdrawn in spl-gov then VoteRecord is disposed and we have to assert it doesn't exist
     //
     // If the Proposal is in any other state then we can dispose NftVoteRecords without any additional Proposal checks
+
+    msg!("Proposal State: {:?}", proposal.state);
+
     if proposal.state == ProposalState::Voting {
         let vote_record_info = &ctx.accounts.vote_record.to_account_info();
 

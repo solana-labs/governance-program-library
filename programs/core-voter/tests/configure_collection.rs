@@ -20,7 +20,7 @@ async fn test_configure_collection() -> Result<(), TransportError> {
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
     
     let voter_cookie = core_voter_test.bench.with_wallet().await;
 
@@ -79,8 +79,8 @@ async fn test_configure_multiple_collections() -> Result<(), TransportError> {
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie1 = core_voter_test.core.with_collection().await?;
-    let collection_cookie2 = core_voter_test.core.with_collection().await?;
+    let collection_cookie1 = core_voter_test.core.with_collection(None).await?;
+    let collection_cookie2 = core_voter_test.core.with_collection(None).await?;
 
     let voter_cookie = core_voter_test.bench.with_wallet().await;
 
@@ -158,7 +158,7 @@ async fn test_configure_max_collections() -> Result<(), TransportError> {
     let voter_cookie = core_voter_test.bench.with_wallet().await;
 
     for _ in 0..registrar_cookie.max_collections {
-        let collection_cookie = core_voter_test.core.with_collection().await?;
+        let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
         for _ in 0..3 {
             let _asset_cookie = core_voter_test
@@ -206,7 +206,7 @@ async fn test_configure_existing_collection() -> Result<(), TransportError> {
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let voter_cookie = core_voter_test.bench.with_wallet().await;
 
@@ -272,7 +272,7 @@ async fn test_configure_collection_with_invalid_realm_error() -> Result<(), Tran
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let voter_cookie = core_voter_test.bench.with_wallet().await;
 
@@ -318,7 +318,7 @@ async fn test_configure_collection_with_realm_authority_must_sign_error() -> Res
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let voter_cookie = core_voter_test.bench.with_wallet().await;
 
@@ -361,7 +361,7 @@ async fn test_configure_collection_with_invalid_realm_authority_error() -> Resul
 
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let voter_cookie = core_voter_test.bench.with_wallet().await;
 
@@ -405,7 +405,7 @@ async fn test_configure_collection_with_invalid_max_voter_weight_realm_error() -
     let realm_cookie = core_voter_test.governance.with_realm().await?;
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let voter_cookie = core_voter_test.bench.with_wallet().await;
 
@@ -448,7 +448,7 @@ async fn test_configure_collection_with_invalid_max_voter_weight_mint_error() ->
     let mut realm_cookie = core_voter_test.governance.with_realm().await?;
     let registrar_cookie = core_voter_test.with_registrar(&realm_cookie).await?;
 
-    let collection_cookie = core_voter_test.core.with_collection().await?;
+    let collection_cookie = core_voter_test.core.with_collection(None).await?;
 
     let voter_cookie = core_voter_test.bench.with_wallet().await;
 
