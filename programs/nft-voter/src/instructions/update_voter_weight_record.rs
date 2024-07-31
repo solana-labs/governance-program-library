@@ -58,7 +58,7 @@ pub fn update_voter_weight_record(
             &mut unique_nft_mints,
         )?;
 
-        voter_weight = voter_weight.checked_add(nft_vote_weight as u64).unwrap();
+        voter_weight = voter_weight.checked_add(nft_vote_weight).unwrap();
     }
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;

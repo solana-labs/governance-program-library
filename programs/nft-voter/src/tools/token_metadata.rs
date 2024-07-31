@@ -9,7 +9,7 @@ pub fn get_token_metadata(account_info: &AccountInfo) -> Result<Metadata> {
     if *account_info.owner != mpl_token_metadata::ID {
         return Err(NftVoterError::InvalidAccountOwner.into());
     }
-    
+
     let metadata = Metadata::try_from(account_info)?;
 
     // I'm not sure if this is needed but try_from_slice_checked in from_account_info
