@@ -94,7 +94,7 @@ export class QuadraticClient extends Client<Quadratic> {
 
   async createVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction> {
     const { registrar } = this.getRegistrarPDA(realm, mint);
-    const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, voter);
+    const { voterWeightPk } = await this.getVoterWeightRecordPDA(realm, mint, voter);
 
     return this.program.methods
       .createVoterWeightRecord(voter)
@@ -117,7 +117,7 @@ export class QuadraticClient extends Client<Quadratic> {
     inputRecordCallback?: () => Promise<PublicKey>
   ) {
     const { registrar } = this.getRegistrarPDA(realm, mint);
-    const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, voter);
+    const { voterWeightPk } = await this.getVoterWeightRecordPDA(realm, mint, voter);
     const inputVoterWeightPk = await this.getPredecessorVoterWeightRecordPDA(realm, mint, voter, inputRecordCallback);
 
     const ix = await this.program.methods

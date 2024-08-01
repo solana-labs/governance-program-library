@@ -12,7 +12,7 @@ export abstract class Client<T extends Idl> {
 
   abstract createVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction | null>;
   abstract createMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction | null>;
-  abstract updateVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey, action?: VoterWeightAction, inputRecordCallback?: () => Promise<PublicKey>): Promise<{ pre: TransactionInstruction[], post?: TransactionInstruction[] }>;
+  abstract updateVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey, action?: VoterWeightAction, inputRecordCallback?: () => Promise<PublicKey>, target?: PublicKey): Promise<{ pre: TransactionInstruction[], post?: TransactionInstruction[] }>;
   abstract updateMaxVoterWeightRecord(realm: PublicKey, mint: PublicKey, action?: VoterWeightAction, inputRecordCallback?: () => Promise<PublicKey>): Promise<TransactionInstruction | null>;
 
   /**
@@ -63,7 +63,7 @@ export abstract class Client<T extends Idl> {
    * @param walletPk
    */
   async getVoterWeightRecord (realm: PublicKey, mint: PublicKey, walletPk: PublicKey): Promise<IdlAccounts<T>['voterWeightRecord'] | null>  {
-    const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, walletPk);
+    const { voterWeightPk } = await this.getVoterWeightRecordPDA(realm, mint, walletPk);
     const voterWeightRecordAccount = (this.program.account as PluginProgramAccounts<T>).voterWeightRecord;
 
     // TODO handle this at the type-level with a better PluginProgramAccounts type.
@@ -75,7 +75,7 @@ export abstract class Client<T extends Idl> {
   }
 
   async getMaxVoterWeightRecord (realm: PublicKey, mint: PublicKey) {
-    const { maxVoterWeightPk } = this.getMaxVoterWeightRecordPDA(realm, mint) ?? {};
+    const { maxVoterWeightPk } =  await this.getMaxVoterWeightRecordPDA(realm, mint) ?? {};
     if (!maxVoterWeightPk) return null; // this plugin does not have a max voter weight record
 
     const maxVoterWeightRecordAccount = (this.program.account as PluginProgramAccounts<T>).maxVoterWeightRecord;
@@ -105,10 +105,10 @@ export abstract class Client<T extends Idl> {
   // Should be overridden by the plugin if the plugin has a max voter weight record (most plugins do not)
   // Boilerplate for those plugins:
   // return Client.getMaxVoterWeightRecordPDAForProgram(realm, mint, this.program.programId)
-  getMaxVoterWeightRecordPDA(realm: PublicKey, mint: PublicKey): {
+  async getMaxVoterWeightRecordPDA(realm: PublicKey, mint: PublicKey): Promise<{
     maxVoterWeightPk: PublicKey;
     maxVoterWeightRecordBump: number;
-  } | null {
+  } | null> {
     return null;
   }
 
@@ -170,10 +170,10 @@ export abstract class Client<T extends Idl> {
     }
   }
 
-  getVoterWeightRecordPDA(realm: PublicKey, mint: PublicKey, walletPk: PublicKey): {
+  async getVoterWeightRecordPDA(realm: PublicKey, mint: PublicKey, walletPk: PublicKey): Promise<{
     voterWeightPk: PublicKey;
     voterWeightRecordBump: number;
-  } {
+  }> {
     return Client.deriveVoterWeightRecordPDAForProgram(realm, mint, walletPk, this.program.programId)
   }
 

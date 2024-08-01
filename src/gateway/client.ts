@@ -57,7 +57,7 @@ export class GatewayClient extends Client<Gateway> {
 
   async createVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey) {
     const { registrar } = this.getRegistrarPDA(realm, mint);
-    const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, voter);
+    const { voterWeightPk } = await this.getVoterWeightRecordPDA(realm, mint, voter);
 
     return this.program.methods
       .createVoterWeightRecord(voter)
@@ -80,7 +80,7 @@ export class GatewayClient extends Client<Gateway> {
     inputRecordCallback?: () => Promise<PublicKey>
   ) {
     const { registrar } = this.getRegistrarPDA(realm, mint);
-    const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, voter);
+    const { voterWeightPk } = await this.getVoterWeightRecordPDA(realm, mint, voter);
 
     // if the previous plugin has a specific way of deriving the input voter weight, use it
     // otherwise derive it the default way.
