@@ -1,4 +1,5 @@
 import { AccountClient, Idl, Program } from '@coral-xyz/anchor';
+import { IdlDefinedFieldsNamed, IdlField, IdlTypeDefTyStruct } from '@coral-xyz/anchor/dist/cjs/idl';
 
 type RegistrarAccountTemplate = {
   name: 'registrar'
@@ -7,39 +8,34 @@ type RegistrarAccountTemplate = {
       {
         "name": "previousVoterWeightPluginProgramId",
         "type": {
-          "option": "publicKey"
+          "option": "pubkey"
         }
       }
     ]
   }
 }
 
-// IdlAccountDef is not exported by anchor, so this allows us to reference it
-type NonNullableAccounts = NonNullable<Idl['accounts']>;
-type IdlAccountDef = NonNullableAccounts[number];
-type IdlTypeDefTyStruct = IdlAccountDef['type'];
-
 // A type function that checks if one of the fields of an account type has the name 'previousVoterWeightPluginProgramId'
-type HasPreviousVotingWeightPlugin<T extends IdlTypeDefTyStruct['fields']> =
-  T extends [infer First extends IdlTypeDefTyStruct['fields'][number], ...infer Rest]
+type HasPreviousVotingWeightPlugin<T extends IdlDefinedFieldsNamed[number]> =
+  T extends [infer First extends IdlDefinedFieldsNamed[number], ...infer Rest]
     ? First['name'] extends RegistrarAccountTemplate['type']['fields'][0]['name']
       ? T
-      : Rest extends IdlTypeDefTyStruct['fields']
+      : Rest extends IdlDefinedFieldsNamed[number]
         ? (Rest extends HasPreviousVotingWeightPlugin<Rest> ? T : never)
         : never
     : never;
 
 // A type function that checks if an account is a registrar account
-type MatchesRegistrarAccountType<T extends IdlAccountDef> = T['name'] extends 'registrar' ? (
-  T['type']['fields'] extends HasPreviousVotingWeightPlugin<T['type']['fields']> ? T : never
+type MatchesRegistrarAccountType<T extends IdlDefinedFieldsNamed[number]> = T['name'] extends 'registrar' ? (
+  T extends HasPreviousVotingWeightPlugin<T> ? T : never
   ) : never;
 
 // A type function that checks that an IDLAccountDef array has a registrar account
-type HasRegistrar<T extends IdlAccountDef[]> =
-  T extends [infer First extends IdlAccountDef, ...infer Rest]
+type HasRegistrar<T extends IdlDefinedFieldsNamed[number]> =
+  T extends [infer First extends IdlDefinedFieldsNamed[number], ...infer Rest]
     ? First extends MatchesRegistrarAccountType<First>
       ? T
-      : Rest extends IdlAccountDef[]
+      : Rest extends IdlDefinedFieldsNamed[number]
         ? (Rest extends HasRegistrar<Rest> ? T : never)
         : never
     : never;

@@ -1,6 +1,7 @@
 import { BN, Program, Provider } from '@coral-xyz/anchor';
 import { PublicKey, TransactionInstruction } from '@solana/web3.js';
-import { Quadratic, IDL } from './quadratic';
+import { Quadratic } from './quadratic';
+import QuadraticIDL from './quadratic.json';
 import { Client, DEFAULT_GOVERNANCE_PROGRAM_ID } from '../common/Client';
 import { getTokenOwnerRecordAddress, VoterWeightAction } from '@solana/spl-governance';
 
@@ -32,7 +33,7 @@ export class QuadraticClient extends Client<Quadratic> {
     devnet?: boolean,
   ): Promise<QuadraticClient> {
     return new QuadraticClient(
-      new Program<Quadratic>(IDL, QUADRATIC_PLUGIN_ID, provider),
+      new Program<Quadratic>(QuadraticIDL as Quadratic, provider),
       devnet,
     );
   }
@@ -45,7 +46,7 @@ export class QuadraticClient extends Client<Quadratic> {
       .accounts({
         registrar,
         realm,
-        realmAuthority: this.program.provider.publicKey,
+        realmAuthority: this.program.provider.publicKey!,
       });
 
     if (previousVoterWeightPluginProgramId) {
@@ -65,7 +66,7 @@ export class QuadraticClient extends Client<Quadratic> {
 
     // No registrar yet, QV weight cannot be calculated
     if (!registrar) return null;
-
+    // @ts-ignore: below should return ok
     const coefficients = registrar.quadraticCoefficients;
 
     // otherwise, the input voter weight is passed through
@@ -94,13 +95,12 @@ export class QuadraticClient extends Client<Quadratic> {
 
   async createVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey): Promise<TransactionInstruction> {
     const { registrar } = this.getRegistrarPDA(realm, mint);
-    const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, voter);
 
     return this.program.methods
       .createVoterWeightRecord(voter)
       .accounts({
         registrar,
-        voterWeightRecord: voterWeightPk,
+        payer: voter,
       })
       .instruction();
   }

@@ -1,6 +1,7 @@
 import { BN, Program, Provider } from '@coral-xyz/anchor';
 import { PublicKey } from '@solana/web3.js';
-import { Gateway, IDL } from './gateway';
+import { Gateway } from './gateway';
+import GatewayIDL  from './gateway.json';
 import { Client, DEFAULT_GOVERNANCE_PROGRAM_ID } from '../common/Client';
 import { getGatewayTokenAddressForOwnerAndGatekeeperNetwork, getGatewayToken } from '@identity.com/solana-gateway-ts';
 import { getTokenOwnerRecordAddress, VoterWeightAction } from '@solana/spl-governance';
@@ -8,9 +9,6 @@ import { getTokenOwnerRecordAddress, VoterWeightAction } from '@solana/spl-gover
 export const GATEWAY_PLUGIN_ID = new PublicKey(
   'GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk'
 );
-import { Program, Provider } from '@coral-xyz/anchor';
-import { Gateway } from './gateway';
-import GatewayIDL  from './gateway.json';
 
 export class GatewayClient extends Client<Gateway> {
   readonly requiresInputVoterWeight = true;
@@ -57,13 +55,11 @@ export class GatewayClient extends Client<Gateway> {
 
   async createVoterWeightRecord(voter: PublicKey, realm: PublicKey, mint: PublicKey) {
     const { registrar } = this.getRegistrarPDA(realm, mint);
-    const { voterWeightPk } = this.getVoterWeightRecordPDA(realm, mint, voter);
 
     return this.program.methods
       .createVoterWeightRecord(voter)
       .accounts({
         registrar,
-        voterWeightRecord: voterWeightPk,
       })
       .instruction();
   }
