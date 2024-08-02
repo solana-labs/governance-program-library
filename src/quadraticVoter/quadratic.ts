@@ -2,15 +2,15 @@
  * Program IDL in camelCase format in order to be used in JS/TS.
  *
  * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/gateway.json`.
+ * IDL can be found at `target/idl/quadratic.json`.
  */
-export type Gateway = {
-  "address": "GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk",
+export type Quadratic = {
+  "address": "quadCSapU8nTdLg73KHDnmdxKnJQsh7GUbu5tZfnRRr",
   "metadata": {
-    "name": "gateway",
+    "name": "quadratic",
     "version": "0.1.1",
     "spec": "0.1.0",
-    "description": "SPL Governance addin for Civic Pass (www.civic.com)"
+    "description": "SPL Governance quadratic voting plugin"
   },
   "instructions": [
     {
@@ -29,7 +29,7 @@ export type Gateway = {
         {
           "name": "registrar",
           "docs": [
-            "The Gateway Plugin Registrar to be updated"
+            "The quadratic Plugin Registrar to be updated"
           ],
           "writable": true
         },
@@ -49,18 +49,17 @@ export type Gateway = {
             "realm_authority must sign and match Realm.authority"
           ],
           "signer": true
-        },
-        {
-          "name": "gatekeeperNetwork",
-          "docs": [
-            "The new Identity.com Gateway gatekeeper network",
-            "(See the registry struct docs for details).",
-            "Gateway Token belongs to this gatekeeper network, so passing a particular key here is",
-            "essentially saying \"We trust this gatekeeper network\"."
-          ]
         }
       ],
       "args": [
+        {
+          "name": "coefficients",
+          "type": {
+            "defined": {
+              "name": "quadraticCoefficients"
+            }
+          }
+        },
         {
           "name": "usePreviousVoterWeightPlugin",
           "type": "bool"
@@ -83,7 +82,7 @@ export type Gateway = {
         {
           "name": "registrar",
           "docs": [
-            "The Gateway Registrar",
+            "The quadratic Registrar",
             "There can only be a single registrar per governance Realm and governing mint of the Realm"
           ],
           "writable": true,
@@ -149,15 +148,6 @@ export type Gateway = {
           "signer": true
         },
         {
-          "name": "gatekeeperNetwork",
-          "docs": [
-            "The Identity.com Gateway gatekeeper network that this realm uses",
-            "(See the registry struct docs for details).",
-            "Gateway Token belongs to this gatekeeper network, so passing a particular key here is",
-            "essentially saying \"We trust this gatekeeper network\"."
-          ]
-        },
-        {
           "name": "payer",
           "writable": true,
           "signer": true
@@ -168,6 +158,14 @@ export type Gateway = {
         }
       ],
       "args": [
+        {
+          "name": "coefficients",
+          "type": {
+            "defined": {
+              "name": "quadraticCoefficients"
+            }
+          }
+        },
         {
           "name": "usePreviousVoterWeightPlugin",
           "type": "bool"
@@ -269,7 +267,7 @@ export type Gateway = {
         {
           "name": "registrar",
           "docs": [
-            "The Gateway Registrar"
+            "The quadratic plugin Registrar"
           ]
         },
         {
@@ -277,13 +275,6 @@ export type Gateway = {
           "docs": [
             "An account that is either of type TokenOwnerRecordV2 or VoterWeightRecord",
             "depending on whether the registrar includes a predecessor or not"
-          ]
-        },
-        {
-          "name": "gatewayToken",
-          "docs": [
-            "A gateway token from the gatekeeper network in the registrar.",
-            "Proves that the holder is permitted to take an action."
           ]
         },
         {
@@ -324,9 +315,29 @@ export type Gateway = {
   ],
   "types": [
     {
+      "name": "quadraticCoefficients",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "a",
+            "type": "f64"
+          },
+          {
+            "name": "b",
+            "type": "f64"
+          },
+          {
+            "name": "c",
+            "type": "f64"
+          }
+        ]
+      }
+    },
+    {
       "name": "registrar",
       "docs": [
-        "Registrar which stores Civic Pass voting configuration for the given Realm"
+        "Registrar which stores Quadratic voting configuration for the given Realm"
       ],
       "type": {
         "kind": "struct",
@@ -356,14 +367,6 @@ export type Gateway = {
             "type": "pubkey"
           },
           {
-            "name": "gatekeeperNetwork",
-            "docs": [
-              "The Gatekeeper Network represents the \"Pass Type\" that a",
-              "user must present."
-            ],
-            "type": "pubkey"
-          },
-          {
             "name": "previousVoterWeightPluginProgramId",
             "docs": [
               "If the plugin is one in a sequence, this is the previous plugin program ID",
@@ -371,6 +374,17 @@ export type Gateway = {
             ],
             "type": {
               "option": "pubkey"
+            }
+          },
+          {
+            "name": "quadraticCoefficients",
+            "docs": [
+              "A set of coefficients to be used when calculating the voter weight"
+            ],
+            "type": {
+              "defined": {
+                "name": "quadraticCoefficients"
+              }
             }
           },
           {

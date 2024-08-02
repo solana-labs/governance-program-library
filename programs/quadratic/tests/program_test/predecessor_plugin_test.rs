@@ -3,16 +3,17 @@ use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
 
-use gpl_civic_gateway::state::*;
+use gpl_quadratic::state::*;
 use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 use spl_governance_addin_mock::instruction::*;
 
 use crate::program_test::{
-    gateway_voter_test::VoterWeightRecordCookie,
     governance_test::RealmCookie,
     program_test_bench::{ProgramTestBench, WalletCookie},
+    quadratic_voter_test::VoterWeightRecordCookie,
 };
-use solana_program_test::{processor, ProgramTest};
+use gpl_quadratic::state::VoterWeightRecord;
+use solana_program_test::{BanksClientError, ProgramTest};
 
 pub struct PredecessorPluginTest {
     pub bench: Arc<ProgramTestBench>,
@@ -25,11 +26,7 @@ impl PredecessorPluginTest {
 
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
-        program_test.add_program(
-            "spl_governance_addin_mock",
-            Self::program_id(),
-            processor!(spl_governance_addin_mock::processor::process_instruction),
-        );
+        program_test.add_program("spl_governance_addin_mock", Self::program_id(), None);
     }
 
     #[allow(dead_code)]
@@ -43,7 +40,7 @@ impl PredecessorPluginTest {
         realm_cookie: &RealmCookie,
         voter_cookie: &WalletCookie,
         voter_weight: u64,
-    ) -> Result<VoterWeightRecordCookie, TransportError> {
+    ) -> Result<VoterWeightRecordCookie, BanksClientError> {
         let governing_token_owner = voter_cookie.address;
         let voter_weight_record_account = Keypair::new();
 

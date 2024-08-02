@@ -1,23 +1,17 @@
-use std::str::FromStr;
 use std::sync::Arc;
 
 use anchor_lang::prelude::Pubkey;
 use itertools::Either;
-use solana_gateway::{
-    instruction::{add_gatekeeper, issue},
-    state::{get_gatekeeper_account_address, get_gateway_token_address_with_seed},
-};
 use solana_program::instruction::AccountMeta;
 
-use gpl_civic_gateway::state::{get_registrar_address, Registrar, *};
-use solana_sdk::{
-    instruction::Instruction, signature::Keypair, signer::Signer, transport::TransportError,
-};
+use gpl_quadratic::state::{get_registrar_address, Registrar, *};
+use solana_sdk::{instruction::Instruction, signature::Keypair, signer::Signer};
 use spl_governance::{
     instruction::cast_vote,
     state::vote_record::{Vote, VoteChoice},
 };
 
+use gpl_quadratic::state::quadratic_coefficients::QuadraticCoefficients;
 use solana_program_test::{processor, BanksClientError, ProgramTest};
 
 use crate::program_test::{
@@ -40,36 +34,6 @@ pub struct VoterWeightRecordCookie {
     pub account: VoterWeightRecord,
 }
 
-pub struct GatewayCookie {
-    pub gatekeeper_network: Keypair,
-    pub gatekeeper: Keypair,
-}
-
-impl GatewayCookie {
-    pub fn get_gatekeeper_account(&self) -> Pubkey {
-        let (gatekeeper_account, _) = get_gatekeeper_account_address(
-            &self.gatekeeper.pubkey(),
-            &self.gatekeeper_network.pubkey(),
-        );
-        gatekeeper_account
-    }
-}
-
-pub struct GatewayTokenCookie {
-    pub address: Pubkey,
-}
-
-impl GatewayTokenCookie {
-    pub fn new(owner: &Pubkey, gateway_cookie: &GatewayCookie) -> Self {
-        let (address, _) = get_gateway_token_address_with_seed(
-            owner,
-            &None,
-            &gateway_cookie.gatekeeper_network.pubkey(),
-        );
-        Self { address }
-    }
-}
-
 pub struct CastVoteArgs {
     pub cast_spl_gov_vote: bool,
 }
@@ -82,39 +46,33 @@ impl Default for CastVoteArgs {
     }
 }
 
-pub struct GatewayVoterTest {
+pub struct QuadraticVoterTest {
     pub program_id: Pubkey,
     pub bench: Arc<ProgramTestBench>,
     pub governance: GovernanceTest,
     pub predecessor_plugin: PredecessorPluginTest,
 }
 
-impl GatewayVoterTest {
+impl QuadraticVoterTest {
     #[allow(dead_code)]
     pub fn add_programs(program_test: &mut ProgramTest) {
-        program_test.add_program(
-            "gpl_civic_gateway",
-            gpl_civic_gateway::id(),
-            // processor!(gpl_civic_gateway::entry),
-            None,
-        );
-        program_test.add_program(
-            "solana_gateway",
-            Pubkey::from_str("gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs").unwrap(),
-            // processor!(solana_gateway::processor::process_instruction),
-            None,
-        );
+        program_test.add_program("gpl_quadratic", gpl_quadratic::id(), None);
+        // program_test.add_program(
+        //     "gpl_quadratic",
+        //     gpl_quadratic::id(),
+        //     processor!(gpl_quadratic::entry),
+        // );
     }
 
     #[allow(dead_code)]
     pub async fn start_new() -> Self {
         let mut program_test = ProgramTest::default();
 
-        GatewayVoterTest::add_programs(&mut program_test);
+        QuadraticVoterTest::add_programs(&mut program_test);
         GovernanceTest::add_program(&mut program_test);
         PredecessorPluginTest::add_program(&mut program_test);
 
-        let program_id = gpl_civic_gateway::id();
+        let program_id = gpl_quadratic::id();
 
         let bench = ProgramTestBench::start_new(program_test).await;
         let bench_rc = Arc::new(bench);
@@ -136,15 +94,15 @@ impl GatewayVoterTest {
     pub async fn with_registrar(
         &mut self,
         realm_cookie: &RealmCookie,
-        gateway_cookie: &GatewayCookie,
+        coefficients: &QuadraticCoefficients,
         previous_plugin_program_id: Option<Pubkey>,
     ) -> Result<RegistrarCookie, BanksClientError> {
         self.with_registrar_using_ix(
             realm_cookie,
-            gateway_cookie,
             previous_plugin_program_id,
             previous_plugin_program_id.is_some(),
-            &gpl_civic_gateway::id(),
+            coefficients,
+            &gpl_quadratic::id(),
             NopOverride,
             None,
         )
@@ -155,9 +113,9 @@ impl GatewayVoterTest {
     pub async fn with_registrar_using_ix<F: Fn(&mut Instruction)>(
         &mut self,
         realm_cookie: &RealmCookie,
-        gateway_cookie: &GatewayCookie,
         previous_plugin_program_id: Option<Pubkey>,
         use_previous_voter_weight_plugin: bool,
+        coefficients: &QuadraticCoefficients,
         program_id: &Pubkey,
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
@@ -166,17 +124,17 @@ impl GatewayVoterTest {
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
         let data =
-            anchor_lang::InstructionData::data(&gpl_civic_gateway::instruction::CreateRegistrar {
+            anchor_lang::InstructionData::data(&gpl_quadratic::instruction::CreateRegistrar {
+                coefficients: *coefficients,
                 use_previous_voter_weight_plugin,
             });
 
         let mut accounts = anchor_lang::ToAccountMetas::to_account_metas(
-            &gpl_civic_gateway::accounts::CreateRegistrar {
+            &gpl_quadratic::accounts::CreateRegistrar {
                 registrar: registrar_key,
                 realm: realm_cookie.address,
                 governance_program_id: self.governance.program_id,
                 governing_token_mint: realm_cookie.account.community_mint,
-                gatekeeper_network: gateway_cookie.gatekeeper_network.pubkey(),
                 realm_authority: realm_cookie.get_realm_authority().pubkey(),
                 payer: self.bench.payer.pubkey(),
                 system_program: solana_sdk::system_program::id(),
@@ -208,7 +166,7 @@ impl GatewayVoterTest {
             previous_voter_weight_plugin_program_id: previous_plugin_program_id,
             realm: realm_cookie.address,
             governing_token_mint: realm_cookie.account.community_mint,
-            gatekeeper_network: gateway_cookie.gatekeeper_network.pubkey(),
+            quadratic_coefficients: *coefficients,
             reserved: [0; 128],
         };
 
@@ -223,20 +181,11 @@ impl GatewayVoterTest {
     pub async fn setup(
         &mut self,
         with_predecessor: bool,
-    ) -> Result<
-        (
-            RealmCookie,
-            RegistrarCookie,
-            GatewayCookie,
-            GatewayTokenCookie,
-            WalletCookie,
-        ),
-        TransportError,
-    > {
+        coefficients: &QuadraticCoefficients,
+    ) -> Result<(RealmCookie, RegistrarCookie, WalletCookie), BanksClientError> {
         let realm_cookie = self.governance.with_realm().await?;
-        let gateway_cookie = self.with_gateway().await?;
 
-        // register the gateway plugin registrar with a predecessor (the dummy voter weight plugin) if requested
+        // register the quadratic plugin registrar with a predecessor (the dummy voter weight plugin) if requested
         let predecessor_program_id = if with_predecessor {
             Some(PredecessorPluginTest::program_id())
         } else {
@@ -244,96 +193,12 @@ impl GatewayVoterTest {
         };
 
         let registrar_cookie = self
-            .with_registrar(&realm_cookie, &gateway_cookie, predecessor_program_id)
+            .with_registrar(&realm_cookie, coefficients, predecessor_program_id)
             .await?;
+
         let voter_cookie = self.bench.with_wallet().await;
-        let gateway_token_cookie = self
-            .with_gateway_token(&gateway_cookie, &voter_cookie)
-            .await?;
 
-        Ok((
-            realm_cookie,
-            registrar_cookie,
-            gateway_cookie,
-            gateway_token_cookie,
-            voter_cookie,
-        ))
-    }
-
-    pub async fn with_gateway(&mut self) -> Result<GatewayCookie, TransportError> {
-        self.with_gateway_using_ix(NopOverride, None).await
-    }
-
-    pub async fn with_gateway_using_ix<F: Fn(&mut Instruction)>(
-        &mut self,
-        instruction_override: F,
-        signers_override: Option<&[&Keypair]>,
-    ) -> Result<GatewayCookie, TransportError> {
-        let gatekeeper_network = Keypair::new();
-        let gatekeeper = Keypair::new();
-
-        let mut add_gatekeeper_ix = add_gatekeeper(
-            &self.bench.payer.pubkey(),
-            &gatekeeper.pubkey(),
-            &gatekeeper_network.pubkey(),
-        );
-
-        instruction_override(&mut add_gatekeeper_ix);
-
-        let default_signers = &[&gatekeeper_network];
-        let signers = signers_override.unwrap_or(default_signers);
-
-        self.bench
-            .process_transaction(&[add_gatekeeper_ix], Some(signers))
-            .await?;
-
-        Ok(GatewayCookie {
-            gatekeeper_network,
-            gatekeeper,
-        })
-    }
-
-    #[allow(dead_code)]
-    pub async fn with_gateway_token(
-        &mut self,
-        gateway_cookie: &GatewayCookie,
-        wallet_cookie: &WalletCookie,
-    ) -> Result<GatewayTokenCookie, TransportError> {
-        self.with_gateway_token_using_ix(gateway_cookie, wallet_cookie, NopOverride, None)
-            .await
-    }
-
-    #[allow(dead_code)]
-    pub async fn with_gateway_token_using_ix<F: Fn(&mut Instruction)>(
-        &mut self,
-        gateway_cookie: &GatewayCookie,
-        wallet_cookie: &WalletCookie,
-        instruction_override: F,
-        signers_override: Option<&[&Keypair]>,
-    ) -> Result<GatewayTokenCookie, TransportError> {
-        let gatekeeper_account = gateway_cookie.get_gatekeeper_account();
-        let gateway_token_cookie = GatewayTokenCookie::new(&wallet_cookie.address, gateway_cookie);
-
-        let mut issue_ix = issue(
-            &self.bench.payer.pubkey(),
-            &wallet_cookie.address,
-            &gatekeeper_account,
-            &gateway_cookie.gatekeeper.pubkey(),
-            &gateway_cookie.gatekeeper_network.pubkey(),
-            None,
-            None,
-        );
-
-        instruction_override(&mut issue_ix);
-
-        let default_signers = &[&gateway_cookie.gatekeeper];
-        let signers = signers_override.unwrap_or(default_signers);
-
-        self.bench
-            .process_transaction(&[issue_ix], Some(signers))
-            .await?;
-
-        Ok(gateway_token_cookie)
+        Ok((realm_cookie, registrar_cookie, voter_cookie))
     }
 
     #[allow(dead_code)]
@@ -362,16 +227,16 @@ impl GatewayVoterTest {
                 registrar_cookie.account.governing_token_mint.as_ref(),
                 governing_token_owner.as_ref(),
             ],
-            &gpl_civic_gateway::id(),
+            &gpl_quadratic::id(),
         );
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_civic_gateway::instruction::CreateVoterWeightRecord {
+            &gpl_quadratic::instruction::CreateVoterWeightRecord {
                 governing_token_owner,
             },
         );
 
-        let accounts = gpl_civic_gateway::accounts::CreateVoterWeightRecord {
+        let accounts = gpl_quadratic::accounts::CreateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_key,
             payer: self.bench.payer.pubkey(),
@@ -379,7 +244,7 @@ impl GatewayVoterTest {
         };
 
         let mut create_voter_weight_record_ix = Instruction {
-            program_id: gpl_civic_gateway::id(),
+            program_id: gpl_quadratic::id(),
             accounts: anchor_lang::ToAccountMetas::to_account_metas(&accounts, None),
             data,
         };
@@ -413,15 +278,13 @@ impl GatewayVoterTest {
         registrar_cookie: &RegistrarCookie,
         input_voter_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
         output_voter_weight_record_cookie: &mut VoterWeightRecordCookie,
-        gateway_token_cookie: &GatewayTokenCookie,
     ) -> Result<(), BanksClientError> {
         let data = anchor_lang::InstructionData::data(
-            &gpl_civic_gateway::instruction::UpdateVoterWeightRecord {},
+            &gpl_quadratic::instruction::UpdateVoterWeightRecord {},
         );
 
-        let accounts = gpl_civic_gateway::accounts::UpdateVoterWeightRecord {
+        let accounts = gpl_quadratic::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
-            gateway_token: gateway_token_cookie.address,
             voter_weight_record: output_voter_weight_record_cookie.address,
             input_voter_weight: extract_voting_weight_address(input_voter_weight_cookie),
         };
@@ -429,7 +292,7 @@ impl GatewayVoterTest {
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
         let instructions = vec![Instruction {
-            program_id: gpl_civic_gateway::id(),
+            program_id: gpl_quadratic::id(),
             accounts: account_metas,
             data,
         }];
@@ -442,13 +305,11 @@ impl GatewayVoterTest {
         &self,
         realm_cookie: &RealmCookie,
         registrar_cookie: &RegistrarCookie,
-        gateway_cookie: &GatewayCookie,
         predecessor_program_id: Option<Pubkey>,
     ) -> Result<(), BanksClientError> {
         self.configure_registrar_using_ix(
             realm_cookie,
             registrar_cookie,
-            gateway_cookie,
             predecessor_program_id,
             predecessor_program_id.is_some(),
             NopOverride,
@@ -462,24 +323,22 @@ impl GatewayVoterTest {
         &self,
         realm_cookie: &RealmCookie,
         registrar_cookie: &RegistrarCookie,
-        gateway_cookie: &GatewayCookie,
         predecessor_program_id: Option<Pubkey>,
         use_previous_voter_weight_plugin: bool,
         instruction_override: F,
         signers_override: Option<Option<&[&Keypair]>>,
     ) -> Result<(), BanksClientError> {
-        let data = anchor_lang::InstructionData::data(
-            &gpl_civic_gateway::instruction::ConfigureRegistrar {
+        let data =
+            anchor_lang::InstructionData::data(&gpl_quadratic::instruction::ConfigureRegistrar {
+                coefficients: QuadraticCoefficients::default(),
                 use_previous_voter_weight_plugin,
-            },
-        );
+            });
 
         let mut accounts = anchor_lang::ToAccountMetas::to_account_metas(
-            &gpl_civic_gateway::accounts::ConfigureRegistrar {
+            &gpl_quadratic::accounts::ConfigureRegistrar {
                 registrar: registrar_cookie.address,
                 realm: realm_cookie.address,
                 realm_authority: realm_cookie.get_realm_authority().pubkey(),
-                gatekeeper_network: gateway_cookie.gatekeeper_network.pubkey(),
             },
             None,
         );
@@ -489,7 +348,7 @@ impl GatewayVoterTest {
         }
 
         let mut configure_registrar_ix = Instruction {
-            program_id: gpl_civic_gateway::id(),
+            program_id: gpl_quadratic::id(),
             accounts,
             data,
         };
@@ -512,28 +371,26 @@ impl GatewayVoterTest {
         voter_weight_record_cookie: &VoterWeightRecordCookie,
         proposal_cookie: &ProposalCookie,
         voter_cookie: &WalletCookie,
-        gateway_token_cookie: &GatewayTokenCookie,
         voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
         input_voter_weight_cookie: &mut Either<&VoterWeightRecordCookie, &TokenOwnerRecordCookie>,
         args: Option<CastVoteArgs>,
-    ) -> Result<(), TransportError> {
+    ) -> Result<(), BanksClientError> {
         let args = args.unwrap_or_default();
 
         let data = anchor_lang::InstructionData::data(
-            &gpl_civic_gateway::instruction::UpdateVoterWeightRecord {},
+            &gpl_quadratic::instruction::UpdateVoterWeightRecord {},
         );
 
-        let accounts = gpl_civic_gateway::accounts::UpdateVoterWeightRecord {
+        let accounts = gpl_quadratic::accounts::UpdateVoterWeightRecord {
             registrar: registrar_cookie.address,
             voter_weight_record: voter_weight_record_cookie.address,
-            gateway_token: gateway_token_cookie.address,
             input_voter_weight: extract_voting_weight_address(input_voter_weight_cookie),
         };
 
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
         let update_voter_weight_ix = Instruction {
-            program_id: gpl_civic_gateway::id(),
+            program_id: gpl_quadratic::id(),
             accounts: account_metas,
             data,
         };

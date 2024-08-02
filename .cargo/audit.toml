@@ -1,5 +1,4 @@
-# RUSTSEC-2020-0159 ignore as no upgrade path
-# RUSTSEC-2020-0071 as dependency in RUSTSEC-2020-0159
+# RUSTSEC-2022-0093 ed25519-dalek imported by latest version of solana
 
 [advisories]
 ignore = [

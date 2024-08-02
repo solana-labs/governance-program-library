@@ -38,6 +38,8 @@
         "trailingComma": "all"
     },
     "dependencies": {
+        "@identity.com/solana-gateway-ts": "^0.12.0",
+        "@solana/spl-governance": "^0.3.28",
         "@coral-xyz/anchor": "^0.30.1"
     }
 }
