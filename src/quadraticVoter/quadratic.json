@@ -1,10 +1,4 @@
-/**
- * Program IDL in camelCase format in order to be used in JS/TS.
- *
- * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/quadratic.json`.
- */
-export type Quadratic = {
+{
   "address": "quadCSapU8nTdLg73KHDnmdxKnJQsh7GUbu5tZfnRRr",
   "metadata": {
     "name": "quadratic",
@@ -14,7 +8,7 @@ export type Quadratic = {
   },
   "instructions": [
     {
-      "name": "configureRegistrar",
+      "name": "configure_registrar",
       "discriminator": [
         252,
         142,
@@ -44,7 +38,7 @@ export type Quadratic = {
           ]
         },
         {
-          "name": "realmAuthority",
+          "name": "realm_authority",
           "docs": [
             "realm_authority must sign and match Realm.authority"
           ],
@@ -56,18 +50,18 @@ export type Quadratic = {
           "name": "coefficients",
           "type": {
             "defined": {
-              "name": "quadraticCoefficients"
+              "name": "QuadraticCoefficients"
             }
           }
         },
         {
-          "name": "usePreviousVoterWeightPlugin",
+          "name": "use_previous_voter_weight_plugin",
           "type": "bool"
         }
       ]
     },
     {
-      "name": "createRegistrar",
+      "name": "create_registrar",
       "discriminator": [
         132,
         235,
@@ -108,13 +102,13 @@ export type Quadratic = {
               },
               {
                 "kind": "account",
-                "path": "governingTokenMint"
+                "path": "governing_token_mint"
               }
             ]
           }
         },
         {
-          "name": "governanceProgramId",
+          "name": "governance_program_id",
           "docs": [
             "The program id of the spl-governance program the realm belongs to"
           ]
@@ -131,7 +125,7 @@ export type Quadratic = {
           ]
         },
         {
-          "name": "governingTokenMint",
+          "name": "governing_token_mint",
           "docs": [
             "Either the realm community mint or the council mint.",
             "It must match Realm.community_mint or Realm.config.council_mint",
@@ -141,7 +135,7 @@ export type Quadratic = {
           ]
         },
         {
-          "name": "realmAuthority",
+          "name": "realm_authority",
           "docs": [
             "realm_authority must sign and match Realm.authority"
           ],
@@ -153,7 +147,7 @@ export type Quadratic = {
           "signer": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -162,18 +156,18 @@ export type Quadratic = {
           "name": "coefficients",
           "type": {
             "defined": {
-              "name": "quadraticCoefficients"
+              "name": "QuadraticCoefficients"
             }
           }
         },
         {
-          "name": "usePreviousVoterWeightPlugin",
+          "name": "use_previous_voter_weight_plugin",
           "type": "bool"
         }
       ]
     },
     {
-      "name": "createVoterWeightRecord",
+      "name": "create_voter_weight_record",
       "discriminator": [
         184,
         249,
@@ -189,7 +183,7 @@ export type Quadratic = {
           "name": "registrar"
         },
         {
-          "name": "voterWeightRecord",
+          "name": "voter_weight_record",
           "writable": true,
           "pda": {
             "seeds": [
@@ -220,16 +214,16 @@ export type Quadratic = {
               {
                 "kind": "account",
                 "path": "registrar.realm",
-                "account": "registrar"
+                "account": "Registrar"
               },
               {
                 "kind": "account",
                 "path": "registrar.governing_token_mint",
-                "account": "registrar"
+                "account": "Registrar"
               },
               {
                 "kind": "arg",
-                "path": "governingTokenOwner"
+                "path": "governing_token_owner"
               }
             ]
           }
@@ -240,19 +234,19 @@ export type Quadratic = {
           "signer": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "governingTokenOwner",
+          "name": "governing_token_owner",
           "type": "pubkey"
         }
       ]
     },
     {
-      "name": "updateVoterWeightRecord",
+      "name": "update_voter_weight_record",
       "discriminator": [
         45,
         185,
@@ -271,14 +265,14 @@ export type Quadratic = {
           ]
         },
         {
-          "name": "inputVoterWeight",
+          "name": "input_voter_weight",
           "docs": [
             "An account that is either of type TokenOwnerRecordV2 or VoterWeightRecord",
             "depending on whether the registrar includes a predecessor or not"
           ]
         },
         {
-          "name": "voterWeightRecord",
+          "name": "voter_weight_record",
           "writable": true
         }
       ],
@@ -287,7 +281,7 @@ export type Quadratic = {
   ],
   "accounts": [
     {
-      "name": "registrar",
+      "name": "Registrar",
       "discriminator": [
         193,
         202,
@@ -300,7 +294,7 @@ export type Quadratic = {
       ]
     },
     {
-      "name": "voterWeightRecord",
+      "name": "VoterWeightRecord",
       "discriminator": [
         46,
         249,
@@ -315,7 +309,7 @@ export type Quadratic = {
   ],
   "types": [
     {
-      "name": "quadraticCoefficients",
+      "name": "QuadraticCoefficients",
       "type": {
         "kind": "struct",
         "fields": [
@@ -335,7 +329,7 @@ export type Quadratic = {
       }
     },
     {
-      "name": "registrar",
+      "name": "Registrar",
       "docs": [
         "Registrar which stores Quadratic voting configuration for the given Realm"
       ],
@@ -343,7 +337,7 @@ export type Quadratic = {
         "kind": "struct",
         "fields": [
           {
-            "name": "governanceProgramId",
+            "name": "governance_program_id",
             "docs": [
               "spl-governance program the Realm belongs to"
             ],
@@ -357,7 +351,7 @@ export type Quadratic = {
             "type": "pubkey"
           },
           {
-            "name": "governingTokenMint",
+            "name": "governing_token_mint",
             "docs": [
               "Governing token mint the Registrar is for",
               "It can either be the Community or the Council mint of the Realm",
@@ -367,7 +361,7 @@ export type Quadratic = {
             "type": "pubkey"
           },
           {
-            "name": "previousVoterWeightPluginProgramId",
+            "name": "previous_voter_weight_plugin_program_id",
             "docs": [
               "If the plugin is one in a sequence, this is the previous plugin program ID",
               "If set, then update_voter_weight_record will expect a voter_weight_record owned by this program"
@@ -377,13 +371,13 @@ export type Quadratic = {
             }
           },
           {
-            "name": "quadraticCoefficients",
+            "name": "quadratic_coefficients",
             "docs": [
               "A set of coefficients to be used when calculating the voter weight"
             ],
             "type": {
               "defined": {
-                "name": "quadraticCoefficients"
+                "name": "QuadraticCoefficients"
               }
             }
           },
@@ -403,7 +397,7 @@ export type Quadratic = {
       }
     },
     {
-      "name": "voterWeightAction",
+      "name": "VoterWeightAction",
       "docs": [
         "VoterWeightAction enum as defined in spl-governance-addin-api",
         "It's redefined here for Anchor to export it to IDL"
@@ -412,25 +406,25 @@ export type Quadratic = {
         "kind": "enum",
         "variants": [
           {
-            "name": "castVote"
+            "name": "CastVote"
           },
           {
-            "name": "commentProposal"
+            "name": "CommentProposal"
           },
           {
-            "name": "createGovernance"
+            "name": "CreateGovernance"
           },
           {
-            "name": "createProposal"
+            "name": "CreateProposal"
           },
           {
-            "name": "signOffProposal"
+            "name": "SignOffProposal"
           }
         ]
       }
     },
     {
-      "name": "voterWeightRecord",
+      "name": "VoterWeightRecord",
       "docs": [
         "VoterWeightRecord account as defined in spl-governance-addin-api",
         "It's redefined here without account_discriminator for Anchor to treat it as native account",
@@ -448,7 +442,7 @@ export type Quadratic = {
             "type": "pubkey"
           },
           {
-            "name": "governingTokenMint",
+            "name": "governing_token_mint",
             "docs": [
               "Governing Token Mint the VoterWeightRecord is associated with",
               "Note: The addin can take deposits of any tokens and is not restricted to the community or council tokens only"
@@ -456,7 +450,7 @@ export type Quadratic = {
             "type": "pubkey"
           },
           {
-            "name": "governingTokenOwner",
+            "name": "governing_token_owner",
             "docs": [
               "The owner of the governing token and voter",
               "This is the actual owner (voter) and corresponds to TokenOwnerRecord.governing_token_owner"
@@ -464,7 +458,7 @@ export type Quadratic = {
             "type": "pubkey"
           },
           {
-            "name": "voterWeight",
+            "name": "voter_weight",
             "docs": [
               "Voter's weight",
               "The weight of the voter provided by the addin for the given realm, governing_token_mint and governing_token_owner (voter)"
@@ -472,7 +466,7 @@ export type Quadratic = {
             "type": "u64"
           },
           {
-            "name": "voterWeightExpiry",
+            "name": "voter_weight_expiry",
             "docs": [
               "The slot when the voting weight expires",
               "It should be set to None if the weight never expires",
@@ -485,7 +479,7 @@ export type Quadratic = {
             }
           },
           {
-            "name": "weightAction",
+            "name": "weight_action",
             "docs": [
               "The governance action the voter's weight pertains to",
               "It allows to provided voter's weight specific to the particular action the weight is evaluated for",
@@ -494,13 +488,13 @@ export type Quadratic = {
             "type": {
               "option": {
                 "defined": {
-                  "name": "voterWeightAction"
+                  "name": "VoterWeightAction"
                 }
               }
             }
           },
           {
-            "name": "weightActionTarget",
+            "name": "weight_action_target",
             "docs": [
               "The target the voter's weight  action pertains to",
               "It allows to provided voter's weight specific to the target the weight is evaluated for",
@@ -527,4 +521,4 @@ export type Quadratic = {
       }
     }
   ]
-};
+}

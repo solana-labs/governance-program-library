@@ -60,7 +60,7 @@ const loadClient = (plugin: typeof PLUGIN_NAMES[number], provider: Provider) => 
 
   // update the voter weight record
   const updateVoterWeightRecordIx = await client.updateVoterWeightRecord(voterPk, realmPk, communityMintPk);
-  ixes.push(updateVoterWeightRecordIx);
+  ixes.push(...updateVoterWeightRecordIx.pre);
 
   const updateMaxVoterWeightRecordIx = await client.updateMaxVoterWeightRecord(realmPk, communityMintPk);
   if (updateMaxVoterWeightRecordIx) ixes.push(updateMaxVoterWeightRecordIx);
@@ -70,8 +70,12 @@ const loadClient = (plugin: typeof PLUGIN_NAMES[number], provider: Provider) => 
   const { voterWeightPk } = client.getVoterWeightRecordPDA(realmPk, communityMintPk, voterPk);
   console.log("Voter weight record", voterWeightPk.toBase58());
 
-  const { maxVoterWeightPk } = client.getMaxVoterWeightRecordPDA(realmPk, communityMintPk);
-  console.log("Max voter weight record", maxVoterWeightPk.toBase58());
+  const maxVoterWeight = client.getMaxVoterWeightRecordPDA(realmPk, communityMintPk);
+  if (!maxVoterWeight) {
+    console.log("No max voter weight record found")
+    return
+  }
+  console.log("Max voter weight record", maxVoterWeight.maxVoterWeightPk.toBase58());
 })().catch((err) => {
   console.error(err);
   process.exit(1);
