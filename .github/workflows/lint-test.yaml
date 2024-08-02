@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  SOLANA_VERSION: '1.17.12'
+  SOLANA_VERSION: '1.18.18'
   RUST_TOOLCHAIN: stable
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
         run: cargo fmt -- --check
 
       - name: Run clippy
-        run: cargo clippy -- --deny=warnings
+        run: cargo clippy -- -A clippy::pedantic --deny=warnings
 
   test:
     name: Run Tests
@@ -71,8 +71,8 @@ jobs:
           echo Generating keypair...
           solana-keygen new -o "$HOME/.config/solana/id.json" --no-passphrase --silent
 
-      - name: Install BPF tools
-        # Note: as a workaround for cargo build-sbf issue run it and ignore errors to install the BPF tools
+      - name: Install SBF tools
+        # Note: as a workaround for cargo build-sbf issue run it and ignore errors to install the sbf tools
         # https://github.com/solana-labs/solana/issues/26583
         run: cargo build-sbf || true
 

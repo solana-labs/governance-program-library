@@ -4,4 +4,8 @@ members = [
     "programs/quadratic",
     "programs/realm-voter",
     "programs/nft-voter",
+    "programs/token-haver",
 ]
+
+[profile.release]
+overflow-checks = true

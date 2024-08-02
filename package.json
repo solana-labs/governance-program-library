@@ -1,6 +1,6 @@
 {
-    "name": "@civic/governance-program-library",
-    "version": "0.18.2-beta.24",
+    "name": "@solana/governance-program-library",
+    "version": "0.17.7",
     "description": "Client for Governance Program Library which is a set of extensions for Solana's spl-governance program.",
     "author": "Solana Maintainers <maintainers@solana.foundation>",
     "license": "MIT",
@@ -38,8 +38,8 @@
         "trailingComma": "all"
     },
     "dependencies": {
-        "@coral-xyz/anchor": "^0.29.0",
         "@identity.com/solana-gateway-ts": "^0.12.0",
-        "@solana/spl-governance": "^0.3.28"
+        "@solana/spl-governance": "^0.3.28",
+        "@coral-xyz/anchor": "^0.30.1"
     }
 }

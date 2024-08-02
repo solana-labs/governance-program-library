@@ -1,7 +1,12 @@
 # RUSTSEC-2022-0093 ed25519-dalek imported by latest version of solana
 
 [advisories]
-ignore = ["RUSTSEC-2022-0093"] # advisory IDs to ignore e.g. ["RUSTSEC-2019-0001", ...]
+ignore = [
+    "RUSTSEC-2020-0159",
+    "RUSTSEC-2020-0071",  # Potential segfault in the time crate
+    "RUSTSEC-2022-0093",
+    "RUSTSEC-2024-0344"   # curve25519-dalek
+]
 informational_warnings = ["unmaintained"] # warn for categories of informational advisories
 severity_threshold = "medium" # CVSS severity ("none", "low", "medium", "high", "critical")
 

@@ -1,21 +1,16 @@
 import { Program, Provider } from '@coral-xyz/anchor';
-import { PublicKey } from '@solana/web3.js';
-import { NftVoter, IDL } from './nft_voter';
-
-export const NFT_VOTER_ID = new PublicKey(
-  'GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw',
-);
+import { NftVoter } from './nft_voter';
+import NftVoterIDL  from './nft_voter.json';
 
 export class NftVoterClient {
   constructor(public program: Program<NftVoter>, public devnet?: boolean) {}
 
-  static connect(
+  static async connect(
     provider: Provider,
     devnet?: boolean,
-    programId = NFT_VOTER_ID,
-  ): NftVoterClient {
+  ): Promise<NftVoterClient> {
     return new NftVoterClient(
-      new Program<NftVoter>(IDL, programId, provider),
+      new Program(NftVoterIDL as NftVoter, provider),
       devnet,
     );
   }

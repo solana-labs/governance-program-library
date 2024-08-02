@@ -57,11 +57,11 @@ impl QuadraticVoterTest {
     #[allow(dead_code)]
     pub fn add_programs(program_test: &mut ProgramTest) {
         program_test.add_program("gpl_quadratic", gpl_quadratic::id(), None);
-        program_test.add_program(
-            "gpl_quadratic",
-            gpl_quadratic::id(),
-            processor!(gpl_quadratic::entry),
-        );
+        // program_test.add_program(
+        //     "gpl_quadratic",
+        //     gpl_quadratic::id(),
+        //     processor!(gpl_quadratic::entry),
+        // );
     }
 
     #[allow(dead_code)]
