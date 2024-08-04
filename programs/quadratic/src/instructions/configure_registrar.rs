@@ -18,6 +18,7 @@ pub struct ConfigureRegistrar<'info> {
     /// Realm is validated in the instruction:
     /// - Realm is owned by the governance_program_id
     /// - realm_authority is realm.authority
+    ///
     /// CHECK: Owned by spl-governance instance specified in governance_program_id
     #[account(
         address = registrar.realm @ QuadraticError::InvalidRealmForRegistrar,
