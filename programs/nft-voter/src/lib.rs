@@ -54,8 +54,8 @@ pub mod nft_voter {
         instructions::configure_collection(ctx, weight, size)
     }
 
-    pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
-        ctx: Context<'a, 'b, 'c, 'info, CastNftVote<'info>>,
+    pub fn cast_nft_vote<'info>(
+        ctx: Context<'_, '_, '_, 'info, CastNftVote<'info>>,
         proposal: Pubkey,
     ) -> Result<()> {
         log_version();

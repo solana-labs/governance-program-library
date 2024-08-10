@@ -22,9 +22,9 @@ arrayref = "0.3.6"
 anchor-lang = { version = "0.30.1", features = ["init-if-needed"] }
 anchor-spl = "0.30.1"
 enum_dispatch = "0.3.8"
-itertools = "0.10.2"
+itertools = "0.12.0"
 num = "0.4"
-num-derive = "0.3"
+num-derive = "0.4.1"
 num-traits = "0.2"
 solana-gateway  = { version = "0.6.0", features = ["no-entrypoint"] }
 solana-program = "1.18.18"

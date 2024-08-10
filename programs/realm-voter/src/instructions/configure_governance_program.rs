@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 use spl_governance::state::realm;
 
 use crate::error::RealmVoterError;
-use crate::state::{GovernanceProgramConfig, Registrar, CollectionItemChangeType};
+use crate::state::{CollectionItemChangeType, GovernanceProgramConfig, Registrar};
 
 /// Creates or updates configuration for spl-governance program instances to define which spl-governance instances can be used to grant governance power
 #[derive(Accounts)]

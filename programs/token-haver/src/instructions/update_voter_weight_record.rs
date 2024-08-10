@@ -44,7 +44,7 @@ pub fn update_voter_weight_record<'info>(
             voter_weight_record.governing_token_owner,
             TokenHaverError::TokenAccountWrongOwner
         );
-        
+
         // Throw an error if a token account's mint is not unique amount the accounts
         require!(
             nonzero_token_accounts
