@@ -39,7 +39,10 @@ impl CoreTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_collection(&self) -> Result<CollectionCookie, TransportError> {
+    pub async fn create_collection(
+        &self,
+        collection_size: Option<u64>,
+    ) -> Result<CollectionCookie, TransportError> {
         let update_authority = self.bench.context.borrow().payer.pubkey();
         let payer = self.bench.context.borrow().payer.pubkey();
 
@@ -73,6 +76,18 @@ impl CoreTest {
             .process_transaction(&[create_coll_ix], Some(&[&coll_keypair]))
             .await?;
 
+        println!("Minting {} assets to collection", collection_size.unwrap());
+        if collection_size.is_some() {
+            self.mint_assets_to_collection(
+                &CollectionCookie {
+                    collection: coll_keypair.pubkey(),
+                    authority: coll_authority.insecure_clone(),
+                },
+                collection_size.unwrap(),
+            )
+            .await;
+        }
+
         Ok(CollectionCookie {
             collection: coll_keypair.pubkey(),
             authority: coll_authority,
@@ -80,11 +95,11 @@ impl CoreTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_asset(
+    pub async fn create_asset(
         &self,
         collection_cookie: &CollectionCookie,
         asset_owner_cookie: &WalletCookie,
-        collection: Option<Pubkey>,
+        // collection: Option<Pubkey>,
     ) -> Result<AssetCookie, TransportError> {
         let collection_authority = self.bench.context.borrow().payer.pubkey();
         let payer = self.bench.context.borrow().payer.pubkey();
@@ -107,7 +122,7 @@ impl CoreTest {
         // instruction accounts
         let create_accounts = mpl_core::instructions::CreateV2 {
             asset: asset_keypair.pubkey(),
-            collection,
+            collection: Some(collection_cookie.collection),
             authority: Some(collection_authority),
             payer,
             owner: Some(asset_owner_cookie.address),
@@ -126,5 +141,13 @@ impl CoreTest {
         Ok(AssetCookie {
             asset: asset_keypair.pubkey(),
         })
+    }
+
+    pub async fn mint_assets_to_collection(&self, collection_cookie: &CollectionCookie, size: u64) {
+        let asset_owner = self.bench.with_wallet().await;
+
+        for _ in 0..size {
+            let _ = self.create_asset(&collection_cookie, &asset_owner).await;
+        }
     }
 }

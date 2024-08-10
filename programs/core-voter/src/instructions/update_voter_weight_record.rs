@@ -74,3 +74,5 @@ pub fn update_voter_weight_record(
 
     Ok(())
 }
+
+// takes all collections and adjusts collection weight

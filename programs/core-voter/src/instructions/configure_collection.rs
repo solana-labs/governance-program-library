@@ -74,6 +74,8 @@ pub fn configure_collection(
     
     let size = collection.current_size;
 
+    msg!("Collection size: {}", size);
+
     require!(size > 0, NftVoterError::InvalidCollectionSize);
 
     let collection_config = CollectionConfig {
