@@ -7,12 +7,12 @@ use spl_governance_tools::account::{get_account_data, AccountMaxSize};
 use crate::{error::NftVoterError, id};
 
 /// Vote record indicating the given NFT voted on the Proposal
-/// The PDA of the record is ["nft-vote-record",proposal,nft_mint]
+/// The PDA of the record is ["nft-vote-record",proposal,asset_mint]
 /// It guarantees uniques and ensures the same NFT can't vote twice
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
-pub struct NftVoteRecord {
-    /// NftVoteRecord discriminator sha256("account:NftVoteRecord")[..8]
-    /// Note: The discriminator is used explicitly because NftVoteRecords
+pub struct AssetVoteRecord {
+    /// AssetVoteRecord discriminator sha256("account:AssetVoteRecord")[..8]
+    /// Note: The discriminator is used explicitly because AssetVoteRecords
     /// are created and consumed dynamically using remaining_accounts
     /// and Anchor doesn't really support this scenario without going through lots of hoops
     /// Once Anchor has better support for the scenario it shouldn't be necessary
@@ -22,7 +22,7 @@ pub struct NftVoteRecord {
     pub proposal: Pubkey,
 
     /// The mint of the NFT which was used for the vote
-    pub nft_mint: Pubkey,
+    pub asset_mint: Pubkey,
 
     /// The voter who casted this vote
     /// It's a Realm member pubkey corresponding to TokenOwnerRecord.governing_token_owner
@@ -32,32 +32,32 @@ pub struct NftVoteRecord {
     pub reserved: [u8; 8],
 }
 
-impl NftVoteRecord {
-    /// sha256("account:NftVoteRecord")[..8]
-    pub const ACCOUNT_DISCRIMINATOR: [u8; 8] = [137, 6, 55, 139, 251, 126, 254, 99];
+impl AssetVoteRecord {
+    /// sha256("account:AssetVoteRecord")[..8]
+    pub const ACCOUNT_DISCRIMINATOR: [u8; 8] = [14, 166, 191, 239, 186, 156, 140, 83];
 }
 
-impl AccountMaxSize for NftVoteRecord {}
+impl AccountMaxSize for AssetVoteRecord {}
 
-impl IsInitialized for NftVoteRecord {
+impl IsInitialized for AssetVoteRecord {
     fn is_initialized(&self) -> bool {
-        self.account_discriminator == NftVoteRecord::ACCOUNT_DISCRIMINATOR
+        self.account_discriminator == AssetVoteRecord::ACCOUNT_DISCRIMINATOR
     }
 }
 
-/// Returns NftVoteRecord PDA seeds
-pub fn get_nft_vote_record_seeds<'a>(proposal: &'a Pubkey, nft_mint: &'a Pubkey) -> [&'a [u8]; 3] {
-    [b"nft-vote-record", proposal.as_ref(), nft_mint.as_ref()]
+/// Returns AssetVoteRecord PDA seeds
+pub fn get_nft_vote_record_seeds<'a>(proposal: &'a Pubkey, asset_mint: &'a Pubkey) -> [&'a [u8]; 3] {
+    [b"nft-vote-record", proposal.as_ref(), asset_mint.as_ref()]
 }
 
-/// Returns NftVoteRecord PDA address
-pub fn get_nft_vote_record_address(proposal: &Pubkey, nft_mint: &Pubkey) -> Pubkey {
-    Pubkey::find_program_address(&get_nft_vote_record_seeds(proposal, nft_mint), &id()).0
+/// Returns AssetVoteRecord PDA address
+pub fn get_nft_vote_record_address(proposal: &Pubkey, asset_mint: &Pubkey) -> Pubkey {
+    Pubkey::find_program_address(&get_nft_vote_record_seeds(proposal, asset_mint), &id()).0
 }
 
 /// Deserializes account and checks owner program
-pub fn get_nft_vote_record_data(nft_vote_record_info: &AccountInfo) -> Result<NftVoteRecord> {
-    Ok(get_account_data::<NftVoteRecord>(
+pub fn get_nft_vote_record_data(nft_vote_record_info: &AccountInfo) -> Result<AssetVoteRecord> {
+    Ok(get_account_data::<AssetVoteRecord>(
         &id(),
         nft_vote_record_info,
     )?)
@@ -67,7 +67,7 @@ pub fn get_nft_vote_record_data_for_proposal_and_token_owner(
     nft_vote_record_info: &AccountInfo,
     proposal: &Pubkey,
     governing_token_owner: &Pubkey,
-) -> Result<NftVoteRecord> {
+) -> Result<AssetVoteRecord> {
     let nft_vote_record = get_nft_vote_record_data(nft_vote_record_info)?;
 
     require!(

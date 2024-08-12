@@ -11,10 +11,10 @@ pub mod tools;
 
 use crate::state::*;
 
-declare_id!("GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw");
+declare_id!("Gcore62Vw7rfgmXMG8T7B9Ye2smpE35rk12RxkuMNc6a");
 
 #[program]
-pub mod nft_voter {
+pub mod core_voter {
 
     use crate::state::VoterWeightAction;
 
@@ -41,17 +41,17 @@ pub mod nft_voter {
         log_version();
         instructions::update_voter_weight_record(ctx, voter_weight_action)
     }
+    pub fn update_max_voter_weight_record(ctx: Context<UpdateMaxVoterWeightRecord>) -> Result<()> {
+        log_version();
+        instructions::update_max_voter_weight_record(ctx)
+    }
     pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
         log_version();
         instructions::relinquish_nft_vote(ctx)
     }
-    pub fn configure_collection(
-        ctx: Context<ConfigureCollection>,
-        weight: u64,
-        size: u32,
-    ) -> Result<()> {
+    pub fn configure_collection(ctx: Context<ConfigureCollection>, weight: u64) -> Result<()> {
         log_version();
-        instructions::configure_collection(ctx, weight, size)
+        instructions::configure_collection(ctx, weight)
     }
 
     pub fn cast_nft_vote<'a, 'b, 'c, 'info>(

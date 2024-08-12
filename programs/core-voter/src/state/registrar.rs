@@ -2,15 +2,12 @@ use crate::{
     error::NftVoterError,
     id,
     state::{CollectionConfig, VoterWeightRecord},
-    tools::{
-        anchor::DISCRIMINATOR_SIZE, spl_token::get_spl_token_amount,
-        token_metadata::get_token_metadata_for_mint,
-    },
+    tools::anchor::DISCRIMINATOR_SIZE,
 };
 use anchor_lang::prelude::*;
+use mpl_core::{accounts::BaseAssetV1, types::UpdateAuthority};
 use solana_program::pubkey::PUBKEY_BYTES;
 use spl_governance::state::token_owner_record;
-use spl_governance::tools::spl_token::{get_spl_token_mint, get_spl_token_owner};
 
 /// Registrar which stores NFT voting configuration for the given Realm
 #[account]
@@ -28,7 +25,7 @@ pub struct Registrar {
     /// and the actual token of the mint is not used
     pub governing_token_mint: Pubkey,
 
-    /// MPL Collection used for voting
+    /// Core Collection used for voting
     pub collection_configs: Vec<CollectionConfig>,
 
     /// Reserved for future upgrades
@@ -101,11 +98,12 @@ pub fn resolve_governing_token_owner(
 pub fn resolve_nft_vote_weight_and_mint(
     registrar: &Registrar,
     governing_token_owner: &Pubkey,
-    nft_info: &AccountInfo,
-    nft_metadata_info: &AccountInfo,
+    asset_key: Pubkey,
+    asset: &BaseAssetV1,
+    // nft_metadata_info: &AccountInfo,
     unique_nft_mints: &mut Vec<Pubkey>,
 ) -> Result<(u64, Pubkey)> {
-    let nft_owner = get_spl_token_owner(nft_info)?;
+    let nft_owner = asset.owner;
 
     // voter_weight_record.governing_token_owner must be the owner of the NFT
     require!(
@@ -113,7 +111,7 @@ pub fn resolve_nft_vote_weight_and_mint(
         NftVoterError::VoterDoesNotOwnNft
     );
 
-    let nft_mint = get_spl_token_mint(nft_info)?;
+    let nft_mint = asset_key;
 
     // Ensure the same NFT was not provided more than once
     if unique_nft_mints.contains(&nft_mint) {
@@ -121,21 +119,17 @@ pub fn resolve_nft_vote_weight_and_mint(
     }
     unique_nft_mints.push(nft_mint);
 
-    // Ensure the token amount is exactly 1
-    let nft_amount = get_spl_token_amount(nft_info)?;
+    // The Core NFT must have a collection and the collection must be verified
+    let collection = match asset.update_authority {
+        UpdateAuthority::Collection(collection) => {
+            collection
+        },
+        _ => return Err(NftVoterError::InvalidNftCollection.into())
+    };
 
-    require!(nft_amount == 1, NftVoterError::InvalidNftAmount);
+    let collection_config = registrar.get_collection_config(collection)?;
 
-    let nft_metadata = get_token_metadata_for_mint(nft_metadata_info, &nft_mint)?;
-
-    // The NFT must have a collection and the collection must be verified
-    let collection = nft_metadata
-        .collection
-        .ok_or(NftVoterError::MissingMetadataCollection)?;
-
-    require!(collection.verified, NftVoterError::CollectionMustBeVerified);
-
-    let collection_config = registrar.get_collection_config(collection.key)?;
+    require!(collection_config.collection == collection, NftVoterError::InvalidNftCollection);
 
     Ok((collection_config.weight, nft_mint))
 }

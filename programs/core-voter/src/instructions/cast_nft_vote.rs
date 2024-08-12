@@ -3,6 +3,7 @@ use crate::{id, state::*};
 use anchor_lang::prelude::*;
 use anchor_lang::Accounts;
 use itertools::Itertools;
+use mpl_core::accounts::BaseAssetV1;
 use spl_governance_tools::account::create_and_serialize_account_signed;
 
 /// Casts NFT vote. The NFTs used for voting are tracked using NftVoteRecord accounts
@@ -67,28 +68,28 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
     let mut voter_weight = 0u64;
 
     // Ensure all voting nfts in the batch are unique
-    let mut unique_nft_mints = vec![];
+    let mut unique_asset_mints = vec![];
 
     let rent = Rent::get()?;
 
-    for (nft_info, nft_metadata_info, nft_vote_record_info) in
+    for (asset, asset_vote_record_info) in
         ctx.remaining_accounts.iter().tuples()
     {
-        let (nft_vote_weight, nft_mint) = resolve_nft_vote_weight_and_mint(
+        let (asset_vote_weight, asset_mint) = resolve_nft_vote_weight_and_mint(
             registrar,
             &governing_token_owner,
-            nft_info,
-            nft_metadata_info,
-            &mut unique_nft_mints,
+            asset.key.clone(),
+            &BaseAssetV1::from_bytes(&asset.data.borrow()).unwrap(),
+            &mut unique_asset_mints,
         )?;
 
-        voter_weight = voter_weight.checked_add(nft_vote_weight as u64).unwrap();
+        voter_weight = voter_weight.checked_add(asset_vote_weight as u64).unwrap();
 
         // Create NFT vote record to ensure the same NFT hasn't been already used for voting
         // Note: The correct PDA of the NftVoteRecord is validated in create_and_serialize_account_signed
         // It ensures the NftVoteRecord is for ('nft-vote-record',proposal,nft_mint) seeds
         require!(
-            nft_vote_record_info.data_is_empty(),
+            asset_vote_record_info.data_is_empty(),
             NftVoterError::NftAlreadyVoted
         );
 
@@ -98,10 +99,10 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
 
         // Note: Once the NFT plugin is enabled the governing_token_mint is used only as identity
         // for the voting population and the tokens of that mint are no longer used
-        let nft_vote_record = NftVoteRecord {
-            account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
+        let asset_vote_record = AssetVoteRecord {
+            account_discriminator: AssetVoteRecord::ACCOUNT_DISCRIMINATOR,
             proposal,
-            nft_mint,
+            asset_mint,
             governing_token_owner,
             reserved: [0; 8],
         };
@@ -110,9 +111,9 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
         // and we have to take it on the manual drive
         create_and_serialize_account_signed(
             &ctx.accounts.payer.to_account_info(),
-            nft_vote_record_info,
-            &nft_vote_record,
-            &get_nft_vote_record_seeds(&proposal, &nft_mint),
+            asset_vote_record_info,
+            &asset_vote_record,
+            &get_nft_vote_record_seeds(&proposal, &asset_mint),
             &id(),
             &ctx.accounts.system_program.to_account_info(),
             &rent,

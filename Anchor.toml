@@ -5,6 +5,7 @@ solana_version = "1.18.18"
 seeds = false
 
 [programs.localnet]
+core-voter = "Gcore62Vw7rfgmXMG8T7B9Ye2smpE35rk12RxkuMNc6a"
 nft_voter = "GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw"
 gateway = "GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk"
 quadratic = "quadCSapU8nTdLg73KHDnmdxKnJQsh7GUbu5tZfnRRr"

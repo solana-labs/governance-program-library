@@ -1,5 +1,5 @@
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
-use gpl_nft_voter::error::NftVoterError;
+use gpl_core_voter::error::NftVoterError;
 use solana_program::instruction::InstructionError;
 use solana_program_test::BanksClientError;
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
@@ -17,6 +17,11 @@ pub fn NopOverride<T>(_: &mut T) {}
 #[allow(dead_code)]
 pub fn assert_nft_voter_err(banks_client_error: BanksClientError, nft_locker_error: NftVoterError) {
     let tx_error = banks_client_error.unwrap();
+
+    println!("banks client error: {:?}", tx_error);
+    println!("nft locker error: {:?}", nft_locker_error);
+    println!("error code offset: {:?}", ERROR_CODE_OFFSET);
+    println!("nft locker error as u32: {:?}", nft_locker_error as u32 + ERROR_CODE_OFFSET);
 
     match tx_error {
         TransactionError::InstructionError(_, instruction_error) => match instruction_error {
