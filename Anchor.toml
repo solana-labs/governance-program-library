@@ -7,10 +7,10 @@ seeds = false
 [programs.localnet]
 nft_voter = "GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw"
 gateway = "GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk"
-solana-gateway-program = "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
-gpl_token_haver = "7gobfUihgoxA14RUnVaseoah89ggCgYAzgz1JoaPAXam"
-gpl_token_voter = "3JhBg9bSPcfWGFa3t8LH7ooVtrjm45yCkHpxYXMXstUM"
 quadratic = "quadCSapU8nTdLg73KHDnmdxKnJQsh7GUbu5tZfnRRr"
+solana-gateway = "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
+token-haver = "7gobfUihgoxA14RUnVaseoah89ggCgYAzgz1JoaPAXam"
+token_voter = "3JhBg9bSPcfWGFa3t8LH7ooVtrjm45yCkHpxYXMXstUM"
 
 [registry]
 url = "https://anchor.projectserum.com"
