@@ -95,15 +95,16 @@ impl TokenMetadataTest {
         };
 
         // instruction accounts
-        let create_coll_metadata_ix_accounts = mpl_token_metadata::instructions::CreateMetadataAccountV3 {
-            metadata: coll_metadata_key,
-            mint: coll_mint_cookie.address,
-            mint_authority: coll_mint_cookie.mint_authority.pubkey(),
-            payer: payer,
-            update_authority: (payer, true),
-            system_program: system_program::ID,
-            rent: None,
-        };
+        let create_coll_metadata_ix_accounts =
+            mpl_token_metadata::instructions::CreateMetadataAccountV3 {
+                metadata: coll_metadata_key,
+                mint: coll_mint_cookie.address,
+                mint_authority: coll_mint_cookie.mint_authority.pubkey(),
+                payer: payer,
+                update_authority: (payer, true),
+                system_program: system_program::ID,
+                rent: None,
+            };
 
         // creates the instruction
         let create_coll_metadata_ix = create_coll_metadata_ix_accounts.instruction(args);
@@ -124,26 +125,28 @@ impl TokenMetadataTest {
         let (master_edition_key, _) =
             Pubkey::find_program_address(master_edition_seeds, &self.program_id);
 
-
         // instruction args
-        let args_master_edition_v3 = mpl_token_metadata::instructions::CreateMasterEditionV3InstructionArgs {
-            max_supply: Some(0),
-        };
+        let args_master_edition_v3 =
+            mpl_token_metadata::instructions::CreateMasterEditionV3InstructionArgs {
+                max_supply: Some(0),
+            };
 
         // instruction accounts
-        let create_master_edition_v3_ix_accounts = mpl_token_metadata::instructions::CreateMasterEditionV3 {
-            edition: master_edition_key,
-            metadata: coll_metadata_key,
-            mint: coll_mint_cookie.address,
-            mint_authority: coll_mint_cookie.mint_authority.pubkey(),
-            payer: payer,
-            update_authority: payer,
-            system_program: system_program::ID,
-            token_program: spl_token::id(),
-            rent: None,
-        };
+        let create_master_edition_v3_ix_accounts =
+            mpl_token_metadata::instructions::CreateMasterEditionV3 {
+                edition: master_edition_key,
+                metadata: coll_metadata_key,
+                mint: coll_mint_cookie.address,
+                mint_authority: coll_mint_cookie.mint_authority.pubkey(),
+                payer: payer,
+                update_authority: payer,
+                system_program: system_program::ID,
+                token_program: spl_token::id(),
+                rent: None,
+            };
 
-        let create_master_edition_ix = create_master_edition_v3_ix_accounts.instruction(args_master_edition_v3);
+        let create_master_edition_ix =
+            create_master_edition_v3_ix_accounts.instruction(args_master_edition_v3);
 
         self.bench
             .process_transaction(
@@ -210,15 +213,16 @@ impl TokenMetadataTest {
         };
 
         // instruction accounts
-        let create_metadata_ix_accounts = mpl_token_metadata::instructions::CreateMetadataAccountV3 {
-            metadata: metadata_key,
-            mint: mint_cookie.address,
-            mint_authority: mint_cookie.mint_authority.pubkey(),
-            payer: self.bench.payer.pubkey(),
-            update_authority: (self.bench.payer.pubkey(), true),
-            system_program: system_program::ID,
-            rent: None,
-        };
+        let create_metadata_ix_accounts =
+            mpl_token_metadata::instructions::CreateMetadataAccountV3 {
+                metadata: metadata_key,
+                mint: mint_cookie.address,
+                mint_authority: mint_cookie.mint_authority.pubkey(),
+                payer: self.bench.payer.pubkey(),
+                update_authority: (self.bench.payer.pubkey(), true),
+                system_program: system_program::ID,
+                rent: None,
+            };
 
         // creates the instruction
         let create_metadata_ix = create_metadata_ix_accounts.instruction(args);

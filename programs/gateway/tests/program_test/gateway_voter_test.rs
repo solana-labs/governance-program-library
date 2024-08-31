@@ -18,7 +18,7 @@ use spl_governance::{
     state::vote_record::{Vote, VoteChoice},
 };
 
-use solana_program_test::{BanksClientError, ProgramTest};
+use solana_program_test::{processor, BanksClientError, ProgramTest};
 
 use crate::program_test::{
     governance_test::{GovernanceTest, ProposalCookie, RealmCookie, TokenOwnerRecordCookie},
@@ -92,10 +92,16 @@ pub struct GatewayVoterTest {
 impl GatewayVoterTest {
     #[allow(dead_code)]
     pub fn add_programs(program_test: &mut ProgramTest) {
-        program_test.add_program("gpl_civic_gateway", gpl_civic_gateway::id(), None);
         program_test.add_program(
-            "solana_gateway_program",
+            "gpl_civic_gateway",
+            gpl_civic_gateway::id(),
+            // processor!(gpl_civic_gateway::entry),
+            None,
+        );
+        program_test.add_program(
+            "solana_gateway",
             Pubkey::from_str("gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs").unwrap(),
+            // processor!(solana_gateway::processor::process_instruction),
             None,
         );
     }
@@ -240,7 +246,6 @@ impl GatewayVoterTest {
         let registrar_cookie = self
             .with_registrar(&realm_cookie, &gateway_cookie, predecessor_program_id)
             .await?;
-        //
         let voter_cookie = self.bench.with_wallet().await;
         let gateway_token_cookie = self
             .with_gateway_token(&gateway_cookie, &voter_cookie)

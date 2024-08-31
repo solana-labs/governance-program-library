@@ -17,6 +17,7 @@ pub struct ConfigureRegistrar<'info> {
     /// Realm is validated in the instruction:
     /// - Realm is owned by the governance_program_id
     /// - realm_authority is realm.authority
+    ///
     /// CHECK: Owned by spl-governance instance specified in governance_program_id
     #[account(
         address = registrar.realm @ GatewayError::InvalidRealmForRegistrar,
@@ -50,7 +51,7 @@ pub fn configure_registrar(
     registrar.previous_voter_weight_plugin_program_id = use_previous_voter_weight_plugin
         .then(|| {
             remaining_accounts
-                .get(0)
+                .first()
                 .ok_or(GatewayError::MissingPreviousVoterWeightPlugin)
                 .map(|account| account.key)
         })

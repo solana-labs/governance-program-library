@@ -31,6 +31,7 @@ pub struct CreateRegistrar<'info> {
     /// - Realm is owned by the governance_program_id
     /// - governing_token_mint must be the community or council mint
     /// - realm_authority is realm.authority
+    ///
     /// CHECK: Owned by spl-governance instance specified in governance_program_id
     #[account(owner = governance_program_id.key())]
     pub realm: UncheckedAccount<'info>,
@@ -76,7 +77,7 @@ pub fn create_registrar(
     registrar.previous_voter_weight_plugin_program_id = use_previous_voter_weight_plugin
         .then(|| {
             remaining_accounts
-                .get(0)
+                .first()
                 .ok_or(GatewayError::MissingPreviousVoterWeightPlugin)
                 .map(|account| account.key)
         })

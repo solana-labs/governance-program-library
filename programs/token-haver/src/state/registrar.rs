@@ -33,7 +33,7 @@ pub struct Registrar {
 
 impl Registrar {
     pub fn get_space(max_mints: u8) -> usize {
-        DISCRIMINATOR_SIZE + PUBKEY_BYTES * 3 + max_mints as usize * (PUBKEY_BYTES + 8)
+        DISCRIMINATOR_SIZE + PUBKEY_BYTES * 3 + 4 + max_mints as usize * PUBKEY_BYTES
     }
 }
 

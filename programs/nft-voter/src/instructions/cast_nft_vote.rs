@@ -50,8 +50,8 @@ pub struct CastNftVote<'info> {
 }
 
 /// Casts vote with the NFT
-pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
-    ctx: Context<'a, 'b, 'c, 'info, CastNftVote<'info>>,
+pub fn cast_nft_vote<'info>(
+    ctx: Context<'_, '_, '_, 'info, CastNftVote<'info>>,
     proposal: Pubkey,
 ) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
@@ -82,7 +82,7 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
             &mut unique_nft_mints,
         )?;
 
-        voter_weight = voter_weight.checked_add(nft_vote_weight as u64).unwrap();
+        voter_weight = voter_weight.checked_add(nft_vote_weight).unwrap();
 
         // Create NFT vote record to ensure the same NFT hasn't been already used for voting
         // Note: The correct PDA of the NftVoteRecord is validated in create_and_serialize_account_signed
