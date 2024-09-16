@@ -14,11 +14,14 @@ pub struct VotingMintConfig {
     /// Number of digits to shift native amounts, applying a 10^digit_shift factor.
     pub digit_shift: i8,
 
+    // The mint_supply is used to calculate the vote weight
+    pub mint_supply: u64,
+
     // Empty bytes for future upgrades.
-    pub reserved1: [u8; 63],
+    pub reserved1: [u8; 55],
 }
 
-const_assert!(std::mem::size_of::<VotingMintConfig>() == 32 + 1 + 63);
+const_assert!(std::mem::size_of::<VotingMintConfig>() == 32 + 1 + 8 + 55);
 const_assert!(std::mem::size_of::<VotingMintConfig>() % 8 == 0);
 
 impl VotingMintConfig {

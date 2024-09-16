@@ -155,13 +155,13 @@ pub fn deposit<'key, 'accounts, 'remaining, 'info>(
                 is_used: true,
                 reserved: [0; 38],
             };
-            voter.deposits.push(deposit_entry);
+            voter.deposits[mint_idx] = deposit_entry;
         }
     }
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
-    let governance_program_id = ctx.accounts.token_owner_record.owner;
+    let governance_program_id = &ctx.accounts.registrar.governance_program_id;
 
     let token_owner_record = token_owner_record::get_token_owner_record_data(
         governance_program_id,
