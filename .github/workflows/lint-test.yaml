@@ -71,13 +71,5 @@ jobs:
           echo Generating keypair...
           solana-keygen new -o "$HOME/.config/solana/id.json" --no-passphrase --silent
 
-      - name: Install SBF tools
-        # Note: as a workaround for cargo build-sbf issue run it and ignore errors to install the sbf tools
-        # https://github.com/solana-labs/solana/issues/26583
-        run: cargo build-sbf || true
-
-      - name: Build dependencies
-        run: cargo build-sbf
-
-      - name: Run sbf tests
+      - name: Run SBF tests
         run: cargo test-sbf
