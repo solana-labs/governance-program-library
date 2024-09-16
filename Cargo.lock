@@ -711,23 +711,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
 
 [[package]]
-name = "bonk-plugin"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
- "borsh 0.10.3",
- "gpl-shared",
- "itertools 0.10.5",
- "solana-program",
- "solana-program-test",
- "solana-sdk",
- "spl-governance",
- "spl-governance-tools",
- "spl-token",
-]
-
-[[package]]
 name = "borsh"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
