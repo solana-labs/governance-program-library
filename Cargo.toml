@@ -5,6 +5,7 @@ members = [
     "programs/realm-voter",
     "programs/nft-voter",
     "programs/token-haver",
+    "programs/bonk-plugin",
 ]
 
 [profile.release]
