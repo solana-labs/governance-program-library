@@ -6,7 +6,7 @@ use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
 use spl_governance::{
     instruction::{
         create_governance, create_proposal, create_realm, create_token_owner_record,
-        deposit_governing_tokens, relinquish_vote, sign_off_proposal, 
+        deposit_governing_tokens, relinquish_vote, sign_off_proposal,
     },
     state::{
         enums::{
@@ -124,7 +124,7 @@ impl GovernanceTest {
             None,
             realm_name.clone(),
             min_community_weight_to_create_governance,
-            community_mint_max_voter_weight_source.clone()
+            community_mint_max_voter_weight_source.clone(),
         );
 
         self.bench
@@ -166,7 +166,11 @@ impl GovernanceTest {
     ) -> Result<ProposalCookie, TransportError> {
         let token_account_cookie = self
             .bench
-            .with_token_account(&realm_cookie.account.community_mint, &MintType::SplToken, true)
+            .with_token_account(
+                &realm_cookie.account.community_mint,
+                &MintType::SplToken,
+                true,
+            )
             .await?;
 
         let token_owner = self.bench.payer.pubkey();
@@ -175,7 +179,13 @@ impl GovernanceTest {
 
         let governing_token_account_cookie = self
             .bench
-            .with_tokens(council_mint_cookie, &token_owner, 2, &MintType::SplToken, true)
+            .with_tokens(
+                council_mint_cookie,
+                &token_owner,
+                2,
+                &MintType::SplToken,
+                true,
+            )
             .await?;
 
         let proposal_owner_record_key = get_token_owner_record_address(
@@ -196,7 +206,7 @@ impl GovernanceTest {
         self.bench
             .process_transaction(&[create_tor_ix], None)
             .await?;
-        
+
         let deposit_ix = deposit_governing_tokens(
             &self.program_id,
             &realm_cookie.address,
@@ -452,7 +462,6 @@ impl GovernanceTest {
         max_voter_weight_record: &Pubkey,
         token_owner_record_cookie: &TokenOwnerRecordCookie,
     ) -> Result<(), TransportError> {
-
         let instructions = vec![spl_governance::instruction::cast_vote(
             &self.program_id,
             &realm_cookie.address,

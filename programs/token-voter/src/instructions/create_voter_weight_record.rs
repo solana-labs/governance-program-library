@@ -40,9 +40,7 @@ pub struct CreateVoterWeightRecord<'info> {
     pub instructions: UncheckedAccount<'info>,
 }
 
-pub fn create_voter_weight_record(
-    ctx: Context<CreateVoterWeightRecord>,
-) -> Result<()> {
+pub fn create_voter_weight_record(ctx: Context<CreateVoterWeightRecord>) -> Result<()> {
     // Forbid creating voter accounts from CPI. The goal is to make automation
     // impossible that weakens some of the limitations intentionally imposed on
     // tokens.
@@ -69,7 +67,8 @@ pub fn create_voter_weight_record(
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
-    voter_weight_record.account_discriminator = spl_governance_addin_api::voter_weight::VoterWeightRecord::ACCOUNT_DISCRIMINATOR;
+    voter_weight_record.account_discriminator =
+        spl_governance_addin_api::voter_weight::VoterWeightRecord::ACCOUNT_DISCRIMINATOR;
     voter_weight_record.realm = registrar.realm.key();
     voter_weight_record.governing_token_mint = registrar.governing_token_mint.key();
     voter_weight_record.governing_token_owner = voter_authority.key();

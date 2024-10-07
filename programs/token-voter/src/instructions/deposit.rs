@@ -137,7 +137,7 @@ pub fn deposit<'key, 'accounts, 'remaining, 'info>(
                 d_entry.voting_mint_config_idx as usize,
                 TokenVoterError::MintIndexMismatch
             );
-            
+
             d_entry.amount_deposited_native = d_entry
                 .amount_deposited_native
                 .checked_add(deposit_amount)

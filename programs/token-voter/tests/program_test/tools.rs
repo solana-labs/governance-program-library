@@ -1,9 +1,9 @@
 use anchor_lang::prelude::ERROR_CODE_OFFSET;
+use gpl_token_voter::error::TokenVoterError;
 use solana_program::instruction::InstructionError;
 use solana_program_test::BanksClientError;
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
 use spl_governance_tools::error::GovernanceToolsError;
-use gpl_token_voter::error::TokenVoterError;
 
 pub fn clone_keypair(source: &Keypair) -> Keypair {
     Keypair::from_bytes(&source.to_bytes()).unwrap()
@@ -80,10 +80,7 @@ pub fn assert_ix_err(banks_client_error: BanksClientError, ix_error: Instruction
 }
 
 #[allow(dead_code)]
-pub fn assert_ix_err_transport(
-    banks_client_error: TransportError,
-    ix_error: InstructionError
-) {
+pub fn assert_ix_err_transport(banks_client_error: TransportError, ix_error: InstructionError) {
     let tx_error = banks_client_error.unwrap();
 
     match tx_error {

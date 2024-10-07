@@ -53,7 +53,7 @@ pub enum TokenVoterError {
     /// Token Mint account doesn't exist
     #[msg("Token Mint account doesn't exist")]
     SplTokenMintDoesNotExist,
-    
+
     /// Account data is empty or invalid
     #[msg("Account Data is empty or invalid")]
     InvalidAccountData,
@@ -96,7 +96,7 @@ pub enum TokenVoterError {
 
     #[msg("Resizing Max Mints cannot be smaller than Configure Mint Configs")]
     InvalidResizeMaxMints,
-    
+
     #[msg("Mint Index mismatch!")]
     MintIndexMismatch,
 }

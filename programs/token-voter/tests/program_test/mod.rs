@@ -2,8 +2,8 @@ pub mod governance_test;
 pub mod program_test_bench;
 pub mod token_voter_test;
 pub mod tools;
-use std::{sync::Arc, sync::RwLock};
 use log::*;
+use std::{sync::Arc, sync::RwLock};
 
 #[derive(Default, Clone)]
 pub struct ProgramOutput {

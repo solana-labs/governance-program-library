@@ -4,12 +4,22 @@ use anchor_lang::{
     prelude::{Pubkey, Rent},
     AccountDeserialize,
 };
-use anchor_spl::associated_token::{get_associated_token_address, spl_associated_token_account::instruction::create_associated_token_account};
+use anchor_spl::associated_token::{
+    get_associated_token_address,
+    spl_associated_token_account::instruction::create_associated_token_account,
+};
 #[allow(deprecated)]
 use solana_program::{borsh::try_from_slice_unchecked, system_program};
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
-    account::{Account, ReadableAccount}, instruction::Instruction, program_pack::Pack, signature::Keypair, signer::Signer, system_instruction, transaction::Transaction, transport::TransportError
+    account::{Account, ReadableAccount},
+    instruction::Instruction,
+    program_pack::Pack,
+    signature::Keypair,
+    signer::Signer,
+    system_instruction,
+    transaction::Transaction,
+    transport::TransportError,
 };
 
 use borsh::BorshDeserialize;
@@ -164,16 +174,15 @@ impl ProgramTestBench {
         owner: &Pubkey,
         amount: u64,
     ) -> Result<TokenAccountCookie, TransportError> {
-        
-        let create_ata_account =
-        create_associated_token_account(
+        let create_ata_account = create_associated_token_account(
             &self.context.borrow().payer.pubkey(),
             owner,
             &mint_cookie.address,
             &spl_token::id(),
         );
         let token_account_address = get_associated_token_address(owner, &mint_cookie.address);
-        self.process_transaction(&[create_ata_account], None).await?;
+        self.process_transaction(&[create_ata_account], None)
+            .await?;
         self.mint_tokens(
             &mint_cookie.address,
             &mint_cookie.mint_authority,
@@ -308,7 +317,6 @@ impl ProgramTestBench {
         AccountDeserialize::try_deserialize(&mut data_slice).unwrap()
     }
 }
-
 
 #[allow(dead_code)]
 pub async fn airdrop(

@@ -4,11 +4,11 @@ use anchor_lang::prelude::{ErrorCode, Pubkey};
 use gpl_token_voter::error::TokenVoterError;
 use program_test::token_voter_test::TokenVoterTest;
 
+use crate::program_test::program_test_bench::MintType;
+use program_test::tools::{assert_anchor_err, assert_ix_err, assert_token_voter_err};
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, transport::TransportError};
-use crate::program_test::program_test_bench::MintType;
-use program_test::tools::{assert_anchor_err, assert_ix_err, assert_token_voter_err};
 
 #[tokio::test]
 async fn test_create_registrar_with_token_extensions() -> Result<(), TransportError> {
@@ -65,7 +65,7 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
         .err()
         .unwrap();
 
-        assert_token_voter_err(err, TokenVoterError::InvalidRealmAuthority);
+    assert_token_voter_err(err, TokenVoterError::InvalidRealmAuthority);
 
     Ok(())
 }
@@ -153,7 +153,10 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
 
     let realm_cookie = token_voter_test.governance.with_realm().await?;
 
-    let mint_cookie = token_voter_test.bench.with_mint(&MintType::SplToken, None).await?;
+    let mint_cookie = token_voter_test
+        .bench
+        .with_mint(&MintType::SplToken, None)
+        .await?;
 
     // Act
     let err = token_voter_test

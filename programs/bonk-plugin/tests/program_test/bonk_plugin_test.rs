@@ -46,7 +46,6 @@ pub struct BonkPluginTest {
     pub governance: GovernanceTest,
 }
 
-
 impl BonkPluginTest {
     #[allow(dead_code)]
     pub fn add_program(program_test: &mut ProgramTest) {
@@ -251,7 +250,7 @@ impl BonkPluginTest {
         action: VoterWeightAction,
         proposal: Option<Pubkey>,
         voter_authority: &Keypair,
-        governance_key: Pubkey
+        governance_key: Pubkey,
     ) -> Result<Instruction, BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_bonk_plugin::instruction::UpdateVoterWeightRecord {
@@ -291,7 +290,6 @@ impl BonkPluginTest {
 
         Ok(instruction)
     }
-
 
     #[allow(dead_code)]
     pub async fn get_registrar_account(&mut self, registrar: &Pubkey) -> Registrar {

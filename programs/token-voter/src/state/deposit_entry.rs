@@ -1,12 +1,9 @@
-use {
-    crate::state::VotingMintConfig,
-    anchor_lang::prelude::*
-};
+use {crate::state::VotingMintConfig, anchor_lang::prelude::*};
 
 /// Bookkeeping for a single deposit for a given mint.
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq)]
 pub struct DepositEntry {
-    /// Amount in deposited, in native currency. 
+    /// Amount in deposited, in native currency.
     /// Withdraws directly reduce this amount.
     ///
     /// This directly tracks the total amount added by the user. They may
@@ -34,8 +31,7 @@ impl DepositEntry {
     /// Voting Power Caclulation
     /// Returns the voting power for the deposit.
     pub fn voting_power(&self, mint_config: &VotingMintConfig) -> Result<u64> {
-        let vote_weight =
-            mint_config.digit_shift_native(self.amount_deposited_native)?;
+        let vote_weight = mint_config.digit_shift_native(self.amount_deposited_native)?;
 
         Ok(vote_weight)
     }

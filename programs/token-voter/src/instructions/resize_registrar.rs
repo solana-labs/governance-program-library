@@ -33,7 +33,7 @@ pub struct ResizeRegistrar<'info> {
     /// - Realm is owned by the governance_program_id
     /// - governing_token_mint must be the community or council mint
     /// - realm_authority is realm.authority
-    /// 
+    ///
     /// CHECK: Owned by spl-governance instance specified in governance_program_id
     #[account(owner = governance_program_id.key())]
     pub realm: UncheckedAccount<'info>,
@@ -81,7 +81,6 @@ pub fn resize_registrar(ctx: Context<ResizeRegistrar>, max_mints: u8) -> Result<
         ctx.accounts.realm_authority.key(),
         TokenVoterError::InvalidRealmAuthority
     );
-    
 
     Ok(())
 }

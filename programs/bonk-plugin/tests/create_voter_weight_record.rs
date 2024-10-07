@@ -15,9 +15,13 @@ async fn test_create_voter_weight_record() -> Result<(), TransportError> {
 
     // Act
     let mut spl_token_staking_cookie = SplTokenStakingCookie::new(bonk_plugin_test.bench.clone());
-    let stake_pool_pubkey = spl_token_staking_cookie.with_stake_pool(&realm_cookie.community_mint_cookie.address).await?;
-    let registrar_cookie = bonk_plugin_test.with_registrar(&realm_cookie, &stake_pool_pubkey).await?;
-    
+    let stake_pool_pubkey = spl_token_staking_cookie
+        .with_stake_pool(&realm_cookie.community_mint_cookie.address)
+        .await?;
+    let registrar_cookie = bonk_plugin_test
+        .with_registrar(&realm_cookie, &stake_pool_pubkey)
+        .await?;
+
     let voter_cookie = bonk_plugin_test.bench.with_wallet().await;
 
     // Act
@@ -44,9 +48,12 @@ async fn test_create_voter_weight_record_with_already_exists_error() -> Result<(
     let realm_cookie = bonk_plugin_test.governance.with_realm().await?;
     // Act
     let mut spl_token_staking_cookie = SplTokenStakingCookie::new(bonk_plugin_test.bench.clone());
-    let stake_pool_pubkey = spl_token_staking_cookie.with_stake_pool(&realm_cookie.community_mint_cookie.address).await?;
-    let registrar_cookie = bonk_plugin_test.with_registrar(&realm_cookie, &stake_pool_pubkey).await?;
-    
+    let stake_pool_pubkey = spl_token_staking_cookie
+        .with_stake_pool(&realm_cookie.community_mint_cookie.address)
+        .await?;
+    let registrar_cookie = bonk_plugin_test
+        .with_registrar(&realm_cookie, &stake_pool_pubkey)
+        .await?;
 
     let voter_cookie = bonk_plugin_test.bench.with_wallet().await;
 
