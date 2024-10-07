@@ -69,7 +69,6 @@ async fn test_create_max_voter_weight_record() -> Result<(), TransportError> {
     Ok(())
 }
 
-
 #[tokio::test]
 async fn test_create_max_voter_weight_record_with_already_exists_error(
 ) -> Result<(), TransportError> {

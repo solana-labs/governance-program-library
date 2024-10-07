@@ -10,7 +10,7 @@ macro_rules! vote_weight_record {
             pub fn get_space() -> usize {
                 8 + 32 * 4 + 8 + 1 + 8 + 1 + 1 + 1 + 8
             }
-            
+
             pub fn new(
                 realm: Pubkey,
                 governing_token_mint: Pubkey,
@@ -97,7 +97,6 @@ macro_rules! vote_weight_record {
     };
 }
 
-
 /// A macro is exposed so that we can embed the program ID.
 #[macro_export]
 macro_rules! max_voter_weight_record {
@@ -105,7 +104,7 @@ macro_rules! max_voter_weight_record {
         /// Anchor wrapper for the SPL governance program's MaxVoterWeightRecord type.
         #[derive(Clone)]
         pub struct MaxVoterWeightRecord(spl_governance_addin_api::max_voter_weight::MaxVoterWeightRecord);
-        
+
         impl MaxVoterWeightRecord {
             pub fn get_space() -> usize {
                 8 + 32 * 2 + 8 + 1 + 8 + 8

@@ -38,7 +38,7 @@ pub struct CloseVoter<'info> {
 /// Closes the voter account (Optionally, also token vaults, as part of remaining_accounts),
 /// allowing one to retrieve rent exemption SOL.
 /// Only accounts with no remaining deposits can be closed.
-/// 
+///
 /// Tokens must be withdrawn first to be able to close voter and close the token accounts.
 pub fn close_voter<'key, 'accounts, 'remaining, 'info>(
     ctx: Context<'key, 'accounts, 'remaining, 'info, CloseVoter<'info>>,

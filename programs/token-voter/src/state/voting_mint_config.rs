@@ -10,7 +10,7 @@ use std::convert::TryFrom;
 pub struct VotingMintConfig {
     /// Mint for this entry.
     pub mint: Pubkey,
-    
+
     /// Number of digits to shift native amounts, applying a 10^digit_shift factor.
     pub digit_shift: i8,
 

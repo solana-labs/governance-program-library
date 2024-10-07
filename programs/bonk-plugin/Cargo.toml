@@ -1,0 +1,33 @@
+[package]
+name = "bonk-plugin"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "gpl_bonk_plugin"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = { version = "0.30.1", features = ["init-if-needed"] }
+anchor-spl = "=0.30.1"
+spl-governance = { version = "4.0.0", features = ["no-entrypoint"] }
+spl-governance-tools =  "0.1.4"
+solana-program = "1.18.18"
+itertools = "0.10.2"
+gpl-shared = { path = "../shared", features = ["no-entrypoint"] }
+spl-token = { version = "4.0.0", features = [ "no-entrypoint" ] }
+
+[dev-dependencies]
+borsh = "0.10.3"
+solana-sdk = "1.18.18"
+solana-program-test = "1.18.18"
+bytemuck = { version = "1.7", features = ["derive"] }
