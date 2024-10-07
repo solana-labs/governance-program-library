@@ -4,7 +4,7 @@ members = [
     "programs/quadratic",
     "programs/realm-voter",
     "programs/nft-voter",
-    "programs/token-haver",
+    "programs/token-voter",
     "programs/bonk-plugin",
 ]
 

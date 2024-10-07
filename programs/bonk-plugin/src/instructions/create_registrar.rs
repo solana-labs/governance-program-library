@@ -14,7 +14,7 @@ use crate::{
 #[instruction()]
 pub struct CreateRegistrar<'info> {
   #[account(
-    init_if_needed,
+    init,
     seeds = [
       b"registrar".as_ref(),
       realm.key().as_ref(),

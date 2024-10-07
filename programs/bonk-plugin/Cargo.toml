@@ -30,4 +30,4 @@ spl-token = { version = "4.0.0", features = [ "no-entrypoint" ] }
 borsh = "0.10.3"
 solana-sdk = "1.18.18"
 solana-program-test = "1.18.18"
-
+bytemuck = { version = "1.7", features = ["derive"] }

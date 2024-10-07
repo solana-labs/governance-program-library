@@ -3,6 +3,7 @@ use gpl_bonk_plugin::error::BonkPluginError;
 use solana_program::instruction::InstructionError;
 use solana_program_test::BanksClientError;
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
+use spl_governance::error::GovernanceError;
 use spl_governance_tools::error::GovernanceToolsError;
 
 pub fn clone_keypair(source: &Keypair) -> Keypair {
@@ -14,16 +15,16 @@ pub fn clone_keypair(source: &Keypair) -> Keypair {
 pub fn NopOverride<T>(_: &mut T) {}
 
 #[allow(dead_code)]
-pub fn assert_realm_voter_err(
+pub fn assert_bonks_plugin_err(
     banks_client_error: BanksClientError,
-    realm_voter_error: BonkPluginError,
+    bonks_plugin_error: BonkPluginError,
 ) {
     let tx_error = banks_client_error.unwrap();
 
     match tx_error {
         TransactionError::InstructionError(_, instruction_error) => match instruction_error {
             InstructionError::Custom(e) => {
-                assert_eq!(e, realm_voter_error as u32 + ERROR_CODE_OFFSET)
+                assert_eq!(e, bonks_plugin_error as u32 + ERROR_CODE_OFFSET)
             }
             _ => panic!("{:?} Is not InstructionError::Custom()", instruction_error),
         },
@@ -49,6 +50,20 @@ pub fn assert_gov_tools_err(
     };
 }
 
+#[allow(dead_code)]
+pub fn assert_gov_err(banks_client_error: TransportError, gov_error: GovernanceError) {
+    let tx_error = banks_client_error.unwrap();
+
+    match tx_error {
+        TransactionError::InstructionError(_, instruction_error) => match instruction_error {
+            InstructionError::Custom(e) => {
+                assert_eq!(e, gov_error as u32)
+            }
+            _ => panic!("{:?} Is not InstructionError::Custom()", instruction_error),
+        },
+        _ => panic!("{:?} Is not InstructionError", tx_error),
+    };
+}
 #[allow(dead_code)]
 pub fn assert_anchor_err(
     banks_client_error: BanksClientError,

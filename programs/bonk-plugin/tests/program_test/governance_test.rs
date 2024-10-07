@@ -2,7 +2,9 @@ use std::{str::FromStr, sync::Arc};
 
 use anchor_lang::prelude::Pubkey;
 use solana_program_test::ProgramTest;
-use solana_sdk::{signature::Keypair, signer::Signer, transport::TransportError};
+use solana_sdk::{
+    instruction::Instruction, signature::Keypair, signer::Signer, transport::TransportError,
+};
 use spl_governance::{
     instruction::{
         create_governance, create_proposal, create_realm, create_token_owner_record,
@@ -14,12 +16,13 @@ use spl_governance::{
             VoteTipping,
         },
         governance::get_governance_address,
-        proposal::{get_proposal_address, ProposalV2},
+        proposal::ProposalV2,
         realm::{get_realm_address, GoverningTokenConfigAccountArgs, RealmConfig, RealmV2},
         realm_config::GoverningTokenType,
         token_owner_record::{
             get_token_owner_record_address, TokenOwnerRecordV2, TOKEN_OWNER_RECORD_LAYOUT_VERSION,
         },
+        vote_record,
     },
 };
 
@@ -27,6 +30,8 @@ use crate::program_test::{
     program_test_bench::{MintCookie, ProgramTestBench, WalletCookie},
     tools::clone_keypair,
 };
+
+use super::{bonk_plugin_test::VoterWeightRecordCookie, program_test_bench::TokenAccountCookie};
 
 pub struct RealmCookie {
     pub address: Pubkey,
@@ -57,7 +62,6 @@ pub struct GovernanceTest {
     pub bench: Arc<ProgramTestBench>,
     pub next_id: u8,
     pub community_voter_weight_addin: Option<Pubkey>,
-    pub max_community_voter_weight_addin: Option<Pubkey>,
 }
 
 impl GovernanceTest {
@@ -71,17 +75,12 @@ impl GovernanceTest {
     }
 
     #[allow(dead_code)]
-    pub fn new(
-        bench: Arc<ProgramTestBench>,
-        community_voter_weight_addin: Option<Pubkey>,
-        max_community_voter_weight_addin: Option<Pubkey>,
-    ) -> Self {
+    pub fn new(bench: Arc<ProgramTestBench>, community_voter_weight_addin: Option<Pubkey>) -> Self {
         GovernanceTest {
             bench,
             program_id: Self::program_id(),
             next_id: 0,
             community_voter_weight_addin,
-            max_community_voter_weight_addin,
         }
     }
 
@@ -102,7 +101,7 @@ impl GovernanceTest {
 
         let community_token_config_args = GoverningTokenConfigAccountArgs {
             voter_weight_addin: self.community_voter_weight_addin,
-            max_voter_weight_addin: self.community_voter_weight_addin,
+            max_voter_weight_addin: None,
             token_type: GoverningTokenType::default(),
         };
 
@@ -155,15 +154,16 @@ impl GovernanceTest {
     pub async fn with_proposal(
         &mut self,
         realm_cookie: &RealmCookie,
+        voter_weight_record: &VoterWeightRecordCookie,
+        token_owner_keypair: &Keypair,
+        update_voter_weight_record_create_proposal_ix: Instruction,
+        proposal_seed: &Pubkey,
+        proposal_key: &Pubkey,
+        token_account_cookie: TokenAccountCookie,
     ) -> Result<ProposalCookie, TransportError> {
-        let token_account_cookie = self
-            .bench
-            .with_token_account(&realm_cookie.account.community_mint)
-            .await?;
-
-        let token_owner = self.bench.payer.pubkey();
+        let token_owner = token_owner_keypair.pubkey();
         let council_mint_cookie = realm_cookie.council_mint_cookie.as_ref().unwrap();
-        let governing_token_mint = council_mint_cookie.address;
+        let governing_token_mint: Pubkey = council_mint_cookie.address;
 
         let governing_token_account_cookie = self
             .bench
@@ -180,13 +180,13 @@ impl GovernanceTest {
         let create_tor_ix = create_token_owner_record(
             &self.program_id,
             &realm_cookie.address,
-            &self.bench.payer.pubkey(),
+            &token_owner_keypair.pubkey(),
             &governing_token_mint,
-            &self.bench.payer.pubkey(),
+            &token_owner_keypair.pubkey(),
         );
 
         self.bench
-            .process_transaction(&[create_tor_ix], None)
+            .process_transaction(&[create_tor_ix], Some(&[&token_owner_keypair]))
             .await?;
 
         let deposit_ix = deposit_governing_tokens(
@@ -200,7 +200,9 @@ impl GovernanceTest {
             &governing_token_mint,
         );
 
-        self.bench.process_transaction(&[deposit_ix], None).await?;
+        self.bench
+            .process_transaction(&[deposit_ix], Some(&[&token_owner_keypair]))
+            .await?;
 
         let governance_key = get_governance_address(
             &self.program_id,
@@ -215,7 +217,7 @@ impl GovernanceTest {
             &proposal_owner_record_key,
             &self.bench.payer.pubkey(),
             &realm_cookie.realm_authority.pubkey(),
-            None,
+            Some(voter_weight_record.address),
             spl_governance::state::governance::GovernanceConfig {
                 min_community_weight_to_create_proposal: 1,
                 min_transaction_hold_up_time: 0,
@@ -238,17 +240,7 @@ impl GovernanceTest {
                 Some(&[&realm_cookie.realm_authority]),
             )
             .await?;
-
         let proposal_governing_token_mint = realm_cookie.account.community_mint;
-        let proposal_seed = Pubkey::new_unique();
-
-        let proposal_key = get_proposal_address(
-            &self.program_id,
-            &governance_key,
-            &proposal_governing_token_mint,
-            &proposal_seed,
-        );
-
         let create_proposal_ix = create_proposal(
             &self.program_id,
             &governance_key,
@@ -276,7 +268,14 @@ impl GovernanceTest {
         );
 
         self.bench
-            .process_transaction(&[create_proposal_ix, sign_off_proposal_ix], None)
+            .process_transaction(
+                &[
+                    update_voter_weight_record_create_proposal_ix,
+                    create_proposal_ix,
+                    sign_off_proposal_ix,
+                ],
+                Some(&[&token_owner_keypair]),
+            )
             .await?;
 
         let account = ProposalV2 {
@@ -311,7 +310,7 @@ impl GovernanceTest {
         };
 
         Ok(ProposalCookie {
-            address: proposal_key,
+            address: *proposal_key,
             account,
         })
     }
@@ -360,6 +359,52 @@ impl GovernanceTest {
             address: token_owner_record_key,
             account,
         })
+    }
+
+    #[allow(dead_code)]
+    pub async fn cast_vote(
+        &self,
+        realm_cookie: &RealmCookie,
+        proposal: &ProposalCookie,
+        authority: &Keypair,
+        payer: &Keypair,
+        voter_weight_record: &Option<Pubkey>,
+        max_voter_weight_record: &Option<Pubkey>,
+        token_owner_record_cookie: &TokenOwnerRecordCookie,
+        update_voter_weight_record_cast_vote_ix: Option<Instruction>,
+    ) -> Result<(), TransportError> {
+        let cast_voter_instruction = spl_governance::instruction::cast_vote(
+            &self.program_id,
+            &realm_cookie.address,
+            &proposal.account.governance,
+            &proposal.address,
+            &proposal.account.token_owner_record,
+            &token_owner_record_cookie.address,
+            &authority.pubkey(),
+            &realm_cookie.account.community_mint,
+            &payer.pubkey(),
+            *voter_weight_record,
+            *max_voter_weight_record,
+            vote_record::Vote::Approve(vec![vote_record::VoteChoice {
+                rank: 0,
+                weight_percentage: 100,
+            }]),
+        );
+
+        let signer1 = Keypair::from_base58_string(&payer.to_base58_string());
+        let signer2 = Keypair::from_base58_string(&authority.to_base58_string());
+        let mut instructions = vec![cast_voter_instruction.clone()];
+        if update_voter_weight_record_cast_vote_ix.is_some() {
+            instructions = vec![
+                update_voter_weight_record_cast_vote_ix.unwrap(),
+                cast_voter_instruction,
+            ];
+        }
+        self.bench
+            .process_transaction(&instructions, Some(&[&signer1, &signer2]))
+            .await?;
+
+        Ok(())
     }
 
     #[allow(dead_code)]

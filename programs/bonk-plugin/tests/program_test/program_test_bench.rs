@@ -4,18 +4,12 @@ use anchor_lang::{
     prelude::{Pubkey, Rent},
     AccountDeserialize,
 };
-
+use anchor_spl::associated_token::{get_associated_token_address, spl_associated_token_account::instruction::create_associated_token_account};
+#[allow(deprecated)]
 use solana_program::{borsh::try_from_slice_unchecked, system_program};
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
-    account::{Account, ReadableAccount},
-    instruction::Instruction,
-    program_pack::Pack,
-    signature::Keypair,
-    signer::Signer,
-    system_instruction,
-    transaction::Transaction,
-    transport::TransportError,
+    account::{Account, ReadableAccount}, instruction::Instruction, program_pack::Pack, signature::Keypair, signer::Signer, system_instruction, transaction::Transaction, transport::TransportError
 };
 
 use borsh::BorshDeserialize;
@@ -25,7 +19,6 @@ use crate::program_test::tools::clone_keypair;
 pub struct MintCookie {
     pub address: Pubkey,
     pub mint_authority: Keypair,
-    pub freeze_authority: Option<Keypair>,
 }
 pub struct TokenAccountCookie {
     pub address: Pubkey,
@@ -34,8 +27,6 @@ pub struct TokenAccountCookie {
 #[derive(Debug)]
 pub struct WalletCookie {
     pub address: Pubkey,
-    pub account: Account,
-
     pub signer: Keypair,
 }
 
@@ -111,7 +102,6 @@ impl ProgramTestBench {
     pub async fn with_mint(&self) -> Result<MintCookie, TransportError> {
         let mint_keypair = Keypair::new();
         let mint_authority = Keypair::new();
-        let freeze_authority = Keypair::new();
 
         self.create_mint(&mint_keypair, &mint_authority.pubkey(), None)
             .await?;
@@ -119,7 +109,6 @@ impl ProgramTestBench {
         Ok(MintCookie {
             address: mint_keypair.pubkey(),
             mint_authority,
-            freeze_authority: Some(freeze_authority),
         })
     }
 
@@ -175,21 +164,26 @@ impl ProgramTestBench {
         owner: &Pubkey,
         amount: u64,
     ) -> Result<TokenAccountCookie, TransportError> {
-        let token_account_keypair = Keypair::new();
-
-        self.create_token_account(&token_account_keypair, &mint_cookie.address, owner)
-            .await?;
-
+        
+        let create_ata_account =
+        create_associated_token_account(
+            &self.context.borrow().payer.pubkey(),
+            owner,
+            &mint_cookie.address,
+            &spl_token::id(),
+        );
+        let token_account_address = get_associated_token_address(owner, &mint_cookie.address);
+        self.process_transaction(&[create_ata_account], None).await?;
         self.mint_tokens(
             &mint_cookie.address,
             &mint_cookie.mint_authority,
-            &token_account_keypair.pubkey(),
+            &token_account_address,
             amount,
         )
         .await?;
 
         Ok(TokenAccountCookie {
-            address: token_account_keypair.pubkey(),
+            address: token_account_address,
         })
     }
 
@@ -269,17 +263,8 @@ impl ProgramTestBench {
             .await
             .unwrap();
 
-        let account = Account {
-            lamports: account_rent,
-            data: vec![],
-            owner: system_program::id(),
-            executable: false,
-            rent_epoch: 0,
-        };
-
         WalletCookie {
             address: account_keypair.pubkey(),
-            account,
             signer: account_keypair,
         }
     }
@@ -296,6 +281,7 @@ impl ProgramTestBench {
 
     #[allow(dead_code)]
     pub async fn get_borsh_account<T: BorshDeserialize>(&self, address: &Pubkey) -> T {
+        #[allow(deprecated)]
         self.get_account(address)
             .await
             .map(|a| try_from_slice_unchecked(&a.data).unwrap())
@@ -321,4 +307,28 @@ impl ProgramTestBench {
         let mut data_slice: &[u8] = &data;
         AccountDeserialize::try_deserialize(&mut data_slice).unwrap()
     }
+}
+
+
+#[allow(dead_code)]
+pub async fn airdrop(
+    context: &mut ProgramTestContext,
+    receiver: &Pubkey,
+    amount: u64,
+) -> Result<(), BanksClientError> {
+    let block_hash = context.banks_client.get_latest_blockhash().await.unwrap();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[system_instruction::transfer(
+            &context.payer.pubkey(),
+            receiver,
+            amount,
+        )],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        block_hash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+    Ok(())
 }

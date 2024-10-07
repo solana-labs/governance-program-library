@@ -1,26 +1,28 @@
 mod program_test;
 
 use anchor_lang::prelude::{ErrorCode, Pubkey};
-use program_test::realm_voter_test::RealmVoterTest;
+use program_test::{bonk_plugin_test::BonkPluginTest, spl_token_staking_test::SplTokenStakingCookie};
 
 use solana_program::instruction::InstructionError;
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, transport::TransportError};
 
-use program_test::tools::{assert_anchor_err, assert_ix_err, assert_realm_voter_err};
+use program_test::tools::{assert_anchor_err, assert_ix_err, assert_bonks_plugin_err};
 
 #[tokio::test]
 async fn test_create_registrar() -> Result<(), TransportError> {
     // Arrange
-    let mut realm_voter_test = RealmVoterTest::start_new().await;
+    let mut bonk_plugin_test = BonkPluginTest::start_new().await;
 
-    let realm_cookie = realm_voter_test.governance.with_realm().await?;
-
+    let realm_cookie = bonk_plugin_test.governance.with_realm().await?;
+    
     // Act
-    let registrar_cookie = realm_voter_test.with_registrar(&realm_cookie).await?;
-
+    let mut spl_token_staking_cookie = SplTokenStakingCookie::new(bonk_plugin_test.bench.clone());
+    let stake_pool_pubkey = spl_token_staking_cookie.with_stake_pool(&realm_cookie.community_mint_cookie.address).await?;
+    let registrar_cookie = bonk_plugin_test.with_registrar(&realm_cookie, &stake_pool_pubkey).await?;
+    
     // Assert
-    let registrar = realm_voter_test
+    let registrar = bonk_plugin_test
         .get_registrar_account(&registrar_cookie.address)
         .await;
 
@@ -32,19 +34,21 @@ async fn test_create_registrar() -> Result<(), TransportError> {
 #[tokio::test]
 async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<(), TransportError> {
     // Arrange
-    let mut realm_voter_test = RealmVoterTest::start_new().await;
+    let mut bonk_plugin_test = BonkPluginTest::start_new().await;
 
-    let mut realm_cookie = realm_voter_test.governance.with_realm().await?;
+    let mut realm_cookie = bonk_plugin_test.governance.with_realm().await?;
     realm_cookie.realm_authority = Keypair::new();
+    let mut spl_token_staking_cookie = SplTokenStakingCookie::new(bonk_plugin_test.bench.clone());
+    let stake_pool_pubkey = spl_token_staking_cookie.with_stake_pool(&realm_cookie.community_mint_cookie.address).await?;
 
     // Act
-    let err = realm_voter_test
-        .with_registrar(&realm_cookie)
+    let err = bonk_plugin_test
+        .with_registrar(&realm_cookie, &stake_pool_pubkey)
         .await
         .err()
         .unwrap();
 
-    assert_realm_voter_err(err, gpl_bonk_plugin::error::BonkPluginError::InvalidRealmAuthority);
+    assert_bonks_plugin_err(err, gpl_bonk_plugin::error::BonkPluginError::InvalidRealmAuthority);
 
     Ok(())
 }
@@ -53,15 +57,18 @@ async fn test_create_registrar_with_invalid_realm_authority_error() -> Result<()
 async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<(), TransportError>
 {
     // Arrange
-    let mut realm_voter_test = RealmVoterTest::start_new().await;
+    let mut bonk_plugin_test = BonkPluginTest::start_new().await;
 
-    let realm_cookie = realm_voter_test.governance.with_realm().await?;
+    let realm_cookie = bonk_plugin_test.governance.with_realm().await?;
+    let mut spl_token_staking_cookie = SplTokenStakingCookie::new(bonk_plugin_test.bench.clone());
+    let stake_pool_pubkey = spl_token_staking_cookie.with_stake_pool(&realm_cookie.community_mint_cookie.address).await?;
 
     // Act
-    let err = realm_voter_test
+    let err = bonk_plugin_test
         .with_registrar_using_ix(
             &realm_cookie,
-            |i| i.accounts[4].is_signer = false, // realm_authority
+            &stake_pool_pubkey,
+            |i| i.accounts[6].is_signer = false, // realm_authority
             Some(&[]),
         )
         .await
@@ -77,17 +84,20 @@ async fn test_create_registrar_with_realm_authority_must_sign_error() -> Result<
 async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result<(), TransportError>
 {
     // Arrange
-    let mut realm_voter_test = RealmVoterTest::start_new().await;
+    let mut bonk_plugin_test = BonkPluginTest::start_new().await;
 
-    let realm_cookie = realm_voter_test.governance.with_realm().await?;
+    let realm_cookie = bonk_plugin_test.governance.with_realm().await?;
+    let mut spl_token_staking_cookie = SplTokenStakingCookie::new(bonk_plugin_test.bench.clone());
+    let stake_pool_pubkey = spl_token_staking_cookie.with_stake_pool(&realm_cookie.community_mint_cookie.address).await?;   
 
     // Try to use a different program id
-    let governance_program_id = realm_voter_test.program_id;
+    let governance_program_id = bonk_plugin_test.program_id;
 
     // Act
-    let err = realm_voter_test
+    let err = bonk_plugin_test
         .with_registrar_using_ix(
             &realm_cookie,
+            &stake_pool_pubkey,
             |i| i.accounts[1].pubkey = governance_program_id, //governance_program_id
             None,
         )
@@ -103,15 +113,19 @@ async fn test_create_registrar_with_invalid_spl_gov_program_id_error() -> Result
 #[tokio::test]
 async fn test_create_registrar_with_invalid_realm_error() -> Result<(), TransportError> {
     // Arrange
-    let mut realm_voter_test = RealmVoterTest::start_new().await;
+    let mut bonk_plugin_test = BonkPluginTest::start_new().await;
 
-    let realm_cookie = realm_voter_test.governance.with_realm().await?;
+    let realm_cookie = bonk_plugin_test.governance.with_realm().await?;
+
+    let mut spl_token_staking_cookie = SplTokenStakingCookie::new(bonk_plugin_test.bench.clone());
+    let stake_pool_pubkey = spl_token_staking_cookie.with_stake_pool(&realm_cookie.community_mint_cookie.address).await?;   
 
     // Act
-    let err = realm_voter_test
+    let err = bonk_plugin_test
         .with_registrar_using_ix(
             &realm_cookie,
-            |i| i.accounts[2].pubkey = Pubkey::new_unique(), // realm
+            &stake_pool_pubkey,
+            |i| i.accounts[3].pubkey = Pubkey::new_unique(), // realm
             None,
         )
         .await
@@ -128,17 +142,21 @@ async fn test_create_registrar_with_invalid_realm_error() -> Result<(), Transpor
 async fn test_create_registrar_with_invalid_governing_token_mint_error(
 ) -> Result<(), TransportError> {
     // Arrange
-    let mut realm_voter_test = RealmVoterTest::start_new().await;
+    let mut bonk_plugin_test = BonkPluginTest::start_new().await;
 
-    let realm_cookie = realm_voter_test.governance.with_realm().await?;
+    let realm_cookie = bonk_plugin_test.governance.with_realm().await?;
 
-    let mint_cookie = realm_voter_test.bench.with_mint().await?;
+    let mint_cookie = bonk_plugin_test.bench.with_mint().await?;
+
+    let mut spl_token_staking_cookie = SplTokenStakingCookie::new(bonk_plugin_test.bench.clone());
+    let stake_pool_pubkey = spl_token_staking_cookie.with_stake_pool(&realm_cookie.community_mint_cookie.address).await?;  
 
     // Act
-    let err = realm_voter_test
+    let err = bonk_plugin_test
         .with_registrar_using_ix(
             &realm_cookie,
-            |i| i.accounts[3].pubkey = mint_cookie.address, // governing_token_mint
+            &stake_pool_pubkey,
+            |i| i.accounts[5].pubkey = mint_cookie.address, // governing_token_mint
             None,
         )
         .await
@@ -154,18 +172,20 @@ async fn test_create_registrar_with_invalid_governing_token_mint_error(
 #[tokio::test]
 async fn test_create_registrar_with_registrar_already_exists_error() -> Result<(), TransportError> {
     // Arrange
-    let mut realm_voter_test = RealmVoterTest::start_new().await;
+    let mut bonk_plugin_test = BonkPluginTest::start_new().await;
 
-    let realm_cookie = realm_voter_test.governance.with_realm().await?;
+    let realm_cookie = bonk_plugin_test.governance.with_realm().await?;
 
-    realm_voter_test.with_registrar(&realm_cookie).await?;
+    let mut spl_token_staking_cookie = SplTokenStakingCookie::new(bonk_plugin_test.bench.clone());
+    let stake_pool_pubkey = spl_token_staking_cookie.with_stake_pool(&realm_cookie.community_mint_cookie.address).await?;
+    bonk_plugin_test.with_registrar(&realm_cookie, &stake_pool_pubkey).await?;
 
-    realm_voter_test.bench.advance_clock().await;
+    bonk_plugin_test.bench.advance_clock().await;
 
     // Act
 
-    let err = realm_voter_test
-        .with_registrar(&realm_cookie)
+    let err = bonk_plugin_test
+        .with_registrar(&realm_cookie, &stake_pool_pubkey)
         .await
         .err()
         .unwrap();
