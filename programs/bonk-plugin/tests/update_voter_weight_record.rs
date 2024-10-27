@@ -100,6 +100,7 @@ async fn test_update_voter_weight_record_create_proposal() -> Result<(), Transpo
             Some(proposal_key),
             &clone_keypair(&depositor),
             governance_key,
+            &None
         )
         .await?;
     bonk_plugin_test
@@ -261,6 +262,7 @@ async fn test_update_voter_weight_record_vote() -> Result<(), TransportError> {
             Some(proposal_key),
             &clone_keypair(&depositor),
             governance_key,
+            &None,
         )
         .await?;
     let proposal_cookie = bonk_plugin_test
@@ -288,6 +290,7 @@ async fn test_update_voter_weight_record_vote() -> Result<(), TransportError> {
             Some(proposal_key),
             &clone_keypair(&voter),
             governance_key,
+            &Some(vec![stake_pool_reciept_voter])
         )
         .await?;
 
@@ -429,6 +432,7 @@ async fn test_update_voter_weight_record_vote_invalid_action() -> Result<(), Tra
             Some(proposal_key),
             &clone_keypair(&depositor),
             governance_key,
+            &None,
         )
         .await?;
     let proposal_cookie = bonk_plugin_test
