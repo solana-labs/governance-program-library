@@ -3,7 +3,7 @@ use {
     super::VoterWeightAction,
     crate::{
         error::BonkPluginError, id, state::VoterWeightRecord,
-        utils::stake_deposit_receipt::StakeDepositReceipt, SPL_TOKEN_STAKING_PROGRAM_ID,
+        utils::stake_deposit_receipt::StakeDepositReceipt,
     },
     anchor_lang::prelude::*,
     solana_program::pubkey::Pubkey,
@@ -100,16 +100,9 @@ pub fn resolve_stake_deposit_weight(
         BonkPluginError::MaximumDepositsReached
     );
 
-    // The stake deposit receipt account must be owned by the SPL Token Staking Program
-    require_keys_eq!(
-        *stake_deposit_receipt_info.owner,
-        SPL_TOKEN_STAKING_PROGRAM_ID,
-        BonkPluginError::InvalidStakeReceiptOwner
-    );
-
-    let stake_deposit_receipt_buf = &mut &**stake_deposit_receipt_info.try_borrow_mut_data()?;
     let stake_deposit_receipt: StakeDepositReceipt =
-        StakeDepositReceipt::deserialize(stake_deposit_receipt_buf)?;
+        StakeDepositReceipt::deserialize_checked(stake_deposit_receipt_info)?;
+        
     let stake_deposit_receipt_key = stake_deposit_receipt_info.key();
 
     // voter_weight_record.governing_token_owner must be the owner of the stake deposit
@@ -133,6 +126,19 @@ pub fn resolve_stake_deposit_weight(
 
     unique_stake_deposit_receipts.push(stake_deposit_receipt_key);
 
+    let stake_deposit_end_time = stake_deposit_receipt
+    .deposit_timestamp
+    .checked_add(stake_deposit_receipt.lockup_duration as i64)
+    .unwrap();
+
+    let current_timestamp = Clock::get()?.unix_timestamp;
+
+    require_gt!(
+        stake_deposit_end_time,
+        current_timestamp,
+        BonkPluginError::ExpiredStakeDepositReceipt
+    );
+
     if action == VoterWeightAction::CastVote {
         if let Some(proposal_info) = proposal_info {
             require_keys_eq!(
@@ -140,11 +146,6 @@ pub fn resolve_stake_deposit_weight(
                 action_target,
                 BonkPluginError::ActionTargetMismatch
             );
-
-            let stake_deposit_end_time = stake_deposit_receipt
-                .deposit_timestamp
-                .checked_add(stake_deposit_receipt.lockup_duration as i64)
-                .unwrap();
 
             let proposal_end_time =
                 resolve_proposal_end_time(registrar, proposal_info, governance_info)?;

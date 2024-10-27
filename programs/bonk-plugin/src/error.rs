@@ -16,10 +16,10 @@ pub enum BonkPluginError {
     InvalidTokenOwnerForVoterWeightRecord,
     #[msg("The owner of the receipt does not match")]
     VoterDoesNotOwnDepositReceipt,
-    #[msg("The stake deposit receipt is not owned by the expected program")]
-    InvalidStakeReceiptOwner,
     #[msg("The deposit receipt was already provided")]
     DuplicatedReceiptDetected,
+    #[msg("The stake deposit receipt has already expired")]
+    ExpiredStakeDepositReceipt,
     #[msg("The stake deposit receipt will expire before proposal")]
     InvalidStakeDuration,
     #[msg("The stake deposit receipts count does not match")]

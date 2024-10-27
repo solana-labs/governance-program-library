@@ -55,3 +55,25 @@ pub struct RewardPool {
     pub last_amount: u64,
     _padding0: [u8; 8],
 }
+
+impl StakePool {
+    pub const ACCOUNT_DISCRIMINATOR: [u8; 8] = [121,  34, 206, 21, 79, 127, 255, 28];
+
+    pub fn deserialize_checked(
+        stake_pool_account_info: &AccountInfo
+    ) -> Result<Self> {
+        let stake_pool_data = &stake_pool_account_info.try_borrow_data()?;
+        let mut data = &mut stake_pool_data.as_ref();
+
+        let stake_pool = Self::try_from_slice(&mut data)?;
+
+        if stake_pool.discriminator.to_le_bytes() != Self::ACCOUNT_DISCRIMINATOR {
+            return Err(
+                anchor_lang::error!(anchor_lang::error::ErrorCode::AccountDiscriminatorMismatch)
+                .with_account_name("StakePool")
+            );
+        }
+
+        Ok(stake_pool)
+    }
+}

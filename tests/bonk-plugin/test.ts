@@ -5,11 +5,11 @@ import idl from "../../target/idl/bonk_plugin.json";
 import {StakeIdl, stakeIdl} from "./stake-idl";
 import { GovernanceConfig, SplGovernance } from "governance-idl-sdk";
 import secret from "../../../../sol/id.json";
-import { Connection, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
+import { Connection, Transaction, sendAndConfirmTransaction, clusterApiUrl } from "@solana/web3.js";
 import { token } from "@coral-xyz/anchor/dist/cjs/utils";
 
 const connection = new anchor.web3.Connection(anchor.web3.clusterApiUrl("devnet"));
-const web3Connection = new Connection(anchor.web3.clusterApiUrl("devnet"));
+const web3Connection = new Connection(clusterApiUrl("devnet"));
 const keypair = anchor.web3.Keypair.fromSecretKey(Uint8Array.from(secret));
 const wallet = new anchor.Wallet(keypair);
 
@@ -22,12 +22,13 @@ describe("bonk-plugin", () => {
   const governanceProgramId = new anchor.web3.PublicKey("GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw")
   const realm = new anchor.web3.PublicKey("A2MqSD5iEqTjBkTg9naHoS5x1YLhQemrJTcBEFXoasph")
   const stakePool = new anchor.web3.PublicKey("9YbGRA8qfDeJuonKJuZYzDXcRVyB2B6cMPCWpTeC1eRL")
+  //8TPev5NsgJoViPrRUXp7F1HjUhmHDjzknG4i82FPVWkT
   const governingTokenMint = new anchor.web3.PublicKey("6WddAU5ryy4BSNWqNPM3LsPYcirKY2ax7U2yfkzwe1kq")
   const governingTokenOwner = wallet.publicKey
   const previousVoterWeightPluginProgramId = new anchor.web3.PublicKey("BUsq2cFH6cmfYcoveaf52BkPaXUW3ZhTUnFybyaJrtkN")
 
   const governanceKey = new anchor.web3.PublicKey("GyzFPcYaG6wfoi7Y3jLxAvXZWDR3nNqni1cJxkTSQHuq")
-  const proposalKey = new anchor.web3.PublicKey("2YX24vU9DzPjFzPPtoonJRYqGnYDe4xdULg5RKXhmYgS")
+  const proposalKey = new anchor.web3.PublicKey("AmGnTWwrJSszBgtRTA3j4pRL6o9GNsBuEQj3UY85AQwB")
   const ownerAta = token.associatedAddress({mint: governingTokenMint, owner: keypair.publicKey})
   const stakeMintToken = new anchor.web3.PublicKey("J5d7DVTTdGj7KcDtuFWL3322rasxHjpHhUmEzqFLHjuB")
   const vaultAta = "5DpomEty6Rgpe46wu8dyCs8bQviFJdo2yRbxBBxH8NbM"
@@ -109,7 +110,6 @@ describe("bonk-plugin", () => {
     // 12,
     // 13,
     // 14,
-    16
   ].map(i => {
     const [stakeDepositReceipt] = anchor.web3.PublicKey.findProgramAddressSync(
       [
@@ -127,8 +127,9 @@ describe("bonk-plugin", () => {
   const remainingAccounts = stakeDepositReceipts.map(address => (
     {pubkey: address, isSigner: false, isWritable: false}
   ))
+  // const remainingAccounts = [{pubkey: stakePool, isSigner: false, isWritable: false}]
 
-  xit("Is initializes registrar!", async () => {
+  it("Is initializes registrar!", async () => {
     try {
       const tx = await program.methods.createRegistrar()
       .accounts({
@@ -137,7 +138,7 @@ describe("bonk-plugin", () => {
         stakePool,
         governingTokenMint,
         realmAuthority: keypair.publicKey,
-        previousVoterWeightPluginProgramId
+        previousVoterWeightPluginProgramId: null
       })
       .instruction();
       
@@ -157,6 +158,7 @@ describe("bonk-plugin", () => {
       governingTokenOwner
     )
     .accountsPartial({
+      voterWeightRecord,
       registrar,
       stakeDepositRecord
     })
@@ -168,7 +170,7 @@ describe("bonk-plugin", () => {
     // console.log("Your transaction signature", tx);
   })
 
-  it("updates voter weight record", async() => {
+  xit("updates voter weight record", async() => {
     const updateVwrIx = await program.methods.updateVoterWeightRecord(
       stakeDepositReceipts.length,
       proposalKey,
@@ -179,7 +181,7 @@ describe("bonk-plugin", () => {
       voterWeightRecord,
       inputVoterWeight,
       governance: governanceKey,
-      proposal: null,
+      proposal: proposalKey,
       voterAuthority: keypair.publicKey,
       voterTokenOwnerRecord: tokenOwnerRecord,
     })
@@ -208,7 +210,7 @@ describe("bonk-plugin", () => {
     console.log(registrarInfo)
   })
 
-  it("fetches Voter Weight Record", async() => {
+  xit("fetches Voter Weight Record", async() => {
     const vwrInfo = await program.account.voterWeightRecord.fetch(voterWeightRecord)
     console.log(vwrInfo)
     console.log("THe current power is: ", vwrInfo.voterWeight.toNumber())

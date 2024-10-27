@@ -36,8 +36,8 @@ pub struct CreateRegistrar<'info> {
 
     /// CHECK: Owned by SPL Staking Program
     #[account(
-    owner = SPL_TOKEN_STAKING_PROGRAM_ID
-  )]
+        owner = SPL_TOKEN_STAKING_PROGRAM_ID,
+    )]
     pub stake_pool: AccountInfo<'info>,
 
     pub governing_token_mint: Account<'info, Mint>,
@@ -70,8 +70,7 @@ pub fn create_registrar_handler(ctx: Context<CreateRegistrar>) -> Result<()> {
         &registrar.governing_token_mint,
     )?;
 
-    let stake_pool_account_info = &mut &**ctx.accounts.stake_pool.try_borrow_mut_data()?;
-    let stake_pool: StakePool = StakePool::deserialize(stake_pool_account_info)?;
+    let stake_pool = StakePool::deserialize_checked(&ctx.accounts.stake_pool)?;
 
     require!(
         realm.authority.unwrap() == ctx.accounts.realm_authority.key(),
