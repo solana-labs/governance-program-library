@@ -116,7 +116,7 @@ impl SplTokenStakingCookie {
         let deposit_to_pool_args = spl_token_staking::client::args::Deposit {
             nonce: 0,
             amount: 100,
-            lockup_duration: 10,
+            lockup_duration: 1000,
         };
         let stake_mint = find_stake_mint(*stake_pool_key, self.program_id);
         let stake_mint_account_key = get_associated_token_address(&owner.pubkey(), &stake_mint);

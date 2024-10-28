@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use anchor_lang::prelude::Pubkey;
+use anchor_lang::prelude::{AccountMeta, Pubkey};
 use gpl_bonk_plugin::state::*;
 
 use solana_program_test::{BanksClientError, ProgramTest};
@@ -251,10 +251,15 @@ impl BonkPluginTest {
         proposal: Option<Pubkey>,
         voter_authority: &Keypair,
         governance_key: Pubkey,
+        stake_deposit_receipts: &Option<Vec<Pubkey>>,
     ) -> Result<Instruction, BanksClientError> {
         let data = anchor_lang::InstructionData::data(
             &gpl_bonk_plugin::instruction::UpdateVoterWeightRecord {
-                stake_receipts_count: 0,
+                stake_receipts_count: if stake_deposit_receipts.is_some() {
+                    stake_deposit_receipts.as_ref().unwrap().len() as u8
+                } else {
+                    0
+                },
                 action_target,
                 action,
             },
@@ -281,10 +286,21 @@ impl BonkPluginTest {
         };
 
         let account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
+        let remaining_accounts: Vec<_> = stake_deposit_receipts
+            .clone()
+            .unwrap_or_default() // Use unwrap_or_default() to get empty Vec if None
+            .iter()
+            .map(|stake_deposit_receipt| AccountMeta::new(*stake_deposit_receipt, false))
+            .collect();
+
+        let all_accounts: Vec<_> = account_metas
+            .into_iter()
+            .chain(remaining_accounts.into_iter())
+            .collect();
 
         let instruction = Instruction {
             program_id: gpl_bonk_plugin::id(),
-            accounts: account_metas,
+            accounts: all_accounts,
             data,
         };
 
