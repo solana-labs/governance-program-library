@@ -137,8 +137,8 @@ pub fn update_voter_weight_record_handler<'info>(
     if voter_weight_record.weight_action_target == Some(action_target)
         && voter_weight_record.weight_action == Some(action)
     {
-        voter_weight = voter_weight
-            .checked_sub(stake_deposit_record.previous_voter_weight)
+        voter_weight_record.voter_weight = voter_weight_record
+            .voter_weight.checked_sub(stake_deposit_record.previous_voter_weight)
             .unwrap();
 
         voter_weight_record.voter_weight = voter_weight_record
