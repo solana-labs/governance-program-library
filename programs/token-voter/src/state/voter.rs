@@ -42,10 +42,13 @@ impl Voter {
 
     /// The full vote weight available to the voter
     pub fn weight(&self, registrar: &Registrar) -> Result<u64> {
-        self.deposits.iter().filter(|d| d.is_used).try_fold(0u64, |sum, d| {
-            d.voting_power(&registrar.voting_mint_configs[d.voting_mint_config_idx as usize])
-                .map(|vp| sum.checked_add(vp).unwrap())
-        })
+        self.deposits
+            .iter()
+            .filter(|d| d.is_used)
+            .try_fold(0u64, |sum, d| {
+                d.voting_power(&registrar.voting_mint_configs[d.voting_mint_config_idx as usize])
+                    .map(|vp| sum.checked_add(vp).unwrap())
+            })
     }
 
     pub fn active_deposit_mut(&mut self, index: u8) -> Result<&mut DepositEntry> {

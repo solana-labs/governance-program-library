@@ -1,5 +1,6 @@
 use crate::program_test::program_test_bench::MintType;
 use anchor_spl::associated_token;
+use gpl_token_voter::error::TokenVoterError;
 use program_test::token_voter_test::TokenVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
@@ -7,7 +8,6 @@ use solana_sdk::instruction::InstructionError;
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::signer::Signer;
 use solana_sdk::transport::TransportError;
-use gpl_token_voter::error::TokenVoterError;
 
 mod program_test;
 
@@ -18,10 +18,7 @@ async fn test_withdraw_with_token_extensions_transfer_hooks() -> Result<(), Tran
     let mut token_voter_test =
         TokenVoterTest::start_new_token_extensions(Some(&transfer_hook_program_id)).await;
 
-    let realm_cookie = token_voter_test
-        .governance
-        .with_realm()
-        .await?;
+    let realm_cookie = token_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
     let governance_program_cookie = token_voter_test.with_governance_program(None).await;
@@ -42,7 +39,7 @@ async fn test_withdraw_with_token_extensions_transfer_hooks() -> Result<(), Tran
             &first_user_cookie.key.pubkey(),
             100,
             &MintType::SplTokenExtensionsWithTransferHook,
-            false
+            false,
         )
         .await;
 
@@ -198,10 +195,7 @@ async fn test_withdraw_with_token_extensions() -> Result<(), TransportError> {
     // Arrange
     let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
 
-    let realm_cookie = token_voter_test
-        .governance
-        .with_realm()
-        .await?;
+    let realm_cookie = token_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
     let governance_program_cookie = token_voter_test.with_governance_program(None).await;
@@ -269,7 +263,7 @@ async fn test_withdraw_with_token_extensions() -> Result<(), TransportError> {
             &spl_token_2022::id(),
             0,
             amount_deposited,
-            None
+            None,
         )
         .await?;
 

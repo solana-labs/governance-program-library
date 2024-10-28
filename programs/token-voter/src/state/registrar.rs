@@ -1,7 +1,7 @@
 use {
     crate::{
-        error::TokenVoterError, id, state::VotingMintConfig,
-        tools::spl_token::get_spl_token_mint_supply, vote_weight_record, max_voter_weight_record
+        error::TokenVoterError, id, max_voter_weight_record, state::VotingMintConfig,
+        tools::spl_token::get_spl_token_mint_supply, vote_weight_record,
     },
     anchor_lang::{prelude::*, Discriminator},
     solana_program::pubkey::PUBKEY_BYTES,
@@ -60,7 +60,7 @@ impl Registrar {
             .ok_or_else(|| error!(TokenVoterError::MintNotFound))
     }
 
-    /// Returns the max vote weight based on the mint_accounts 
+    /// Returns the max vote weight based on the mint_accounts
     /// throws an error if the mint address does not exist
     pub fn max_vote_weight(&self, mint_accounts: &[AccountInfo]) -> Result<u64> {
         self.voting_mint_configs

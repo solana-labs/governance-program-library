@@ -1,6 +1,7 @@
 use crate::program_test::program_test_bench::MintType;
 use anchor_lang::error::ErrorCode;
 use anchor_spl::associated_token;
+use gpl_token_voter::error::TokenVoterError;
 use program_test::token_voter_test::TokenVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
@@ -8,7 +9,6 @@ use solana_sdk::instruction::InstructionError;
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::signer::Signer;
 use solana_sdk::transport::TransportError;
-use gpl_token_voter::error::TokenVoterError;
 mod program_test;
 
 #[tokio::test]
@@ -16,10 +16,7 @@ async fn test_deposit_entry_with_token_extension() -> Result<(), TransportError>
     // Arrange
     let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
 
-    let realm_cookie = token_voter_test
-        .governance
-        .with_realm()
-        .await?;
+    let realm_cookie = token_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
     let governance_program_cookie = token_voter_test.with_governance_program(None).await;
@@ -108,10 +105,7 @@ async fn test_deposit_entry_with_token_extension_transfer_hooks() -> Result<(), 
     let mut token_voter_test =
         TokenVoterTest::start_new_token_extensions(Some(&transfer_hook_program_id)).await;
 
-    let realm_cookie = token_voter_test
-        .governance
-        .with_realm()
-        .await?;
+    let realm_cookie = token_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
     let governance_program_cookie = token_voter_test.with_governance_program(None).await;
@@ -132,7 +126,7 @@ async fn test_deposit_entry_with_token_extension_transfer_hooks() -> Result<(), 
             &first_user_cookie.key.pubkey(),
             100,
             &MintType::SplTokenExtensionsWithTransferHook,
-            false
+            false,
         )
         .await;
 
@@ -241,10 +235,7 @@ async fn test_deposit_entry_with_token_extension_transfer_fees() -> Result<(), T
     // Arrange
     let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
 
-    let realm_cookie = token_voter_test
-        .governance
-        .with_realm()
-        .await?;
+    let realm_cookie = token_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
     let governance_program_cookie = token_voter_test.with_governance_program(None).await;
@@ -262,7 +253,7 @@ async fn test_deposit_entry_with_token_extension_transfer_fees() -> Result<(), T
             &first_user_cookie.key.pubkey(),
             100,
             &MintType::SplTokenExtensionsWithTransferFees,
-            false
+            false,
         )
         .await;
 

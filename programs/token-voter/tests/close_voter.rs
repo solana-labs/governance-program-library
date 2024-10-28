@@ -1,10 +1,10 @@
 use std::borrow::BorrowMut;
 
+use gpl_token_voter::error::TokenVoterError;
 use program_test::token_voter_test::TokenVoterTest;
 use program_test::tools::*;
 use solana_program_test::*;
 use solana_sdk::transport::TransportError;
-use gpl_token_voter::error::TokenVoterError;
 mod program_test;
 
 #[tokio::test]
@@ -12,10 +12,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
     // Arrange
     let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
 
-    let realm_cookie = token_voter_test
-        .governance
-        .with_realm()
-        .await?;
+    let realm_cookie = token_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
     let governance_program_cookie = token_voter_test.with_governance_program(None).await;
@@ -59,7 +56,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
         .governance
         .with_token_owner_record_using_user_cookie(&realm_cookie, &first_user_cookie)
         .await?;
-    
+
     let amount_deposited = 10_u64;
     token_voter_test
         .deposit_entry(
@@ -71,7 +68,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
             &spl_token_2022::id(),
             0,
             amount_deposited,
-            None
+            None,
         )
         .await?;
 
@@ -87,7 +84,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
             &spl_token_2022::id(),
             1,
             amount_deposited,
-            None
+            None,
         )
         .await?;
 
@@ -104,7 +101,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
         .await
         .err()
         .unwrap();
-    
+
     assert_token_voter_err(err, TokenVoterError::VotingTokenNonZero);
 
     token_voter_test
@@ -117,7 +114,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
             &spl_token_2022::id(),
             0,
             amount_deposited,
-            None
+            None,
         )
         .await?;
 
@@ -146,7 +143,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
             &spl_token_2022::id(),
             1,
             amount_deposited,
-            None
+            None,
         )
         .await?;
     token_voter_test.bench.advance_clock().await;
@@ -173,10 +170,7 @@ async fn test_close_with_token_extensions() -> Result<(), TransportError> {
         .await
         .unwrap();
 
-    assert_eq!(
-        voter_data,
-        None
-    );
+    assert_eq!(voter_data, None);
 
     Ok(())
 }

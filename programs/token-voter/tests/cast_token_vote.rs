@@ -36,24 +36,30 @@ async fn test_cast_token_vote() -> Result<(), TransportError> {
     let token_account_keypair = Keypair::new();
     let council_mint_cookie = realm_cookie.council_mint_cookie.as_ref().unwrap();
 
-    token_voter_test.governance.bench.create_token_account(
-        &token_account_keypair,
-        &council_mint_cookie.address,
-        &first_user_cookie.key.pubkey(),
-        &MintType::SplToken,
-        true
-    )
-    .await?;
-    token_voter_test.governance.bench.mint_tokens(
-        &council_mint_cookie.address,
-        &council_mint_cookie.mint_authority,
-        &token_account_keypair.pubkey(),
-        100,
-        &MintType::SplToken,
-        &first_user_cookie.key.pubkey(),
-        false,
-    )
-    .await?;
+    token_voter_test
+        .governance
+        .bench
+        .create_token_account(
+            &token_account_keypair,
+            &council_mint_cookie.address,
+            &first_user_cookie.key.pubkey(),
+            &MintType::SplToken,
+            true,
+        )
+        .await?;
+    token_voter_test
+        .governance
+        .bench
+        .mint_tokens(
+            &council_mint_cookie.address,
+            &council_mint_cookie.mint_authority,
+            &token_account_keypair.pubkey(),
+            100,
+            &MintType::SplToken,
+            &first_user_cookie.key.pubkey(),
+            false,
+        )
+        .await?;
 
     let _token_account_cookie = TokenAccountCookie {
         address: token_account_keypair.pubkey(),
@@ -113,7 +119,10 @@ async fn test_cast_token_vote() -> Result<(), TransportError> {
         )
         .await?;
 
-    let proposal_cookie = token_voter_test.governance.with_proposal(&realm_cookie).await?;
+    let proposal_cookie = token_voter_test
+        .governance
+        .with_proposal(&realm_cookie)
+        .await?;
 
     token_voter_test
         .governance
@@ -152,11 +161,17 @@ async fn test_cast_token_vote() -> Result<(), TransportError> {
         .get_voter_weight_record(&voter_cookie.voter_weight_record)
         .await;
 
-    let proposal_data = token_voter_test.bench.get_account_data(proposal_cookie.address).await;
+    let proposal_data = token_voter_test
+        .bench
+        .get_account_data(proposal_cookie.address)
+        .await;
     let mut data_slice: &[u8] = &proposal_data;
     let proposal_state: spl_governance::state::proposal::ProposalV2 =
-    spl_governance::state::proposal::ProposalV2::deserialize(&mut data_slice).unwrap();
-    assert_eq!(proposal_state.options[0].vote_weight, voter_weight_record.voter_weight);
+        spl_governance::state::proposal::ProposalV2::deserialize(&mut data_slice).unwrap();
+    assert_eq!(
+        proposal_state.options[0].vote_weight,
+        voter_weight_record.voter_weight
+    );
     assert_eq!(proposal_state.deny_vote_weight.unwrap(), 0);
     Ok(())
 }
@@ -167,7 +182,6 @@ async fn test_cast_token_vote_token_extension() -> Result<(), TransportError> {
     let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
 
     let realm_cookie = token_voter_test.governance.with_realm().await?;
-    
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
     let governance_program_cookie = token_voter_test.with_governance_program(None).await;
@@ -188,24 +202,30 @@ async fn test_cast_token_vote_token_extension() -> Result<(), TransportError> {
     let token_account_keypair = Keypair::new();
     let council_mint_cookie = realm_cookie.council_mint_cookie.as_ref().unwrap();
 
-    token_voter_test.governance.bench.create_token_account(
-        &token_account_keypair,
-        &council_mint_cookie.address,
-        &first_user_cookie.key.pubkey(),
-        &MintType::SplToken,
-        true
-    )
-    .await?;
-    token_voter_test.governance.bench.mint_tokens(
-        &council_mint_cookie.address,
-        &council_mint_cookie.mint_authority,
-        &token_account_keypair.pubkey(),
-        100,
-        &MintType::SplToken,
-        &first_user_cookie.key.pubkey(),
-        true,
-    )
-    .await?;
+    token_voter_test
+        .governance
+        .bench
+        .create_token_account(
+            &token_account_keypair,
+            &council_mint_cookie.address,
+            &first_user_cookie.key.pubkey(),
+            &MintType::SplToken,
+            true,
+        )
+        .await?;
+    token_voter_test
+        .governance
+        .bench
+        .mint_tokens(
+            &council_mint_cookie.address,
+            &council_mint_cookie.mint_authority,
+            &token_account_keypair.pubkey(),
+            100,
+            &MintType::SplToken,
+            &first_user_cookie.key.pubkey(),
+            true,
+        )
+        .await?;
 
     token_voter_test
         .governance
@@ -279,7 +299,10 @@ async fn test_cast_token_vote_token_extension() -> Result<(), TransportError> {
         )
         .await?;
 
-    let proposal_cookie = token_voter_test.governance.with_proposal(&realm_cookie).await?;
+    let proposal_cookie = token_voter_test
+        .governance
+        .with_proposal(&realm_cookie)
+        .await?;
 
     token_voter_test
         .governance
@@ -319,12 +342,18 @@ async fn test_cast_token_vote_token_extension() -> Result<(), TransportError> {
         .get_voter_weight_record(&voter_cookie.voter_weight_record)
         .await;
 
-    let proposal_data = token_voter_test.bench.get_account_data(proposal_cookie.address).await;
+    let proposal_data = token_voter_test
+        .bench
+        .get_account_data(proposal_cookie.address)
+        .await;
     let mut data_slice: &[u8] = &proposal_data;
     let proposal_state: spl_governance::state::proposal::ProposalV2 =
-    spl_governance::state::proposal::ProposalV2::deserialize(&mut data_slice).unwrap();
+        spl_governance::state::proposal::ProposalV2::deserialize(&mut data_slice).unwrap();
     // println!("proposal_state: {:?}", proposal_state.options[0]);
-    assert_eq!(proposal_state.options[0].vote_weight, voter_weight_record.voter_weight);
+    assert_eq!(
+        proposal_state.options[0].vote_weight,
+        voter_weight_record.voter_weight
+    );
     assert_eq!(proposal_state.deny_vote_weight.unwrap(), 0);
 
     Ok(())
@@ -335,10 +364,7 @@ async fn test_cast_token_vote_token_extension_transfer_fees() -> Result<(), Tran
     // Arrange
     let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
 
-    let realm_cookie = token_voter_test
-        .governance
-        .with_realm()
-        .await?;
+    let realm_cookie = token_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
     let governance_program_cookie = token_voter_test.with_governance_program(None).await;
@@ -358,7 +384,7 @@ async fn test_cast_token_vote_token_extension_transfer_fees() -> Result<(), Tran
         .await?;
     let token_account_keypair = Keypair::new();
     let council_mint_cookie = realm_cookie.council_mint_cookie.as_ref().unwrap();
-    
+
     token_voter_test
         .governance
         .bench
@@ -383,7 +409,7 @@ async fn test_cast_token_vote_token_extension_transfer_fees() -> Result<(), Tran
             true,
         )
         .await?;
-    
+
     token_voter_test
         .governance
         .bench
@@ -505,13 +531,12 @@ async fn test_cast_token_vote_token_extension_transfer_fees() -> Result<(), Tran
     let mut data_slice: &[u8] = &proposal_data;
     let proposal_state: spl_governance::state::proposal::ProposalV2 =
         spl_governance::state::proposal::ProposalV2::deserialize(&mut data_slice).unwrap();
-        
+
     assert_eq!(
         proposal_state.options[0].vote_weight,
         voter_weight_record.voter_weight
     );
     assert_eq!(proposal_state.deny_vote_weight.unwrap(), 0);
-
 
     Ok(())
 }
