@@ -26,6 +26,14 @@ pub struct CloseVoter<'info> {
     )]
     pub voter: Box<Account<'info, Voter>>,
 
+    #[account(
+        mut,
+        seeds = [registrar.key().as_ref(), b"voter-weight-record".as_ref(), voter_authority.key().as_ref()],
+        bump,
+        close = sol_destination
+    )]
+    pub voter_weight_record: Box<Account<'info, VoterWeightRecord>>,
+
     pub voter_authority: Signer<'info>,
 
     /// CHECK: Destination may be any address.

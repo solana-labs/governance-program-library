@@ -1,7 +1,7 @@
 use {
     crate::{
         error::TokenVoterError, id, state::VotingMintConfig,
-        tools::spl_token::get_spl_token_mint_supply, vote_weight_record, max_voter_weight_record
+        vote_weight_record, max_voter_weight_record
     },
     anchor_lang::{prelude::*, Discriminator},
     solana_program::pubkey::PUBKEY_BYTES,
@@ -60,24 +60,18 @@ impl Registrar {
             .ok_or_else(|| error!(TokenVoterError::MintNotFound))
     }
 
-    /// Returns the max vote weight based on the mint_accounts 
-    /// throws an error if the mint address does not exist
-    pub fn max_vote_weight(&self, mint_accounts: &[AccountInfo]) -> Result<u64> {
+    /// Returns the max vote weight based on the supply initially set for each mint 
+    /// throws an error if the sum of the vote weights overflows
+    pub fn max_vote_weight(&self) -> Result<u64> {
         self.voting_mint_configs
             .iter()
-            .try_fold(0u64, |mut sum, mint_config| -> Result<u64> {
+            .try_fold(0u64, |sum, mint_config| -> Result<u64> {
                 if !mint_config.in_use() {
                     return Ok(sum);
                 }
-                let mint_account = mint_accounts
-                    .iter()
-                    .find(|a| a.key() == mint_config.mint)
-                    .ok_or_else(|| error!(TokenVoterError::MintNotFound))?;
-                let mint_supply = get_spl_token_mint_supply(mint_account)?;
-                sum = sum
-                    .checked_add(mint_config.digit_shift_native(mint_supply)?)
-                    .ok_or_else(|| error!(TokenVoterError::VoterWeightOverflow))?;
-                Ok(sum)
+                let mint_supply = mint_config.mint_supply;
+                sum.checked_add(mint_config.digit_shift_native(mint_supply)?)
+                    .ok_or_else(|| error!(TokenVoterError::VoterWeightOverflow))
             })
     }
 }
@@ -136,7 +130,8 @@ mod test {
         let mint_config = VotingMintConfig {
             mint: Pubkey::default(),
             digit_shift: 0,
-            reserved1: [0; 63],
+            mint_supply: 0,
+            reserved1: [0; 55],
         };
 
         let registrar = Registrar {
@@ -153,5 +148,62 @@ mod test {
 
         // Assert
         assert_eq!(expected_space, actual_space);
+    }
+
+
+    #[test]
+    fn test_max_vote_weight() {
+        // Arrange
+        let mint_config1 = VotingMintConfig {
+            mint: Pubkey::new_unique(),
+            digit_shift: 2,
+            mint_supply: 1000,
+            reserved1: [0; 55],
+        };
+
+        let mint_config2 = VotingMintConfig {
+            mint: Pubkey::new_unique(),
+            digit_shift: 1,
+            mint_supply: 500,
+            reserved1: [0; 55],
+        };
+
+        let mut mint_config3 = VotingMintConfig {
+            mint: Pubkey::new_unique(),
+            digit_shift: 0,
+            mint_supply: 200,
+            reserved1: [0; 55],
+        };
+
+        let mut registrar = Registrar {
+            governance_program_id: Pubkey::default(),
+            voting_mint_configs: vec![mint_config1, mint_config2, mint_config3.clone()],
+            realm: Pubkey::default(),
+            governing_token_mint: Pubkey::default(),
+            max_mints: 3,
+            reserved: [0; 127],
+        };
+
+        // Act & Assert - Initial state
+        let result = registrar.max_vote_weight();
+        assert!(result.is_ok());
+        let max_weight = result.unwrap();
+        assert_eq!(max_weight, 105200);
+
+        // Modify mint_config3 and update registrar
+        mint_config3.digit_shift = 3;
+        registrar.voting_mint_configs[2] = mint_config3;
+
+        // Act & Assert - After modification
+        let result_after_mod = registrar.max_vote_weight();
+        assert!(result_after_mod.is_ok());
+        let max_weight_after_mod = result_after_mod.unwrap();
+
+        // Expected calculation after modification:
+        // mint_config1: 1000 * 10^2 = 100,000
+        // mint_config2: 500 * 10^1 = 5,000
+        // mint_config3: 200 * 10^3 = 200,000 (now in use and with digit_shift 3)
+        // Total: 100,000 + 5,000 + 200,000 = 305,000
+        assert_eq!(max_weight_after_mod, 305000);
     }
 }
