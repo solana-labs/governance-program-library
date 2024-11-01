@@ -149,7 +149,10 @@ pub fn withdraw<'key, 'accounts, 'remaining, 'info>(
     // Update the voter weight record
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
     voter_weight_record.voter_weight = voter.weight(registrar)?;
-    voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
+    // Voter Weight Expiry is always set to None after a deposit
+    // since no other action other than deposit and withdraw could invalidate it
+    voter_weight_record.voter_weight_expiry = None;
+
 
     Ok(())
 }

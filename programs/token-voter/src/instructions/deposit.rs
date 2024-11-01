@@ -178,8 +178,9 @@ pub fn deposit<'key, 'accounts, 'remaining, 'info>(
     // Setup voter_weight
     voter_weight_record.voter_weight = voter.weight(registrar)?;
 
-    // Record is only valid as of the current slot
-    voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
+    // Voter Weight Expiry is always set to None after a deposit
+    // since no other action other than deposit and withdraw could invalidate it
+    voter_weight_record.voter_weight_expiry = None;
 
     // Set action and target to None to indicate the weight is valid for any action and target
     voter_weight_record.weight_action = None;
