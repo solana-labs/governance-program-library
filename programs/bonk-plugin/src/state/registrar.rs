@@ -84,6 +84,7 @@ pub fn resolve_governing_token_owner(
 }
 
 /// Resolves vote weight for the given stake deposit receipt
+#[allow(clippy::too_many_arguments)]
 pub fn resolve_stake_deposit_weight(
     registrar: &Registrar,
     proposal_info: &Option<UncheckedAccount>,
@@ -102,7 +103,7 @@ pub fn resolve_stake_deposit_weight(
 
     let stake_deposit_receipt: StakeDepositReceipt =
         StakeDepositReceipt::deserialize_checked(stake_deposit_receipt_info)?;
-        
+
     let stake_deposit_receipt_key = stake_deposit_receipt_info.key();
 
     // voter_weight_record.governing_token_owner must be the owner of the stake deposit
@@ -127,9 +128,9 @@ pub fn resolve_stake_deposit_weight(
     unique_stake_deposit_receipts.push(stake_deposit_receipt_key);
 
     let stake_deposit_end_time = stake_deposit_receipt
-    .deposit_timestamp
-    .checked_add(stake_deposit_receipt.lockup_duration as i64)
-    .unwrap();
+        .deposit_timestamp
+        .checked_add(stake_deposit_receipt.lockup_duration as i64)
+        .unwrap();
 
     let current_timestamp = Clock::get()?.unix_timestamp;
 
@@ -160,7 +161,7 @@ pub fn resolve_stake_deposit_weight(
         }
     }
 
-    Ok(stake_deposit_receipt.deposit_amount as u64)
+    Ok(stake_deposit_receipt.deposit_amount)
 }
 
 pub fn resolve_proposal_end_time(

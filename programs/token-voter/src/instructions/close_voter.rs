@@ -48,9 +48,7 @@ pub struct CloseVoter<'info> {
 /// Only accounts with no remaining deposits can be closed.
 ///
 /// Tokens must be withdrawn first to be able to close voter and close the token accounts.
-pub fn close_voter<'key, 'accounts, 'remaining, 'info>(
-    ctx: Context<'key, 'accounts, 'remaining, 'info, CloseVoter<'info>>,
-) -> Result<()> {
+pub fn close_voter<'info>(ctx: Context<'_, '_, '_, 'info, CloseVoter<'info>>) -> Result<()> {
     let voter = &ctx.accounts.voter;
     let voter_authority = &ctx.accounts.voter_authority;
     let amount = voter.deposits.iter().fold(0u64, |sum, d| {

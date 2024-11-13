@@ -1,7 +1,7 @@
 use {
     crate::{
-        error::TokenVoterError, id, state::VotingMintConfig,
-        vote_weight_record, max_voter_weight_record
+        error::TokenVoterError, id, max_voter_weight_record, state::VotingMintConfig,
+        vote_weight_record,
     },
     anchor_lang::{prelude::*, Discriminator},
     solana_program::pubkey::PUBKEY_BYTES,
@@ -60,7 +60,7 @@ impl Registrar {
             .ok_or_else(|| error!(TokenVoterError::MintNotFound))
     }
 
-    /// Returns the max vote weight based on the supply initially set for each mint 
+    /// Returns the max vote weight based on the supply initially set for each mint
     /// throws an error if the sum of the vote weights overflows
     pub fn max_vote_weight(&self) -> Result<u64> {
         self.voting_mint_configs
@@ -149,7 +149,6 @@ mod test {
         // Assert
         assert_eq!(expected_space, actual_space);
     }
-
 
     #[test]
     fn test_max_vote_weight() {

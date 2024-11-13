@@ -104,6 +104,7 @@ pub fn transfer_checked_spl_tokens<'a>(
 
 /// Transfers SPL Tokens checked from a token account owned by the provided PDA
 /// authority with seeds
+#[allow(clippy::too_many_arguments)]
 pub fn transfer_spl_tokens_signed_checked<'a>(
     source_info: &AccountInfo<'a>,
     destination_info: &AccountInfo<'a>,

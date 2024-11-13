@@ -76,8 +76,8 @@ pub struct Withdraw<'info> {
 ///
 /// `deposit_entry_index`: The deposit entry to withdraw from.
 /// `amount`: is in units of the native currency being withdrawn.
-pub fn withdraw<'key, 'accounts, 'remaining, 'info>(
-    ctx: Context<'key, 'accounts, 'remaining, 'info, Withdraw<'info>>,
+pub fn withdraw<'info>(
+    ctx: Context<'_, '_, '_, 'info, Withdraw<'info>>,
     deposit_entry_index: u8,
     amount: u64,
 ) -> Result<()> {
@@ -155,7 +155,6 @@ pub fn withdraw<'key, 'accounts, 'remaining, 'info>(
     // Voter Weight Expiry is always set to None after a deposit
     // since no other action other than deposit and withdraw could invalidate it
     voter_weight_record.voter_weight_expiry = None;
-
 
     Ok(())
 }
