@@ -7,6 +7,7 @@ members = [
     "programs/bonk-plugin",
     "programs/token-haver",
     "programs/token-voter",
+    "programs/bonk-plugin"
 ]
 
 [profile.release]
