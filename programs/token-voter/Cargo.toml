@@ -1,0 +1,44 @@
+[package]
+name = "gpl-token-voter"
+version = "0.0.1"
+description = "SPL Governance plugin implementing token based governance power"
+license = "Apache-2.0"
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "gpl_token_voter"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = { version = "0.30.1", features = ["init-if-needed"] }
+anchor-spl = "0.30.1"
+arrayref = "0.3.7"
+solana-program = "1.18.18"
+spl-governance = { version = "4.0.0", features = ["no-entrypoint"] }
+spl-tlv-account-resolution = { version = "0.6.3" }
+spl-transfer-hook-interface = { version = "0.6.3" }
+spl-governance-tools = "0.1.4"
+spl-token = { version = "4.0.0", features = [ "no-entrypoint" ] }
+spl-token-2022 = { version = "3.0.4", features = [ "no-entrypoint" ] }
+ahash = "=0.8.7"
+static_assertions = "1.1"
+spl-governance-addin-api = "0.1.4"
+
+
+[dev-dependencies]
+borsh = "0.10.3"
+spl-associated-token-account = { version = "^3.0.2", features = ["no-entrypoint"] }
+spl-transfer-hook-example = { version = "0.6.0", features = ["no-entrypoint"] }
+solana-sdk = "1.18.18"
+solana-program-test = "1.18.18"
+log = "0.4.14"
+env_logger = "0.9.0"
+spl-token-client = "0.10.0"

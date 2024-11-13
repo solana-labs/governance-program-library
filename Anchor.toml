@@ -10,6 +10,8 @@ gateway = "GgathUhdrCWRHowoRKACjgWhYHfxCEdBi5ViqYN6HVxk"
 quadratic = "quadCSapU8nTdLg73KHDnmdxKnJQsh7GUbu5tZfnRRr"
 solana-gateway = "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
 token-haver = "7gobfUihgoxA14RUnVaseoah89ggCgYAzgz1JoaPAXam"
+token_voter = "3JhBg9bSPcfWGFa3t8LH7ooVtrjm45yCkHpxYXMXstUM"
+bonk-plugin = "7yJT49ajgYyuhWYzQMzwEt9u9Zbbt7r8Ft2wq1bhhfyy"
 
 [registry]
 url = "https://anchor.projectserum.com"

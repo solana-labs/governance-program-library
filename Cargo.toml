@@ -4,7 +4,9 @@ members = [
     "programs/quadratic",
     "programs/realm-voter",
     "programs/nft-voter",
+    "programs/bonk-plugin",
     "programs/token-haver",
+    "programs/token-voter"
 ]
 
 [profile.release]
