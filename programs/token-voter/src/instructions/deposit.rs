@@ -155,13 +155,13 @@ pub fn deposit<'key, 'accounts, 'remaining, 'info>(
                 is_used: true,
                 reserved: [0; 38],
             };
-            voter.deposits.push(deposit_entry);
+            voter.deposits[mint_idx] = deposit_entry;
         }
     }
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
-    let governance_program_id = ctx.accounts.token_owner_record.owner;
+    let governance_program_id = &ctx.accounts.registrar.governance_program_id;
 
     let token_owner_record = token_owner_record::get_token_owner_record_data(
         governance_program_id,
@@ -178,8 +178,9 @@ pub fn deposit<'key, 'accounts, 'remaining, 'info>(
     // Setup voter_weight
     voter_weight_record.voter_weight = voter.weight(registrar)?;
 
-    // Record is only valid as of the current slot
-    voter_weight_record.voter_weight_expiry = Some(Clock::get()?.slot);
+    // Voter Weight Expiry is always set to None after a deposit
+    // since no other action other than deposit and withdraw could invalidate it
+    voter_weight_record.voter_weight_expiry = None;
 
     // Set action and target to None to indicate the weight is valid for any action and target
     voter_weight_record.weight_action = None;

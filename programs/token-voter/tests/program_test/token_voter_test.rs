@@ -526,7 +526,9 @@ impl TokenVoterTest {
         Ok(VotingMintConfig {
             mint: mint_cookie.address,
             digit_shift,
-            reserved1: [0; 63],
+            // hard coded
+            mint_supply: 100 * 10u64.pow(6),
+            reserved1: [0; 55],
         })
     }
 
@@ -767,6 +769,7 @@ impl TokenVoterTest {
         let accounts = gpl_token_voter::accounts::CloseVoter {
             registrar: registrar_cookie.address,
             voter: voter_cookie.address,
+            voter_weight_record: voter_cookie.voter_weight_record,
             sol_destination: user_cookie.key.pubkey(),
             voter_authority: user_cookie.key.pubkey(),
             token_program: *token_program,

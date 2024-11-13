@@ -99,4 +99,7 @@ pub enum TokenVoterError {
 
     #[msg("Mint Index mismatch!")]
     MintIndexMismatch,
+
+    #[msg("Inactive Deposit Index!")]
+    DepositIndexInactive,
 }

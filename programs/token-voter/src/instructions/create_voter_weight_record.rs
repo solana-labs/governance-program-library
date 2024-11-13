@@ -63,7 +63,8 @@ pub fn create_voter_weight_record(ctx: Context<CreateVoterWeightRecord>) -> Resu
     voter.voter_weight_record_bump = ctx.bumps.voter_weight_record;
     voter.voter_authority = voter_authority.key();
     voter.registrar = registrar.key();
-    voter.deposits = vec![];
+    voter.deposits = DepositEntry::init_deposits(registrar.max_mints as usize);
+
 
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
