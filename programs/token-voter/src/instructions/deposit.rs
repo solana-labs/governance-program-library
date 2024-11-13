@@ -79,8 +79,8 @@ pub struct Deposit<'info> {
 ///
 /// `deposit_entry_index`: Index of the deposit entry.
 /// `amount`: Number of native tokens to transfer.
-pub fn deposit<'key, 'accounts, 'remaining, 'info>(
-    ctx: Context<'key, 'accounts, 'remaining, 'info, Deposit<'info>>,
+pub fn deposit<'info>(
+    ctx: Context<'_, '_, '_, 'info, Deposit<'info>>,
     deposit_entry_index: u8,
     amount: u64,
 ) -> Result<()> {

@@ -47,8 +47,8 @@ pub mod token_voter {
         instructions::configure_mint_config(ctx, digit_shift)
     }
 
-    pub fn deposit<'key, 'accounts, 'remaining, 'info>(
-        ctx: Context<'key, 'accounts, 'remaining, 'info, Deposit<'info>>,
+    pub fn deposit<'info>(
+        ctx: Context<'_, '_, '_, 'info, Deposit<'info>>,
         deposit_entry_index: u8,
         amount: u64,
     ) -> Result<()> {
@@ -56,8 +56,8 @@ pub mod token_voter {
         instructions::deposit(ctx, deposit_entry_index, amount)
     }
 
-    pub fn withdraw<'key, 'accounts, 'remaining, 'info>(
-        ctx: Context<'key, 'accounts, 'remaining, 'info, Withdraw<'info>>,
+    pub fn withdraw<'info>(
+        ctx: Context<'_, '_, '_, 'info, Withdraw<'info>>,
         deposit_entry_index: u8,
         amount: u64,
     ) -> Result<()> {
@@ -65,9 +65,7 @@ pub mod token_voter {
         instructions::withdraw(ctx, deposit_entry_index, amount)
     }
 
-    pub fn close_voter<'key, 'accounts, 'remaining, 'info>(
-        ctx: Context<'key, 'accounts, 'remaining, 'info, CloseVoter<'info>>,
-    ) -> Result<()> {
+    pub fn close_voter<'info>(ctx: Context<'_, '_, '_, 'info, CloseVoter<'info>>) -> Result<()> {
         log_version();
         instructions::close_voter(ctx)
     }

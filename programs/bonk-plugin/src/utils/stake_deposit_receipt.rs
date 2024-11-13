@@ -25,29 +25,27 @@ pub struct StakeDepositReceipt {
     pub claimed_amounts: [u128; 10],
 }
 
-impl StakeDepositReceipt {    
+impl StakeDepositReceipt {
     pub const ACCOUNT_DISCRIMINATOR: [u8; 8] = [210, 98, 254, 196, 151, 68, 235, 0];
 
-    pub fn deserialize_checked(
-        stake_deposit_receipt_account_info: &AccountInfo
-    ) -> Result<Self> {
+    pub fn deserialize_checked(stake_deposit_receipt_account_info: &AccountInfo) -> Result<Self> {
         if stake_deposit_receipt_account_info.owner != &SPL_TOKEN_STAKING_PROGRAM_ID {
-            return Err(
-                anchor_lang::error!(anchor_lang::error::ErrorCode::AccountOwnedByWrongProgram)
-                .with_account_name("StakeDepositReceipt")
-            );
+            return Err(anchor_lang::error!(
+                anchor_lang::error::ErrorCode::AccountOwnedByWrongProgram
+            )
+            .with_account_name("StakeDepositReceipt"));
         }
 
         let stake_deposit_receipt_data = &stake_deposit_receipt_account_info.try_borrow_data()?;
-        let mut data = &mut stake_deposit_receipt_data.as_ref();
+        let data = &mut stake_deposit_receipt_data.as_ref();
 
-        let stake_deposit_receipt = Self::try_from_slice(&mut data)?;
+        let stake_deposit_receipt = Self::try_from_slice(data)?;
 
         if stake_deposit_receipt.discriminator.to_le_bytes() != Self::ACCOUNT_DISCRIMINATOR {
-            return Err(
-                anchor_lang::error!(anchor_lang::error::ErrorCode::AccountDiscriminatorMismatch)
-                .with_account_name("StakeDepositReceipt")
-            );
+            return Err(anchor_lang::error!(
+                anchor_lang::error::ErrorCode::AccountDiscriminatorMismatch
+            )
+            .with_account_name("StakeDepositReceipt"));
         }
 
         Ok(stake_deposit_receipt)

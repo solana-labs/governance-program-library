@@ -65,7 +65,6 @@ pub fn create_voter_weight_record(ctx: Context<CreateVoterWeightRecord>) -> Resu
     voter.registrar = registrar.key();
     voter.deposits = DepositEntry::init_deposits(registrar.max_mints as usize);
 
-
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
     voter_weight_record.account_discriminator =

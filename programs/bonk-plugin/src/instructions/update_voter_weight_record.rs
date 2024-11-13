@@ -70,7 +70,7 @@ pub struct UpdateVoterWeightRecord<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn update_voter_weight_record_handler<'info>(
+pub fn update_voter_weight_record_handler(
     ctx: Context<UpdateVoterWeightRecord>,
     stake_receipts_count: u8,
     action_target: Pubkey,
@@ -108,7 +108,7 @@ pub fn update_voter_weight_record_handler<'info>(
     );
 
     let input_voter_weight_record =
-        resolve_input_voter_weight(&input_voter_weight_account, &clone_record, &registrar)?;
+        resolve_input_voter_weight(&input_voter_weight_account, &clone_record, registrar)?;
 
     voter_weight = voter_weight
         .checked_add(input_voter_weight_record.get_voter_weight())
@@ -119,13 +119,13 @@ pub fn update_voter_weight_record_handler<'info>(
 
     stake_deposit_record.deposits_len = new_deposit_len;
 
-    for mut stake_deposit_receipt_info in ctx.remaining_accounts {
+    for stake_deposit_receipt_info in ctx.remaining_accounts {
         let vote_weight = resolve_stake_deposit_weight(
             registrar,
             proposal_info,
             governance_info,
             &governing_token_owner,
-            &mut stake_deposit_receipt_info,
+            stake_deposit_receipt_info,
             &mut stake_deposit_record.deposits,
             action,
             action_target,
@@ -138,7 +138,8 @@ pub fn update_voter_weight_record_handler<'info>(
         && voter_weight_record.weight_action == Some(action)
     {
         voter_weight_record.voter_weight = voter_weight_record
-            .voter_weight.checked_sub(stake_deposit_record.previous_voter_weight)
+            .voter_weight
+            .checked_sub(stake_deposit_record.previous_voter_weight)
             .unwrap();
 
         voter_weight_record.voter_weight = voter_weight_record

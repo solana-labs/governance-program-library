@@ -8,6 +8,7 @@ members = [
     "programs/token-haver",
     "programs/token-voter"
 ]
+resolver = "2"
 
 [profile.release]
 overflow-checks = true

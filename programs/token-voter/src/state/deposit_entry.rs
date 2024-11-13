@@ -38,7 +38,6 @@ impl DepositEntry {
             reserved: [0; 38],
         }
     }
-
     /// Initializes a vector of DepositEntry with a given length
     pub fn init_deposits(length: usize) -> Vec<Self> {
         vec![Self::new(); length]
@@ -50,5 +49,11 @@ impl DepositEntry {
         let vote_weight = mint_config.digit_shift_native(self.amount_deposited_native)?;
 
         Ok(vote_weight)
+    }
+}
+
+impl Default for DepositEntry {
+    fn default() -> Self {
+        Self::new()
     }
 }

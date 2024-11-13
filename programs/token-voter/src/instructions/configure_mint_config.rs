@@ -63,7 +63,7 @@ pub fn configure_mint_config(
         ctx.accounts.realm_authority.key(),
         TokenVoterError::InvalidRealmAuthority
     );
-    
+
     let voting_mint_config = VotingMintConfig {
         mint: mint.key(),
         digit_shift,
@@ -85,9 +85,8 @@ pub fn configure_mint_config(
     }
 
     // Update MaxVoterWeightRecord.max_voter_weight
-    // recalculate the max voter weight as mint supply has possibly changed 
+    // recalculate the max voter weight as mint supply has possibly changed
     max_voter_weight_record.max_voter_weight = registrar.max_vote_weight()?;
-
 
     max_voter_weight_record.max_voter_weight_expiry = None;
 

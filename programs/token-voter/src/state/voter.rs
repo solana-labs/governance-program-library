@@ -60,7 +60,7 @@ impl Voter {
         );
 
         let d = &mut self.deposits[index];
-        // if deposit_slot_hash is 0 then deposit is inactive 
+        // if deposit_slot_hash is 0 then deposit is inactive
         if d.deposit_slot_hash == 0 {
             return Err(TokenVoterError::DepositIndexInactive.into());
         }
