@@ -1,0 +1,919 @@
+{
+  "address": "STAKEGztX7S1MUHxcQHieZhELCntb9Ys9BgUbeEtMu1",
+  "metadata": {
+    "name": "spl_token_staking",
+    "version": "1.1.2",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "add_reward_pool",
+      "docs": [
+        "Add a [RewardPool](state::RewardPool) to an existing [StakePool](state::StakePool).",
+        "",
+        "Can only be invoked by the StakePool's authority."
+      ],
+      "discriminator": [
+        28,
+        53,
+        119,
+        0,
+        114,
+        211,
+        196,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "docs": [
+            "Payer of rent"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Authority of the StakePool"
+          ],
+          "signer": true,
+          "relations": [
+            "stake_pool"
+          ]
+        },
+        {
+          "name": "reward_mint",
+          "docs": [
+            "SPL Token Mint of the token that will be distributed as rewards"
+          ]
+        },
+        {
+          "name": "stake_pool",
+          "docs": [
+            "StakePool where the RewardPool will be added"
+          ],
+          "writable": true
+        },
+        {
+          "name": "reward_vault",
+          "docs": [
+            "An SPL token Account for holding rewards to be claimed"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "stake_pool"
+              },
+              {
+                "kind": "account",
+                "path": "reward_mint"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  119,
+                  97,
+                  114,
+                  100,
+                  86,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "index",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "deposit",
+      "docs": [
+        "Deposit (aka Stake) a wallet's tokens to the specified [StakePool](state::StakePool).",
+        "Depending on the `lockup_duration` and the StakePool's weighting configuration, the",
+        "wallet initiating the deposit will receive tokens representing their effective stake",
+        "(i.e. deposited amount multiplied by the lockup weight).",
+        "",
+        "For each RewardPool, the latest amount per effective stake will be recalculated to ensure",
+        "the latest accumulated rewards are attributed to all previous depositors and not the deposit",
+        "resulting from this instruction.",
+        "",
+        "A [StakeDepositReceipt](state::StakeDepositReceipt) will be created to track the",
+        "lockup duration, effective weight, and claimable rewards.",
+        "",
+        "Remaining accounts are required: pass the `reward_vault` of each reward pool. These must be",
+        "passed in the same order as `StakePool.reward_pools`"
+      ],
+      "discriminator": [
+        242,
+        35,
+        198,
+        137,
+        82,
+        225,
+        242,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "owner",
+          "docs": [
+            "Owner of the StakeDepositReceipt, which may differ",
+            "from the account staking."
+          ],
+          "relations": [
+            "destination"
+          ]
+        },
+        {
+          "name": "from",
+          "docs": [
+            "Token Account to transfer stake_mint from, to be deposited into the vault"
+          ],
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "Vault of the StakePool token will be transfer to"
+          ],
+          "writable": true,
+          "relations": [
+            "stake_pool"
+          ]
+        },
+        {
+          "name": "stake_mint",
+          "writable": true,
+          "relations": [
+            "stake_pool"
+          ]
+        },
+        {
+          "name": "destination",
+          "docs": [
+            "Token account the StakePool token will be transfered to"
+          ],
+          "writable": true
+        },
+        {
+          "name": "stake_pool",
+          "docs": [
+            "StakePool owning the vault that will receive the deposit"
+          ],
+          "writable": true
+        },
+        {
+          "name": "stake_deposit_receipt",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "stake_pool"
+              },
+              {
+                "kind": "arg",
+                "path": "nonce"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  107,
+                  101,
+                  68,
+                  101,
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  82,
+                  101,
+                  99,
+                  101,
+                  105,
+                  112,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "nonce",
+          "type": "u32"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "lockup_duration",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize_stake_pool",
+      "docs": [
+        "Create a [StakePool](state::StakePool) and initialize the Mint that will",
+        "represent effective stake weight."
+      ],
+      "discriminator": [
+        48,
+        189,
+        243,
+        73,
+        19,
+        67,
+        36,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "docs": [
+            "Payer of rent"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Authority that can add rewards pools"
+          ]
+        },
+        {
+          "name": "mint",
+          "docs": [
+            "SPL Token Mint of the underlying token to be deposited for staking"
+          ]
+        },
+        {
+          "name": "stake_pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "nonce"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  107,
+                  101,
+                  80,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "stake_mint",
+          "docs": [
+            "An SPL token Mint for the effective stake weight token"
+          ],
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "An SPL token Account for staging A tokens"
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "nonce",
+          "type": "u8"
+        },
+        {
+          "name": "max_weight",
+          "type": "u64"
+        },
+        {
+          "name": "min_duration",
+          "type": "u64"
+        },
+        {
+          "name": "max_duration",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "transfer_authority",
+      "docs": [
+        "DANGEROUSLY Update `authority` of [StakePool](state::StakePool) to `new_authority`.",
+        "This is useful for quickly setting up a StakePool and then transfering it to a",
+        "form of governance."
+      ],
+      "discriminator": [
+        48,
+        169,
+        76,
+        72,
+        229,
+        180,
+        55,
+        161
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "Current authority of the StakePool"
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "stake_pool"
+          ]
+        },
+        {
+          "name": "new_authority"
+        },
+        {
+          "name": "stake_pool",
+          "docs": [
+            "StakePool that will have it's authority updated"
+          ],
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_token_meta",
+      "discriminator": [
+        138,
+        54,
+        34,
+        1,
+        233,
+        180,
+        193,
+        240
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "stake_pool"
+          ]
+        },
+        {
+          "name": "metadata_account",
+          "writable": true
+        },
+        {
+          "name": "stake_pool"
+        },
+        {
+          "name": "stake_mint",
+          "relations": [
+            "stake_pool"
+          ]
+        },
+        {
+          "name": "metadata_program",
+          "address": "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "symbol",
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "withdraw",
+      "docs": [
+        "Withdraw (aka Unstake) a wallet's tokens for a specific StakeDepositReceipt. The StakePool's",
+        "total weighted stake will be decreased by the effective stake amount of the StakeDepositReceipt",
+        "and the original amount deposited will be transferred out of the vault.",
+        "",
+        "All rewards will be claimed. So, for each RewardPool, the latest amount per effective stake will",
+        "be recalculated to ensure the latest accumulated rewards are accounted for in the claimable amount.",
+        "The StakeDepositReceipt is also updated so that the latest claimed amount is equivalent, so that",
+        "their claimable amount is 0 after invoking the withdraw instruction.",
+        "",
+        "StakeDepositReceipt account is closed after this instruction.",
+        "",
+        "Remaining accounts are required: pass the `reward_vault` of each reward pool. These must be",
+        "passed in the same order as `StakePool.reward_pools`. The owner (the token account which",
+        "gains the withdrawn funds) must also be passed be, in pairs like so:",
+        "* `<reward_vault[0]><owner[0]>`",
+        "* `<reward_vault[1]><owner[1]>",
+        "* ...etc"
+      ],
+      "discriminator": [
+        183,
+        18,
+        70,
+        156,
+        148,
+        109,
+        161,
+        34
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "Owner of the StakeDepositReceipt"
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "stake_deposit_receipt"
+          ]
+        },
+        {
+          "name": "stake_pool",
+          "writable": true,
+          "relations": [
+            "stake_deposit_receipt"
+          ]
+        },
+        {
+          "name": "stake_deposit_receipt",
+          "docs": [
+            "StakeDepositReceipt of the owner that will be used to claim respective rewards"
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "Vault of the StakePool token will be transferred from"
+          ],
+          "writable": true
+        },
+        {
+          "name": "stake_mint",
+          "docs": [
+            "stake_mint of StakePool that will be burned"
+          ],
+          "writable": true
+        },
+        {
+          "name": "from",
+          "docs": [
+            "Token Account holding weighted stake representation token to burn"
+          ],
+          "writable": true
+        },
+        {
+          "name": "destination",
+          "docs": [
+            "Token account to transfer the previously staked token to"
+          ],
+          "writable": true
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "StakeDepositReceipt",
+      "discriminator": [
+        210,
+        98,
+        254,
+        196,
+        151,
+        68,
+        235,
+        0
+      ]
+    },
+    {
+      "name": "StakePool",
+      "discriminator": [
+        121,
+        34,
+        206,
+        21,
+        79,
+        127,
+        255,
+        28
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidAuthority",
+      "msg": "Invalid StakePool authority"
+    },
+    {
+      "code": 6001,
+      "name": "RewardPoolIndexOccupied",
+      "msg": "RewardPool index is already occupied"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidStakePoolVault",
+      "msg": "StakePool vault is invalid"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidRewardPoolVault",
+      "msg": "RewardPool vault is invalid"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidRewardPoolVaultIndex",
+      "msg": "Invalid RewardPool vault remaining account index"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidOwner",
+      "msg": "Invalid StakeDepositReceiptOwner"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidStakePool",
+      "msg": "Invalid StakePool"
+    },
+    {
+      "code": 6007,
+      "name": "PrecisionMath",
+      "msg": "Math precision error"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidStakeMint",
+      "msg": "Invalid stake mint"
+    },
+    {
+      "code": 6009,
+      "name": "StakeStillLocked",
+      "msg": "Stake is still locked"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidStakePoolDuration",
+      "msg": "Max duration must be great than min"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidStakePoolWeight",
+      "msg": "Max weight must be great than min"
+    },
+    {
+      "code": 6012,
+      "name": "DurationTooShort",
+      "msg": "Duration too short"
+    }
+  ],
+  "types": [
+    {
+      "name": "RewardPool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "reward_vault",
+            "docs": [
+              "Token Account to store the reward SPL Token"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "rewards_per_effective_stake",
+            "docs": [
+              "Ever increasing accumulator of the amount of rewards per effective stake.\n    Said another way, if a user deposited before any rewards were added to the\n    `vault`, then this would be the token amount per effective stake they could\n    claim."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "last_amount",
+            "docs": [
+              "latest amount of tokens in the vault"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "_padding0",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakeDepositReceipt",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "docs": [
+              "Pubkey that owns the staked assets"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "payer",
+            "docs": [
+              "Pubkey that paid for the deposit"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_pool",
+            "docs": [
+              "StakePool the deposit is for"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "lockup_duration",
+            "docs": [
+              "Duration of the lockup period in seconds"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "deposit_timestamp",
+            "docs": [
+              "Timestamp in seconds of when the stake lockup began"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "deposit_amount",
+            "docs": [
+              "Amount of SPL token deposited"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "effective_stake",
+            "docs": [
+              "Amount of stake weighted by lockup duration."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "claimed_amounts",
+            "docs": [
+              "The amount per reward that has been claimed or perceived to be claimed. Indexes align with",
+              "the StakedPool reward_pools property."
+            ],
+            "type": {
+              "array": [
+                "u128",
+                10
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakePool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator",
+            "docs": [
+              "The original creator of the StakePool. Necessary for signer seeds"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "docs": [
+              "Pubkey that can make updates to StakePool"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "total_weighted_stake",
+            "docs": [
+              "Total amount staked that accounts for the lock up period weighting.\n    Note, this is not equal to the amount of SPL Tokens staked."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "vault",
+            "docs": [
+              "Token Account to store the staked SPL Token"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "docs": [
+              "Mint of the token being staked"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_mint",
+            "docs": [
+              "Mint of the token representing effective stake"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "reward_pools",
+            "docs": [
+              "Array of RewardPools that apply to the stake pool.",
+              "Unused entries are Pubkey default. In arbitrary order, and may have gaps."
+            ],
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "RewardPool"
+                  }
+                },
+                10
+              ]
+            }
+          },
+          {
+            "name": "base_weight",
+            "docs": [
+              "The minimum weight received for staking. In terms of 1 / SCALE_FACTOR_BASE.",
+              "Examples:",
+              "* `min_weight = 1 x SCALE_FACTOR_BASE` = minmum of 1x multiplier for > min_duration staking",
+              "* `min_weight = 2 x SCALE_FACTOR_BASE` = minmum of 2x multiplier for > min_duration staking"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "max_weight",
+            "docs": [
+              "Maximum weight for staking lockup (i.e. weight multiplier when locked",
+              "up for max duration). In terms of 1 / SCALE_FACTOR_BASE. Examples:",
+              "* A `max_weight = 1 x SCALE_FACTOR_BASE` = 1x multiplier for max staking duration",
+              "* A `max_weight = 2 x SCALE_FACTOR_BASE` = 2x multiplier for max staking duration"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "min_duration",
+            "docs": [
+              "Minimum duration for lockup. At this point, the staker would receive the base weight. In seconds."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "max_duration",
+            "docs": [
+              "Maximum duration for lockup. At this point, the staker would receive the max weight. In seconds."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "nonce",
+            "docs": [
+              "Nonce to derive multiple stake pools from same mint"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "bump_seed",
+            "docs": [
+              "Bump seed for stake_mint"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "_padding0",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          },
+          {
+            "name": "_reserved0",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

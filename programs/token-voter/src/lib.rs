@@ -7,8 +7,8 @@ use instructions::*;
 
 pub mod state;
 
-pub mod tools;
 mod governance;
+pub mod tools;
 
 #[macro_use]
 extern crate static_assertions;
@@ -33,12 +33,12 @@ pub mod token_voter {
         log_version();
         instructions::create_voter_weight_record(ctx)
     }
-    
+
     pub fn create_max_voter_weight_record(ctx: Context<CreateMaxVoterWeightRecord>) -> Result<()> {
         log_version();
         instructions::create_max_voter_weight_record(ctx)
     }
-    
+
     pub fn configure_mint_config(
         ctx: Context<ConfigureVotingMintConfig>,
         digit_shift: i8,

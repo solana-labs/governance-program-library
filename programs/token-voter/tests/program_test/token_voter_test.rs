@@ -6,8 +6,8 @@ use anchor_spl::{
     associated_token::{self, AssociatedToken},
     token_interface::TokenAccount,
 };
-use solana_sdk::{instruction::AccountMeta, sysvar::instructions};
 use gpl_token_voter::state::*;
+use solana_sdk::{instruction::AccountMeta, sysvar::instructions};
 
 use crate::program_test::governance_test::GovernanceTest;
 use crate::program_test::program_test_bench::ProgramTestBench;
@@ -119,10 +119,8 @@ impl TokenVoterTest {
         }
     }
 
-
     #[allow(dead_code)]
-    pub async fn start_new_token_extensions(
-        transfer_hook_program_id: Option<&Pubkey>,) -> Self {
+    pub async fn start_new_token_extensions(transfer_hook_program_id: Option<&Pubkey>) -> Self {
         let mut program_test = ProgramTest::new("gpl_token_voter", gpl_token_voter::id(), None);
         let (mints, users) = ProgramTestBench::add_mints_and_user_cookies_spl_token(
             &mut program_test,
@@ -203,9 +201,10 @@ impl TokenVoterTest {
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
         let max_mints = 10;
-        let data = anchor_lang::InstructionData::data(&gpl_token_voter::instruction::CreateRegistrar {
-            max_mints,
-        });
+        let data =
+            anchor_lang::InstructionData::data(&gpl_token_voter::instruction::CreateRegistrar {
+                max_mints,
+            });
 
         let accounts = anchor_lang::ToAccountMetas::to_account_metas(
             &gpl_token_voter::accounts::CreateRegistrar {
@@ -258,7 +257,7 @@ impl TokenVoterTest {
         realm_cookie: &RealmCookie,
         max_mints: u8,
     ) -> Result<RegistrarCookie, BanksClientError> {
-        self.with_resize_registrar_using_ix(realm_cookie,max_mints,  NopOverride, None)
+        self.with_resize_registrar_using_ix(realm_cookie, max_mints, NopOverride, None)
             .await
     }
 
@@ -273,9 +272,10 @@ impl TokenVoterTest {
         let registrar_key =
             get_registrar_address(&realm_cookie.address, &realm_cookie.account.community_mint);
 
-        let data = anchor_lang::InstructionData::data(&gpl_token_voter::instruction::ResizeRegistrar {
-            max_mints,
-        });
+        let data =
+            anchor_lang::InstructionData::data(&gpl_token_voter::instruction::ResizeRegistrar {
+                max_mints,
+            });
 
         let accounts = anchor_lang::ToAccountMetas::to_account_metas(
             &gpl_token_voter::accounts::ResizeRegistrar {
@@ -495,10 +495,9 @@ impl TokenVoterTest {
         instruction_override: F,
         signers_override: Option<&[&Keypair]>,
     ) -> Result<VotingMintConfig, BanksClientError> {
-        let data =
-            anchor_lang::InstructionData::data(&gpl_token_voter::instruction::ConfigureMintConfig {
-                digit_shift,
-            });
+        let data = anchor_lang::InstructionData::data(
+            &gpl_token_voter::instruction::ConfigureMintConfig { digit_shift },
+        );
 
         let accounts = gpl_token_voter::accounts::ConfigureVotingMintConfig {
             registrar: registrar_cookie.address,
@@ -558,7 +557,7 @@ impl TokenVoterTest {
             amount,
             NopOverride,
             None,
-            additional_account_meta
+            additional_account_meta,
         )
         .await
     }
@@ -608,9 +607,9 @@ impl TokenVoterTest {
             associated_token_program: AssociatedToken::id(),
         }
         .to_account_metas(None);
-        
+
         if let Some(additional_account_meta) = additional_account_meta {
-                accounts = accounts
+            accounts = accounts
                 .into_iter()
                 .chain(additional_account_meta.into_iter())
                 .collect();
@@ -658,7 +657,7 @@ impl TokenVoterTest {
             amount,
             NopOverride,
             None,
-            additional_account_meta
+            additional_account_meta,
         )
         .await
     }
@@ -707,9 +706,9 @@ impl TokenVoterTest {
             associated_token_program: AssociatedToken::id(),
         }
         .to_account_metas(None);
-        
+
         if let Some(additional_account_meta) = additional_account_meta {
-                accounts = accounts
+            accounts = accounts
                 .into_iter()
                 .chain(additional_account_meta.into_iter())
                 .collect();
@@ -838,7 +837,12 @@ impl TokenVoterTest {
     }
 
     #[allow(dead_code)]
-    pub async fn vault_balance(&self, voter: &VoterCookie, mint: &MintCookie, token_program_id: &Pubkey) -> u64 {
+    pub async fn vault_balance(
+        &self,
+        voter: &VoterCookie,
+        mint: &MintCookie,
+        token_program_id: &Pubkey,
+    ) -> u64 {
         let vault = self.associated_token_address(voter.address, mint, token_program_id);
         self.bench
             .get_anchor_account::<TokenAccount>(vault)
@@ -859,10 +863,20 @@ impl TokenVoterTest {
     pub async fn token_balance(&self, token_account: &Pubkey) -> u64 {
         let token_account_data = self.bench.get_account(token_account).await.unwrap();
         let account_info: spl_token::state::Account =
-            spl_token::state::Account::unpack_from_slice(token_account_data.data.as_slice()).unwrap();
+            spl_token::state::Account::unpack_from_slice(token_account_data.data.as_slice())
+                .unwrap();
         account_info.amount
     }
-    pub fn associated_token_address(&self, address: Pubkey, mint: &MintCookie, token_program_id: &Pubkey,) -> Pubkey {
-        spl_associated_token_account::get_associated_token_address_with_program_id(&address, &&mint.address, token_program_id)
+    pub fn associated_token_address(
+        &self,
+        address: Pubkey,
+        mint: &MintCookie,
+        token_program_id: &Pubkey,
+    ) -> Pubkey {
+        spl_associated_token_account::get_associated_token_address_with_program_id(
+            &address,
+            &&mint.address,
+            token_program_id,
+        )
     }
 }

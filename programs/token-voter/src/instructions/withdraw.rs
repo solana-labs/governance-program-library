@@ -1,7 +1,10 @@
 use {
     crate::{error::*, state::*, tools::spl_token::transfer_spl_tokens_signed_checked, ID},
     anchor_lang::prelude::*,
-    anchor_spl::{associated_token::AssociatedToken, token_interface::{Mint, TokenAccount, TokenInterface}},
+    anchor_spl::{
+        associated_token::AssociatedToken,
+        token_interface::{Mint, TokenAccount, TokenInterface},
+    },
 };
 
 #[derive(Accounts)]
@@ -130,7 +133,7 @@ pub fn withdraw<'key, 'accounts, 'remaining, 'info>(
         .amount_deposited_native
         .checked_sub(amount)
         .unwrap();
-    
+
     if deposit_entry.amount_deposited_native == 0 {
         deposit_entry.is_used = false;
     }

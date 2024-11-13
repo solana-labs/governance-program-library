@@ -5,7 +5,7 @@ use {
     spl_governance::state::realm,
 };
 
-/// Creates or updates configuration for spl-governance program instances to 
+/// Creates or updates configuration for spl-governance program instances to
 /// define which spl-governance instances can be used to grant governance power
 #[derive(Accounts)]
 pub struct ConfigureVotingMintConfig<'info> {

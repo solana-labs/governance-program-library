@@ -1,0 +1,451 @@
+use std::{str::FromStr, sync::Arc};
+
+use anchor_lang::prelude::Pubkey;
+use solana_program_test::ProgramTest;
+use solana_sdk::{
+    instruction::Instruction, signature::Keypair, signer::Signer, transport::TransportError,
+};
+use spl_governance::{
+    instruction::{
+        create_governance, create_proposal, create_realm, create_token_owner_record,
+        deposit_governing_tokens, relinquish_vote, sign_off_proposal,
+    },
+    state::{
+        enums::{
+            GovernanceAccountType, MintMaxVoterWeightSource, ProposalState, VoteThreshold,
+            VoteTipping,
+        },
+        governance::get_governance_address,
+        proposal::ProposalV2,
+        realm::{get_realm_address, GoverningTokenConfigAccountArgs, RealmConfig, RealmV2},
+        realm_config::GoverningTokenType,
+        token_owner_record::{
+            get_token_owner_record_address, TokenOwnerRecordV2, TOKEN_OWNER_RECORD_LAYOUT_VERSION,
+        },
+        vote_record,
+    },
+};
+
+use crate::program_test::{
+    program_test_bench::{MintCookie, ProgramTestBench, WalletCookie},
+    tools::clone_keypair,
+};
+
+use super::{bonk_plugin_test::VoterWeightRecordCookie, program_test_bench::TokenAccountCookie};
+
+pub struct RealmCookie {
+    pub address: Pubkey,
+    pub account: RealmV2,
+    pub realm_authority: Keypair,
+    pub community_mint_cookie: MintCookie,
+    pub council_mint_cookie: Option<MintCookie>,
+}
+
+impl RealmCookie {
+    pub fn get_realm_authority(&self) -> Keypair {
+        clone_keypair(&self.realm_authority)
+    }
+}
+
+pub struct ProposalCookie {
+    pub address: Pubkey,
+    pub account: ProposalV2,
+}
+
+pub struct TokenOwnerRecordCookie {
+    pub address: Pubkey,
+    pub account: TokenOwnerRecordV2,
+}
+
+pub struct GovernanceTest {
+    pub program_id: Pubkey,
+    pub bench: Arc<ProgramTestBench>,
+    pub next_id: u8,
+    pub community_voter_weight_addin: Option<Pubkey>,
+}
+
+impl GovernanceTest {
+    pub fn program_id() -> Pubkey {
+        Pubkey::from_str("Governance111111111111111111111111111111111").unwrap()
+    }
+
+    #[allow(dead_code)]
+    pub fn add_program(program_test: &mut ProgramTest) {
+        program_test.add_program("spl_governance", Self::program_id(), None);
+    }
+
+    #[allow(dead_code)]
+    pub fn new(bench: Arc<ProgramTestBench>, community_voter_weight_addin: Option<Pubkey>) -> Self {
+        GovernanceTest {
+            bench,
+            program_id: Self::program_id(),
+            next_id: 0,
+            community_voter_weight_addin,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_realm(&mut self) -> Result<RealmCookie, TransportError> {
+        let realm_authority = Keypair::new();
+
+        let community_mint_cookie = self.bench.with_mint().await?;
+        let council_mint_cookie = self.bench.with_mint().await?;
+
+        self.next_id += 1;
+        let realm_name = format!("Realm #{}", self.next_id).to_string();
+
+        let min_community_weight_to_create_governance = 1;
+        let community_mint_max_voter_weight_source = MintMaxVoterWeightSource::FULL_SUPPLY_FRACTION;
+
+        let realm_key = get_realm_address(&self.program_id, &realm_name);
+
+        let community_token_config_args = GoverningTokenConfigAccountArgs {
+            voter_weight_addin: self.community_voter_weight_addin,
+            max_voter_weight_addin: None,
+            token_type: GoverningTokenType::default(),
+        };
+
+        let create_realm_ix = create_realm(
+            &self.program_id,
+            &realm_authority.pubkey(),
+            &community_mint_cookie.address,
+            &self.bench.payer.pubkey(),
+            Some(council_mint_cookie.address),
+            Some(community_token_config_args),
+            None,
+            realm_name.clone(),
+            min_community_weight_to_create_governance,
+            community_mint_max_voter_weight_source.clone(),
+        );
+
+        self.bench
+            .process_transaction(&[create_realm_ix], None)
+            .await?;
+
+        let account = RealmV2 {
+            account_type: GovernanceAccountType::RealmV2,
+            community_mint: community_mint_cookie.address,
+
+            name: realm_name,
+            reserved: [0; 6],
+            authority: Some(realm_authority.pubkey()),
+            config: RealmConfig {
+                council_mint: Some(council_mint_cookie.address),
+                reserved: [0; 6],
+                min_community_weight_to_create_governance,
+                legacy1: 0,
+                legacy2: 0,
+                community_mint_max_voter_weight_source,
+            },
+            reserved_v2: [0; 128],
+            legacy1: 0,
+        };
+
+        Ok(RealmCookie {
+            address: realm_key,
+            account,
+            realm_authority,
+            community_mint_cookie,
+            council_mint_cookie: Some(council_mint_cookie),
+        })
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_proposal(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        voter_weight_record: &VoterWeightRecordCookie,
+        token_owner_keypair: &Keypair,
+        update_voter_weight_record_create_proposal_ix: Instruction,
+        proposal_seed: &Pubkey,
+        proposal_key: &Pubkey,
+        token_account_cookie: TokenAccountCookie,
+    ) -> Result<ProposalCookie, TransportError> {
+        let token_owner = token_owner_keypair.pubkey();
+        let council_mint_cookie = realm_cookie.council_mint_cookie.as_ref().unwrap();
+        let governing_token_mint: Pubkey = council_mint_cookie.address;
+
+        let governing_token_account_cookie = self
+            .bench
+            .with_tokens(council_mint_cookie, &token_owner, 1)
+            .await?;
+
+        let proposal_owner_record_key = get_token_owner_record_address(
+            &self.program_id,
+            &realm_cookie.address,
+            &governing_token_mint,
+            &token_owner,
+        );
+
+        let create_tor_ix = create_token_owner_record(
+            &self.program_id,
+            &realm_cookie.address,
+            &token_owner_keypair.pubkey(),
+            &governing_token_mint,
+            &token_owner_keypair.pubkey(),
+        );
+
+        self.bench
+            .process_transaction(&[create_tor_ix], Some(&[&token_owner_keypair]))
+            .await?;
+
+        let deposit_ix = deposit_governing_tokens(
+            &self.program_id,
+            &realm_cookie.address,
+            &governing_token_account_cookie.address,
+            &token_owner,
+            &token_owner,
+            &self.bench.payer.pubkey(),
+            1,
+            &governing_token_mint,
+        );
+
+        self.bench
+            .process_transaction(&[deposit_ix], Some(&[&token_owner_keypair]))
+            .await?;
+
+        let governance_key = get_governance_address(
+            &self.program_id,
+            &realm_cookie.address,
+            &token_account_cookie.address,
+        );
+
+        let create_governance_ix = create_governance(
+            &self.program_id,
+            &realm_cookie.address,
+            Some(&token_account_cookie.address),
+            &proposal_owner_record_key,
+            &self.bench.payer.pubkey(),
+            &realm_cookie.realm_authority.pubkey(),
+            Some(voter_weight_record.address),
+            spl_governance::state::governance::GovernanceConfig {
+                min_community_weight_to_create_proposal: 1,
+                min_transaction_hold_up_time: 0,
+                min_council_weight_to_create_proposal: 1,
+                community_vote_threshold: VoteThreshold::YesVotePercentage(60),
+                voting_base_time: 600,
+                community_vote_tipping: VoteTipping::Strict,
+                council_vote_threshold: VoteThreshold::YesVotePercentage(60),
+                council_veto_vote_threshold: VoteThreshold::Disabled,
+                council_vote_tipping: VoteTipping::Disabled,
+                community_veto_vote_threshold: VoteThreshold::Disabled,
+                voting_cool_off_time: 0,
+                deposit_exempt_proposal_count: 10,
+            },
+        );
+
+        self.bench
+            .process_transaction(
+                &[create_governance_ix],
+                Some(&[&realm_cookie.realm_authority]),
+            )
+            .await?;
+        let proposal_governing_token_mint = realm_cookie.account.community_mint;
+        let create_proposal_ix = create_proposal(
+            &self.program_id,
+            &governance_key,
+            &proposal_owner_record_key,
+            &token_owner,
+            &self.bench.payer.pubkey(),
+            None,
+            &realm_cookie.address,
+            String::from("Proposal #1"),
+            String::from("Proposal #1 link"),
+            &proposal_governing_token_mint,
+            spl_governance::state::proposal::VoteType::SingleChoice,
+            vec!["Yes".to_string()],
+            true,
+            &proposal_seed,
+        );
+
+        let sign_off_proposal_ix = sign_off_proposal(
+            &self.program_id,
+            &realm_cookie.address,
+            &governance_key,
+            &proposal_key,
+            &token_owner,
+            Some(&proposal_owner_record_key),
+        );
+
+        self.bench
+            .process_transaction(
+                &[
+                    update_voter_weight_record_create_proposal_ix,
+                    create_proposal_ix,
+                    sign_off_proposal_ix,
+                ],
+                Some(&[&token_owner_keypair]),
+            )
+            .await?;
+
+        let account = ProposalV2 {
+            account_type: GovernanceAccountType::GovernanceV2,
+            governing_token_mint: proposal_governing_token_mint,
+            state: ProposalState::Voting,
+            governance: governance_key,
+            token_owner_record: proposal_owner_record_key,
+            signatories_count: 1,
+            signatories_signed_off_count: 1,
+            vote_type: spl_governance::state::proposal::VoteType::SingleChoice,
+            options: vec![],
+            deny_vote_weight: Some(1),
+            veto_vote_weight: 0,
+            abstain_vote_weight: None,
+            start_voting_at: None,
+            draft_at: 1,
+            signing_off_at: None,
+            voting_at: None,
+            voting_at_slot: None,
+            voting_completed_at: None,
+            executing_at: None,
+            closed_at: None,
+            execution_flags: spl_governance::state::enums::InstructionExecutionFlags::None,
+            max_vote_weight: None,
+            max_voting_time: None,
+            reserved: [0; 64],
+            name: String::from("Proposal #1"),
+            description_link: String::from("Proposal #1 link"),
+            reserved1: 0,
+            vote_threshold: None,
+        };
+
+        Ok(ProposalCookie {
+            address: *proposal_key,
+            account,
+        })
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_token_owner_record(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        token_owner_cookie: &WalletCookie,
+    ) -> Result<TokenOwnerRecordCookie, TransportError> {
+        let token_owner_record_key = get_token_owner_record_address(
+            &self.program_id,
+            &realm_cookie.address,
+            &realm_cookie.account.community_mint,
+            &token_owner_cookie.address,
+        );
+
+        let create_tor_ix = create_token_owner_record(
+            &self.program_id,
+            &realm_cookie.address,
+            &token_owner_cookie.address,
+            &realm_cookie.account.community_mint,
+            &self.bench.payer.pubkey(),
+        );
+
+        self.bench
+            .process_transaction(&[create_tor_ix], None)
+            .await?;
+
+        let account = TokenOwnerRecordV2 {
+            account_type: GovernanceAccountType::TokenOwnerRecordV2,
+            realm: realm_cookie.address,
+            governing_token_mint: realm_cookie.account.community_mint,
+            governing_token_owner: token_owner_cookie.address,
+            governing_token_deposit_amount: 0,
+            unrelinquished_votes_count: 0,
+
+            outstanding_proposal_count: 0,
+            reserved: [0; 6],
+            governance_delegate: None,
+            reserved_v2: [0; 128],
+            version: TOKEN_OWNER_RECORD_LAYOUT_VERSION,
+        };
+
+        Ok(TokenOwnerRecordCookie {
+            address: token_owner_record_key,
+            account,
+        })
+    }
+
+    #[allow(dead_code)]
+    pub async fn cast_vote(
+        &self,
+        realm_cookie: &RealmCookie,
+        proposal: &ProposalCookie,
+        authority: &Keypair,
+        payer: &Keypair,
+        voter_weight_record: &Option<Pubkey>,
+        max_voter_weight_record: &Option<Pubkey>,
+        token_owner_record_cookie: &TokenOwnerRecordCookie,
+        update_voter_weight_record_cast_vote_ix: Option<Instruction>,
+    ) -> Result<(), TransportError> {
+        let cast_voter_instruction = spl_governance::instruction::cast_vote(
+            &self.program_id,
+            &realm_cookie.address,
+            &proposal.account.governance,
+            &proposal.address,
+            &proposal.account.token_owner_record,
+            &token_owner_record_cookie.address,
+            &authority.pubkey(),
+            &realm_cookie.account.community_mint,
+            &payer.pubkey(),
+            *voter_weight_record,
+            *max_voter_weight_record,
+            vote_record::Vote::Approve(vec![vote_record::VoteChoice {
+                rank: 0,
+                weight_percentage: 100,
+            }]),
+        );
+
+        let signer1 = Keypair::from_base58_string(&payer.to_base58_string());
+        let signer2 = Keypair::from_base58_string(&authority.to_base58_string());
+        let mut instructions = vec![cast_voter_instruction.clone()];
+        if update_voter_weight_record_cast_vote_ix.is_some() {
+            instructions = vec![
+                update_voter_weight_record_cast_vote_ix.unwrap(),
+                cast_voter_instruction,
+            ];
+        }
+        self.bench
+            .process_transaction(&instructions, Some(&[&signer1, &signer2]))
+            .await?;
+
+        Ok(())
+    }
+
+    #[allow(dead_code)]
+    pub async fn relinquish_vote(
+        &mut self,
+        proposal_cookie: &ProposalCookie,
+        token_owner_cookie: &WalletCookie,
+        token_owner_record_cookie: &TokenOwnerRecordCookie,
+    ) -> Result<(), TransportError> {
+        let relinquish_vote_ix = relinquish_vote(
+            &self.program_id,
+            &token_owner_record_cookie.account.realm,
+            &proposal_cookie.account.governance,
+            &proposal_cookie.address,
+            &token_owner_record_cookie.address,
+            &proposal_cookie.account.governing_token_mint,
+            Some(token_owner_record_cookie.account.governing_token_owner),
+            Some(self.bench.payer.pubkey()),
+        );
+
+        self.bench
+            .process_transaction(&[relinquish_vote_ix], Some(&[&token_owner_cookie.signer]))
+            .await?;
+
+        Ok(())
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_proposal(&mut self, proposal_key: &Pubkey) -> ProposalV2 {
+        self.bench
+            .get_borsh_account::<ProposalV2>(proposal_key)
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_token_owner_record(
+        &mut self,
+        token_owner_record_key: &Pubkey,
+    ) -> TokenOwnerRecordV2 {
+        self.bench
+            .get_borsh_account::<TokenOwnerRecordV2>(token_owner_record_key)
+            .await
+    }
+}

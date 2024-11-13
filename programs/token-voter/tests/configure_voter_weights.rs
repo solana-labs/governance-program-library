@@ -10,7 +10,7 @@ mod program_test;
 async fn test_configure_voter_weights_with_token_extensions() -> Result<(), TransportError> {
     // Arrange
     let mut token_voter_test = TokenVoterTest::start_new_token_extensions(None).await;
-    
+
     let realm_cookie = token_voter_test.governance.with_realm().await?;
 
     let registrar_cookie = token_voter_test.with_registrar(&realm_cookie).await?;
@@ -27,30 +27,32 @@ async fn test_configure_voter_weights_with_token_extensions() -> Result<(), Tran
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
-    let _mint_cookie = token_voter_test.configure_mint_config(
-        &registrar_cookie,
-        &governance_program_cookie,
-        &max_voter_weight_record_cookie,
-        first_mint_cookie,
-        0, // no digit shift
-    ).await?;
+    let _mint_cookie = token_voter_test
+        .configure_mint_config(
+            &registrar_cookie,
+            &governance_program_cookie,
+            &max_voter_weight_record_cookie,
+            first_mint_cookie,
+            0, // no digit shift
+        )
+        .await?;
 
     // Assert
 
-    let voter_data = token_voter_test
-    .get_voter(&voter_cookie.address)
-    .await;
+    let voter_data = token_voter_test.get_voter(&voter_cookie.address).await;
 
     assert_eq!(voter_data.deposits.len(), 0);
     assert_eq!(voter_data.registrar, registrar_cookie.address);
 
     let registrar = token_voter_test
-    .get_registrar_account(&registrar_cookie.address)
-    .await;
-
+        .get_registrar_account(&registrar_cookie.address)
+        .await;
 
     assert_eq!(registrar.voting_mint_configs.len(), 1);
-    assert_eq!(registrar.voting_mint_configs.first().unwrap().mint, first_mint_cookie.address);
+    assert_eq!(
+        registrar.voting_mint_configs.first().unwrap().mint,
+        first_mint_cookie.address
+    );
 
     let max_voter_weight_record = token_voter_test
         .get_max_voter_weight_record(&max_voter_weight_record_cookie.address)
@@ -90,30 +92,32 @@ async fn test_configure_voter_weights() -> Result<(), TransportError> {
         .with_max_voter_weight_record(&registrar_cookie)
         .await?;
 
-    let _mint_cookie = token_voter_test.configure_mint_config(
-        &registrar_cookie,
-        &governance_program_cookie,
-        &max_voter_weight_record_cookie,
-        first_mint_cookie,
-        0, // no digit shift
-    ).await?;
+    let _mint_cookie = token_voter_test
+        .configure_mint_config(
+            &registrar_cookie,
+            &governance_program_cookie,
+            &max_voter_weight_record_cookie,
+            first_mint_cookie,
+            0, // no digit shift
+        )
+        .await?;
 
     // Assert
 
-    let voter_data = token_voter_test
-    .get_voter(&voter_cookie.address)
-    .await;
+    let voter_data = token_voter_test.get_voter(&voter_cookie.address).await;
 
     assert_eq!(voter_data.deposits.len(), 0);
     assert_eq!(voter_data.registrar, registrar_cookie.address);
 
     let registrar = token_voter_test
-    .get_registrar_account(&registrar_cookie.address)
-    .await;
-
+        .get_registrar_account(&registrar_cookie.address)
+        .await;
 
     assert_eq!(registrar.voting_mint_configs.len(), 1);
-    assert_eq!(registrar.voting_mint_configs.first().unwrap().mint, first_mint_cookie.address);
+    assert_eq!(
+        registrar.voting_mint_configs.first().unwrap().mint,
+        first_mint_cookie.address
+    );
 
     let max_voter_weight_record = token_voter_test
         .get_max_voter_weight_record(&max_voter_weight_record_cookie.address)
@@ -180,18 +184,20 @@ async fn test_configure_voter_weights_with_realm_authority_must_sign_error(
     let first_mint_cookie = token_voter_test.mints.first().unwrap();
 
     // Act
-    
-    let err = token_voter_test.configure_mint_config_using_ix(
-        &registrar_cookie,
-        &governance_program_cookie,
-        &max_voter_weight_record_cookie,
-        first_mint_cookie,
-        0, // no digit shift,
-        |i| i.accounts[2].is_signer = false, // realm_authority
-        Some(&[]),
-    ).await
-    .err()
-    .unwrap();
+
+    let err = token_voter_test
+        .configure_mint_config_using_ix(
+            &registrar_cookie,
+            &governance_program_cookie,
+            &max_voter_weight_record_cookie,
+            first_mint_cookie,
+            0,                                   // no digit shift,
+            |i| i.accounts[2].is_signer = false, // realm_authority
+            Some(&[]),
+        )
+        .await
+        .err()
+        .unwrap();
 
     // Assert
     assert_anchor_err(err, anchor_lang::error::ErrorCode::AccountNotSigner);

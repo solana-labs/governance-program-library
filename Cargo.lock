@@ -711,6 +711,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
 
 [[package]]
+name = "bonk-plugin"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "borsh 0.10.3",
+ "bytemuck",
+ "gpl-shared",
+ "itertools 0.10.5",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "spl-governance",
+ "spl-governance-tools",
+ "spl-token",
+]
+
+[[package]]
 name = "borsh"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1908,16 +1926,30 @@ dependencies = [
 ]
 
 [[package]]
-name = "gpl-token-haver"
-version = "0.0.2"
+name = "gpl-token-voter"
+version = "0.0.1"
 dependencies = [
+ "ahash 0.8.7",
  "anchor-lang",
  "anchor-spl",
  "arrayref",
+ "borsh 0.10.3",
+ "env_logger",
+ "log",
  "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "spl-associated-token-account 3.0.4",
  "spl-governance",
+ "spl-governance-addin-api",
  "spl-governance-tools",
+ "spl-tlv-account-resolution 0.6.5",
  "spl-token",
+ "spl-token-2022 3.0.4",
+ "spl-token-client",
+ "spl-transfer-hook-example",
+ "spl-transfer-hook-interface 0.6.5",
+ "static_assertions",
 ]
 
 [[package]]
