@@ -386,7 +386,7 @@
       "name": "transfer_authority",
       "docs": [
         "DANGEROUSLY Update `authority` of [StakePool](state::StakePool) to `new_authority`.",
-        "This is useful for quickly setting up a StakePool and then transfering it to a",
+        "This is useful for quickly setting up a StakePool and then transferring it to a",
         "form of governance."
       ],
       "discriminator": [
